@@ -1,0 +1,50 @@
+A-MAZE-ING PLAN:
+
+1. Crea rectángulo, coloca entrada y salida. Comprueba si están dentro de los márgenes (Exception si no).
+
+2. Comprueba si puede hacer el 42 (> 7x5). Sesgo para pares: arriba-izquierda. Si no, imprime mensaje y genera el laberinto sin el 42.
+
+3. Dos matrices: Laberinto y casillas visitadas.
+
+4. Laberinto:
+	Empieza siendo todo f (todas paredes cerradas no visitadas, 42 prohibidas).
+	Obligatiorio: esquinas han de tener dos 1 juntos (ciclicidad permitida). Pueden ser 3.
+	Si perfecto: todas las casillas tienen que tener al menos dos 1 (Prohibido: f).
+	Si no perfecto: todas las casillas deben tener como máximo dos 1 (Prohibido: b-f, salvo en 42). Tampoco: salas > 3x3.
+	Los laberintos deben mantener la coherencia entre espacios y paredes.
+
+5. Algoritmo de generación (Wilson):
+	Si hay 42, genera unos espacios como parte del laberinto. Si no, busca un punto aleatorio como parte del laberinto:
+	xxxxxxxxx   xxxxxxxxx
+	xfxxxfffx   xfxxxfffx
+	xfxxooofx   xfxxooofx
+	xfffxfffx   xfffofffx
+	xxxfxfooo   xxxfofooo
+	xxxfxfffx   xxxfofffx
+	xxxxxxxxx   xxxxoxxxx
+
+	Genera un punto aleatorio y recorre un camino aleatorio. Opcional (o no): que no vaya hacia atrás.
+	Si se solapa consigo mismo, borra todo el camino hasta el punto de choque.
+	Si se solapa con el laberinto forma parte del laberinto. Abrir la pared en dicha celda.
+	Repetir.
+	Si no es perfecto busca paredes no válidas y borra una pared aleatoria (comprueba que sea válido).
+	Si no perfecto: busca prohibidos (excluye 42) y abre una pared aleatoria. Si no cumple: se queda como está o pone/quita paredes.
+
+6. Solución:
+	Perfecto: recursive backtracker (puede que doble para ahorrar tiempo; si consigo hacerlo con multithreading tendré ventaja para el Codexion).
+	No perfecto: ¿Raíces? ¿Variante de recursive backtracker? Pedir a IA posibles algoritmos de optimización.
+
+7. Representación visual:
+	Renderizado ASCII en terminal o MiniLibX. Tendré que pedir ayuda para la segunda.
+	Muestra paredes, entrada, salida y solución.
+	Partes interactivas:
+		Regenerar un nuevo laberinto.
+		Mostrar/ocultar solución.
+		Cambiar colores de paredes (obligatorio) y de 42 (opcional).
+
+8. Archivo de salida:
+	El propio laberinto.
+	Línea vacía.
+	Coordenadas de entrada.
+	Coordenadas de salida.
+	Solución en direcciones cardinales de avance.
