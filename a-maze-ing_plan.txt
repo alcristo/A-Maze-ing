@@ -30,9 +30,17 @@ A-MAZE-ING PLAN:
 	Si no es perfecto busca paredes no válidas y borra una pared aleatoria (comprueba que sea válido).
 	Si no perfecto: busca prohibidos (excluye 42) y abre una pared aleatoria. Si no cumple: se queda como está o pone/quita paredes.
 
+5. Otro posible algoritmo (Aldous-Broder):
+    Celda aleatoria, vecino aleatorio.
+    Si vecino no visitado: se elimina pared entre ambos. Si no, se mueve sin hacer nada.
+    Se repite.
+    
+   Posibilidad: combinar ambos. 1º Aldous-Broder hasta 1/3-1/4, luego cambia a Wilson.
+
 6. Solución:
 	Perfecto: recursive backtracker (puede que doble para ahorrar tiempo; si consigo hacerlo con multithreading tendré ventaja para el Codexion).
-	No perfecto: ¿Raíces? ¿Variante de recursive backtracker? Pedir a IA posibles algoritmos de optimización.
+	No perfecto: ¿Raíces? ¿Variante de recursive backtracker? Pedir a IA posibles algoritmos de optimización. Posibilidad: A*:
+	
 
 7. Representación visual:
 	Renderizado ASCII en terminal o MiniLibX. Tendré que pedir ayuda para la segunda.
