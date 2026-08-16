@@ -1,0 +1,97 @@
+from numpy.typing import NDArray
+
+
+class MazeError(Exception):
+    def __init__(self, msg: str):
+        self.msg = msg
+
+
+"""Manhattan heuristic, return distance"""
+def manhattan(curr: tuple[int], neigh: tuple[int]) -> int:
+    return abs(curr[0] - neigh[0]) + abs(curr[1] - neigh[1])
+
+
+"""Check for errors in the configuration"""
+def check_errors(conf: dict):
+    start = conf["ENTRY"].split(",")
+    end = conf["EXIT"].split(",")
+    entr = (int(start[0]), int(start[1]))
+    exit = (int(end[0]), int(end[1]))
+
+    """Check that entry and exit are actually different"""
+    if entr == exit:
+        raise MazeError("Maze entrance and exit must be different")
+
+    """Check positive height and width"""
+    if size[0] <= 0 or size[1] <= 0:
+        raise MazeError("Maze dimensions must be positive")
+    
+    in_bounds = [
+        entr[0] >= 0,
+        entr[1] >= 0,
+        entr[0] < size[0],
+        entr[1] < size[1],
+        exit[0] >= 0,
+        exit[1] >= 0,
+        exit[0] < size[0],
+        exit[1] < size[1]
+    ]
+    if False in in_bounds:
+        raise MazeError(
+            "Entrance or exit of the maze seem to be out of bounds"
+        )
+    
+    if visited.shape[0] > 6 or visited.shape[1] > 8:
+        in_42 = []
+        in_42.extend([True for i in pos_42 if i[0] == entr[0] and i[1] == entr[1]])
+        in_42.extend([True for i in pos_42 if i[0] == exit[0] and i[1] == exit[1]])
+        if True in in_42:
+            raise MazeError("Entrance or exit of the maze seem to be inside the 42")
+
+
+"""Get the walls in a tile, return bit tuple"""
+def get_walls(n: int) -> tuple[int]:
+    if n > 15 or n < 0:
+        raise ValueError
+    bits = []
+    bits.append(n // 8)
+    n %= 8
+    bits.append(n // 4)
+    n %= 4
+    bits.append(n // 2)
+    n %= 2
+    bits.append(n)
+    bits.reverse()
+    return tuple(bits)
+
+
+"""Check coherence between tile walls"""
+def check_tile(maze: NDArray, coords: tuple[int]):
+    i, j = coords
+    tile = int(maze[i, j])
+    msg = f"Maze tile {coords} has incoherent walls"
+    walls = get_walls(tile)
+    if i == 0:
+        if walls[0] == 0:
+            raise MazeError(f"{msg} with north border")
+    else:
+        if walls[0] != get_walls(maze[i - 1][j])[2]:
+            raise MazeError(f"{msg} with tile {(i - 1, j)}")
+    if i == maze.shape[0] - 1:
+        if walls[2] == 0:
+            raise MazeError(f"{msg} with south border")
+    else:
+        if walls[2] != get_walls(maze[i + 1][j])[0]:
+            raise MazeError(f"{msg} with tile {(i + 1, j)}")
+    if j == 0:
+        if walls[3] == 0:
+            raise MazeError(f"{msg} with west border")
+    else:
+        if walls[3] != get_walls(maze[i][j - 1])[1]:
+            raise MazeError(f"{msg} with tile {(i, j - 1)}")
+    if j == maze.shape[1] - 1:
+        if walls[1] == 0:
+            raise MazeError(f"{msg} with east border")
+    else:
+        if walls[1] != get_walls(maze[i][j + 1])[3]:
+            raise MazeError(f"{msg} with tile {(i, j + 1)}")

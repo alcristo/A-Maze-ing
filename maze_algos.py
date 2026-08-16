@@ -1,10 +1,6 @@
 from numpy.typing import NDArray
 import random as rng
-
-
-"""Manhattan heuristic, return distance"""
-def manhattan(curr: tuple[int], neigh: tuple[int]) -> int:
-    return abs(curr[0] - neigh[0]) + abs(curr[1] - neigh[1])
+from .maze_utils import manhattan
 
 
 """Connect two maze tiles"""
