@@ -1,6 +1,6 @@
 from numpy.typing import NDArray
 import random as rng
-from .maze_utils import manhattan
+from maze_utils import manhattan
 
 
 """Connect two maze tiles"""
@@ -53,10 +53,10 @@ def wilson_erase(visited: NDArray, path: list[tuple], point: tuple[int]) -> None
 
 
 """Make the unvisited tiles set"""
-def unvisited_set(visited: NDArray) -> set
+def unvisited_set(visited: NDArray) -> set:
     yet = set()
-    for i in range(maze.shape[0]):
-        for j in range(maze.shape[1]):
+    for i in range(visited.shape[0]):
+        for j in range(visited.shape[1]):
             if visited[i, j] == 0:
                 yet.add((i, j))
     return yet

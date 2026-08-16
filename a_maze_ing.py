@@ -1,14 +1,15 @@
+from sys import argv, exit
 from numpy import zeros, ones, mean, array
 from numpy.typing import NDArray
-from .maze_utils import *
-from .maze_algos import wilson, aldous_broder
-from .pathfinding import a_star
+from maze_utils import *
+from maze_algos import wilson, aldous_broder
+from pathfinding import a_star
 import random as rng
 
 
 def main() -> None:
     """Open the configuration file and set everything"""
-    with open("config.txt") as f:
+    with open(argv[1]) as f:
         txt = f.read()
         opts = txt.split("\n")
         tup = [tuple(i.split("=")) for i in opts]
@@ -47,20 +48,16 @@ def main() -> None:
     """Algorithm"""
     wilson(maze, visited)
     """Solution"""
-    sol = a_star(maze)
+    start = conf["ENTRY"].split(",")
+    end = conf["EXIT"].split(",")
+    entr = (int(start[0]), int(start[1]))
+    exit = (int(end[0]), int(end[1]))
+    sol = a_star(maze, entr, exit)
 
-    """Print the hexadecimal maze"""
+    """Save the file"""
     base = "0123456789abcdef"
-    for i in range(maze.shape[0]):
-        for j in range(maze.shape[1]):
-            try:
-                check_tile(maze, (i, j))
-                print(base[maze[i][j]], end="")
-            except MazeError as e:
-                print(e.msg)
-        print()txt = ""
+    txt = ""
     with open(conf['OUTPUT_FILE'], 'w') as out:
-        print(maze)
         for i in range(size[0]):
             for j in range(size[1]):
                 out.write(base[maze[i][j]])
@@ -72,6 +69,9 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    if len(argv) != 2:
+        print("Only one configuration file is allowed")
+        exit()
     try:
         main()
     except KeyboardInterrupt:

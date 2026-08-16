@@ -1,6 +1,6 @@
 from numpy.typing import NDArray
-from numpy import Inf
-from .maze_utils import get_walls, manhattan
+from numpy import Inf, ones
+from maze_utils import get_walls, manhattan
 
 
 """Node class to track down the path"""
@@ -62,7 +62,7 @@ def check_closed(closed: list[Node], point: tuple[int]) -> bool:
 
 
 """A* pathfinding algorithm with Manhattan heuristic"""
-def a_star(maze: NDArray) -> str:
+def a_star(maze: NDArray, entr: tuple[int], exit: tuple[int]) -> str:
     """Initialize lists and F cost array"""
     opened, closed = [], []
     f_cost = Inf * ones(maze.shape[:], int)
@@ -103,5 +103,4 @@ def a_star(maze: NDArray) -> str:
         elif current.val[1] == current.next.val[1] - 1:
             sol = "W" + sol
         current = current.next
-    print(len(closed))
-    print(sol)
+    return sol

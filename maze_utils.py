@@ -17,6 +17,7 @@ def check_errors(conf: dict):
     end = conf["EXIT"].split(",")
     entr = (int(start[0]), int(start[1]))
     exit = (int(end[0]), int(end[1]))
+    size = (int(conf["HEIGHT"]), int(conf["WIDTH"]))
 
     """Check that entry and exit are actually different"""
     if entr == exit:
@@ -36,12 +37,22 @@ def check_errors(conf: dict):
         exit[0] < size[0],
         exit[1] < size[1]
     ]
+    if size[0] > 6 and size[1] > 8:
+        hs, ws = size[0] // 2 - 2, size[1] // 2 - 3
+        pos_42 = (
+            (hs, ws), (hs + 1, ws), (hs + 2, ws), (hs + 2, ws + 1),
+            (hs + 2, ws + 2), (hs + 3, ws + 2), (hs + 4, ws + 2),
+            (hs, ws + 4), (hs, ws + 5), (hs, ws + 6), (hs + 1, ws + 6),
+            (hs + 2, ws + 6), (hs + 2, ws + 5), (hs + 2, ws + 4),
+            (hs + 3, ws + 4), (hs + 4, ws + 4), (hs + 4, ws + 5),
+            (hs + 4, ws + 6)
+        )
     if False in in_bounds:
         raise MazeError(
             "Entrance or exit of the maze seem to be out of bounds"
         )
     
-    if visited.shape[0] > 6 or visited.shape[1] > 8:
+    if size[0] > 6 or size[1] > 8:
         in_42 = []
         in_42.extend([True for i in pos_42 if i[0] == entr[0] and i[1] == entr[1]])
         in_42.extend([True for i in pos_42 if i[0] == exit[0] and i[1] == exit[1]])
