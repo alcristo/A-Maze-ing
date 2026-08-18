@@ -37,7 +37,7 @@ def check_errors(conf: dict):
         exit[0] < size[0],
         exit[1] < size[1]
     ]
-    if size[0] > 6 and size[1] > 8:
+    if size[0] > 5 and size[1] > 7:
         hs, ws = size[0] // 2 - 2, size[1] // 2 - 3
         pos_42 = (
             (hs, ws), (hs + 1, ws), (hs + 2, ws), (hs + 2, ws + 1),
@@ -53,11 +53,10 @@ def check_errors(conf: dict):
         )
     
     if size[0] > 6 or size[1] > 8:
-        in_42 = []
-        in_42.extend([True for i in pos_42 if i[0] == entr[0] and i[1] == entr[1]])
-        in_42.extend([True for i in pos_42 if i[0] == exit[0] and i[1] == exit[1]])
-        if True in in_42:
-            raise MazeError("Entrance or exit of the maze seem to be inside the 42")
+        if True in [entr in pos_42, exit in pos_42]:
+            raise MazeError(
+                "Entrance or exit of the maze seem to be inside the 42"
+            )
 
 
 """Get the walls in a tile, return bit tuple"""

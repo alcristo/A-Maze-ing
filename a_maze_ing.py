@@ -1,10 +1,32 @@
-from sys import argv, exit
+from sys import argv, stderr
 from numpy import zeros, ones, mean, array
 from numpy.typing import NDArray
-from maze_utils import *
-from maze_algos import wilson, aldous_broder
+from maze_utils import MazeError, check_errors
+from maze_algos import dfs, prim, wilson, aldous_broder
 from pathfinding import a_star
 import random as rng
+
+
+def select_algo(conf: dict) -> str:
+    try:
+        if conf["ALGORITHM"].lower in (
+            "aldous broder", "aldousbroder", "aldous_broder", "aldous-broder"
+        ):
+            return "AldousBroder"
+        elif conf["ALGORITHM"].lower in (
+            "dfs", "depthfirstsearch", "depth first search", "depth_first_search",
+            "recursivebacktracker", "recursive backtracker",
+            "recursive_backtracker"
+        ):
+            return "DFS"
+        elif conf["ALGORITHM"].lower == "prim":
+            return "Prim"
+        elif conf["ALGORITHM"].lower == "wilson":
+            return "Wilson"
+        else:
+            return "Error"
+    except KeyError:
+        return "Wilson"
 
 
 def main() -> None:
@@ -17,7 +39,7 @@ def main() -> None:
     try:
         check_errors(conf)
     except MazeError as e:
-        print(e.msg)
+        print(e.msg, file=stderr)
         return
 
     """Create the maze and visited tiles arrays"""
@@ -25,12 +47,13 @@ def main() -> None:
     maze = ones(size, int) * 15
     visited = zeros(size, int)
     perfect = bool(conf["PERFECT"])
-    if visited.shape[0] < 7 and visited.shape[1] < 9:
+    if visited.shape[0] < 6 or visited.shape[1] < 8:
         is_42 = 0
         print("The '42' cannot be printed in a maze this size.")
     else:
         is_42 = 1
-        hs, ws = visited.shape[0] // 2 - 2, visited.shape[1] // 2 - 3
+        hs = (visited.shape[0] - 1) // 2 - 2
+        ws = (visited.shape[1] - 1) // 2 - 3
         pos_42 = (
             (hs, ws), (hs + 1, ws), (hs + 2, ws), (hs + 2, ws + 1),
             (hs + 2, ws + 2), (hs + 3, ws + 2), (hs + 4, ws + 2),
@@ -46,7 +69,18 @@ def main() -> None:
     current = [rng.randrange(0, size[0] - 1), rng.randrange(0, size[1] - 1)]
     visited[current[0]][current[1]] = 1
     """Algorithm"""
-    wilson(maze, visited)
+    algo = select_algo(conf)
+    if algo == "AldousBroder":
+        aldous_broder(maze, visited)
+    elif algo == "DFS":
+        dfs(maze, visited)
+    elif algo == "Prim":
+        prim(maze, visited)
+    elif algo == "Wilson":
+        wilson(maze, visited)
+    else:
+        print("Unknown or not implemented algorithm", file=stderr)
+        return
     """Solution"""
     start = conf["ENTRY"].split(",")
     end = conf["EXIT"].split(",")
@@ -70,9 +104,9 @@ def main() -> None:
 
 if __name__ == "__main__":
     if len(argv) != 2:
-        print("Only one configuration file is allowed")
-        exit()
-    try:
-        main()
-    except KeyboardInterrupt:
-        print("Program terminated by user")
+        print("Only one configuration file is allowed", file=stderr)
+    else:
+        try:
+            main()
+        except KeyboardInterrupt:
+            print("Program terminated by user")
