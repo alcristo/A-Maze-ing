@@ -67,25 +67,15 @@ def dfs(maze: NDArray, visited: NDArray) -> None:
     while len(lst) > 0:
         nvis = set()
         h, w = current[:]
-        try:
-            if visited[h - 1, w] == 0:
-                if h - 1 == -1:
+        neighs = ((h - 1, w), (h, w + 1), (h + 1, w), (h, w - 1))
+        for i in neighs:
+            try:
+                if True in [i[j] in (-1, maze.shape[j]) for j in [0, 1]]:
                     raise IndexError
-                nvis.add((h - 1, w))
-            if visited[h, w + 1] == 0:
-                if w + 1 == maze.shape[1]:
-                    raise IndexError
-                nvis.add((h, w + 1))
-            if visited[h + 1, w] == 0:
-                if h + 1 == maze.shape[0]:
-                    raise IndexError
-                nvis.add((h + 1, w))
-            if visited[h, w - 1] == 0:
-                if w - 1 == -1:
-                    raise IndexError
-                nvis.add((h, w - 1))
-        except IndexError:
-            pass
+                if visited[i[:]] == 0:
+                    nvis.add(i[:])
+            except IndexError:
+                continue
         if len(nvis) == 0:
             lst.pop()
         else:
@@ -106,25 +96,15 @@ def prim(maze: NDArray, visited: NDArray) -> None:
     while len(opened) > 0:
         nvis = set()
         h, w = current[:]
-        try:
-            if visited[h - 1, w] == 0:
-                if h - 1 == -1:
+        neighs = ((h - 1, w), (h, w + 1), (h + 1, w), (h, w - 1))
+        for i in neighs:
+            try:
+                if True in [i[j] in (-1, maze.shape[j]) for j in [0, 1]]:
                     raise IndexError
-                nvis.add((h - 1, w))
-            if visited[h, w + 1] == 0:
-                if w + 1 == maze.shape[1]:
-                    raise IndexError
-                nvis.add((h, w + 1))
-            if visited[h + 1, w] == 0:
-                if h + 1 == maze.shape[0]:
-                    raise IndexError
-                nvis.add((h + 1, w))
-            if visited[h, w - 1] == 0:
-                if w - 1 == -1:
-                    raise IndexError
-                nvis.add((h, w - 1))
-        except IndexError:
-            pass
+                if visited[i[:]] == 0:
+                    nvis.add(i[:])
+            except IndexError:
+                continue
         if len(nvis) == 0:
             opened.remove(current)
         else:
