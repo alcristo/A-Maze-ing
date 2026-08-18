@@ -7,13 +7,44 @@ from maze_utils import get_walls, manhattan
 class Node():
     def __init__(self, value):
         self.val = value
+        self._g = Inf
+        self._h = Inf
+        self._f = Inf
         self.next = None
 
-    def add_front(self, newnode):
+    def add_front(self, newnode) -> None:
         if newnode is None:
             return
         newnode.next = self
         self = newnode
+
+    def size(self) -> int:
+        first = self
+        n = 1
+        while self.next != None and self.next is not first:
+            n += 1
+            self = self.next
+        return n
+
+    def get_g(self) -> int:
+        return self._g
+
+    def get_h(self) -> int:
+        return self._h
+
+    def get_f(self) -> int:
+        return self._f
+
+    def _set_f(self, f: int) -> None:
+        self._f = f
+
+    def set_g(self, g: int) -> None:
+        self._g = g
+        self._set_f(self.get_g() + self.get_h())
+
+    def set_h(self, h: int) -> None:
+        self._h = h
+        self._set_f(self.get_g() + self.get_h())
 
 
 """Return reachable neighbours list from a maze tile"""
@@ -38,6 +69,8 @@ def choose_current(f: NDArray, points: list[Node], exit: tuple[int]) -> Node:
     f_cost = []
     for i in points:
         p = i.val
+        if p == exit:
+            return i
         f_cost.append(f[p[:]])
     min_f = min(f_cost)
     to_select = []
@@ -53,9 +86,9 @@ def choose_current(f: NDArray, points: list[Node], exit: tuple[int]) -> Node:
     return current
 
 
-"""Check point in closed list"""
-def check_closed(closed: list[Node], point: tuple[int]) -> bool:
-    for i in closed:
+"""Check point in a set"""
+def check_node(set: set[Node], point = tuple[int]) -> bool:
+    for i in set:
         if i.val == point:
             return True
     return False
@@ -64,34 +97,35 @@ def check_closed(closed: list[Node], point: tuple[int]) -> bool:
 """A* pathfinding algorithm with Manhattan heuristic"""
 def a_star(maze: NDArray, entr: tuple[int], exit: tuple[int]) -> str:
     """Initialize lists and F cost array"""
-    opened, closed = [], []
+    opened, closed = set(), set()
     f_cost = Inf * ones(maze.shape[:], int)
-    opened.append(Node(entr))
+    opened.add(Node(entr))
     f_cost[entr[:]] = manhattan(entr, exit)
     while len(opened) > 0:
         """Choose current node, move from open list to closed list"""
-        current = choose_current(f_cost, opened, exit)
+        current = choose_current(f_cost, list(opened), exit)
         opened.remove(current)
-        closed.append(current)
+        closed.add(current)
         """If node is the exit, path has been found"""
         if current.val == exit:
             break
         for i in neighbours(maze, current.val):
             """If node is already closed, continue"""
-            if check_closed(closed, i) is True:
+            if check_node(closed, i) is True:
                 continue
             node = Node(i)
             node.next = current
-            g = manhattan(i, entr)
-            h = manhattan(i, exit)
-            f = g - h
+            node.set_g(node.size() - 1 + manhattan(i, entr))
+            node.set_h(manhattan(i, exit))
             """Update F cost if is lower"""
-            if f < f_cost[i[:]]:
-                f_cost[i[:]] = f
-                if i in opened:
-                    if manhattan(open[open.index(i)], entr) > g:
+            if node.get_f() < f_cost[i[:]]:
+                f_cost[i[:]] = node.get_f()
+                if check_node(opened, i) is True:
+                    if manhattan(opened[opened.index(i)], entr) > node.get_g():
                         continue
-                opened.append(node)
+                opened.add(node)
+
+    """Return the maze solution via backtracking"""
     sol = ""
     while current.next is not None:
         if current.val[0] == current.next.val[0] + 1:
