@@ -3,6 +3,19 @@ import random as rng
 from maze_utils import manhattan
 
 
+"""Initialize the first tile of the maze"""
+def maze_init(maze: NDArray, visited: NDArray) -> tuple[int]:
+    h, w = maze.shape[:]
+    v = -1
+    while v == -1:
+        current = (
+            rng.randrange(0, h - 1), rng.randrange(0, w - 1)
+        )
+        v = visited[current[:]]
+    visited[current[:]] = 1
+    return current
+
+
 """Connect two maze tiles"""
 def connect(maze: NDArray, curr: tuple[int], neigh: tuple[int]) -> None:
     if manhattan(curr, neigh) != 1:
@@ -63,6 +76,7 @@ def unvisited_set(visited: NDArray) -> set:
 
 
 def dfs(maze: NDArray, visited: NDArray) -> None:
+    current = maze_init(maze, visited)
     lst = [current]
     while len(lst) > 0:
         nvis = set()
@@ -91,6 +105,8 @@ def dfs(maze: NDArray, visited: NDArray) -> None:
 
 
 def prim(maze: NDArray, visited: NDArray) -> None:
+    current = maze_init(maze, visited)
+    yet = unvisited_set(visited)
     opened = set()
     opened.add(tuple(current))
     while len(opened) > 0:
@@ -118,6 +134,7 @@ def prim(maze: NDArray, visited: NDArray) -> None:
 
 
 def aldous_broder(maze: NDArray, visited: NDArray) -> None:
+    current = maze_init(maze, visited)
     yet = unvisited_set(visited)
     while len(yet) > 0:
         direct = direction()
@@ -145,7 +162,7 @@ def wilson(maze: NDArray, visited: NDArray) -> None:
     yet = unvisited_set(visited)
     while len(yet) > 0:
         path = []
-        current = rng.choices([*yet], k=1)[0]
+        current = rng.choice([*yet])
         visited[current[0], current[1]] = 2
         path.append(current)
         last_direction = ()

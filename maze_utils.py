@@ -38,7 +38,8 @@ def check_errors(conf: dict):
         exit[1] < size[1]
     ]
     if size[0] > 5 and size[1] > 7:
-        hs, ws = size[0] // 2 - 2, size[1] // 2 - 3
+        hs = (size[0] - 1) // 2 - 2
+        ws = (size[1] - 1) // 2 - 3
         pos_42 = (
             (hs, ws), (hs + 1, ws), (hs + 2, ws), (hs + 2, ws + 1),
             (hs + 2, ws + 2), (hs + 3, ws + 2), (hs + 4, ws + 2),
@@ -52,7 +53,7 @@ def check_errors(conf: dict):
             "Entrance or exit of the maze seem to be out of bounds"
         )
     
-    if size[0] > 6 or size[1] > 8:
+    if size[0] > 5 or size[1] > 7:
         if True in [entr in pos_42, exit in pos_42]:
             raise MazeError(
                 "Entrance or exit of the maze seem to be inside the 42"

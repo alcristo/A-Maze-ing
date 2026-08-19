@@ -9,19 +9,19 @@ import random as rng
 
 def select_algo(conf: dict) -> str:
     try:
-        if conf["ALGORITHM"].lower in (
+        if conf["ALGORITHM"].lower() in (
             "aldous broder", "aldousbroder", "aldous_broder", "aldous-broder"
         ):
             return "AldousBroder"
-        elif conf["ALGORITHM"].lower in (
+        elif conf["ALGORITHM"].lower() in (
             "dfs", "depthfirstsearch", "depth first search", "depth_first_search",
             "recursivebacktracker", "recursive backtracker",
             "recursive_backtracker"
         ):
             return "DFS"
-        elif conf["ALGORITHM"].lower == "prim":
+        elif conf["ALGORITHM"].lower() == "prim":
             return "Prim"
-        elif conf["ALGORITHM"].lower == "wilson":
+        elif conf["ALGORITHM"].lower() == "wilson":
             return "Wilson"
         else:
             return "Error"

@@ -115,7 +115,7 @@ def a_star(maze: NDArray, entr: tuple[int], exit: tuple[int]) -> str:
                 continue
             node = Node(i)
             node.next = current
-            node.set_g(node.size() - 1 + manhattan(i, entr))
+            node.set_g(node.size() - 1)
             node.set_h(manhattan(i, exit))
             """Update F cost if is lower"""
             if node.get_f() < f_cost[i[:]]:
