@@ -1,10 +1,11 @@
-from sys import argv, stderr
+from sys import argv, stderr, exit
 from numpy import zeros, ones, mean, array
 from numpy.typing import NDArray
 from maze_utils import MazeError, check_errors
 from maze_algos import dfs, prim, wilson, aldous_broder, imperfect
 from pathfinding import a_star
 import random as rng
+from signal import SIGINT, signal, raise_signal
 
 
 def select_algo(conf: dict) -> str:
@@ -35,7 +36,7 @@ def main() -> None:
         txt = f.read()
         opts = txt.split("\n")
         tup = [tuple(i.split("=")) for i in opts]
-        conf = {i[0]: i[1] for i in tup}
+        conf = {i[0].upper(): i[1] for i in tup if i[0][0] != "#"}
     try:
         check_errors(conf)
     except MazeError as e:
@@ -104,11 +105,24 @@ def main() -> None:
         out.write(sol)
 
 
+def handler(signum, frame):
+    print("\rProgram terminated by user")
+    exit(0)
+
+
 if __name__ == "__main__":
+    signal(SIGINT, handler)
     if len(argv) != 2:
         print("Only one configuration file is allowed", file=stderr)
     else:
         try:
             main()
+        except MemoryError:
+            print("[ERROR] Out of memory", file=stderr)
+        except OverflowError:
+            print(
+                "[ERROR] Calculations exceed computer limits. "
+                "Please, try lower maze size.", file=stderr
+            )
         except KeyboardInterrupt:
-            print("Program terminated by user")
+            raise_signal(SIGINT)

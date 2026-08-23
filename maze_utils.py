@@ -1,8 +1,9 @@
 from numpy.typing import NDArray
+from sys import stderr
 
 
 class MazeError(Exception):
-    def __init__(self, msg: str):
+    def __init__(self, msg: str = ""):
         self.msg = msg
 
 
@@ -15,9 +16,17 @@ def manhattan(curr: tuple[int], neigh: tuple[int]) -> int:
 def check_errors(conf: dict):
     start = conf["ENTRY"].split(",")
     end = conf["EXIT"].split(",")
-    entr = (int(start[0]), int(start[1]))
-    exit = (int(end[0]), int(end[1]))
-    size = (int(conf["HEIGHT"]), int(conf["WIDTH"]))
+    try:
+        entr = (int(start[0]), int(start[1]))
+        exit = (int(end[0]), int(end[1]))
+        size = (int(conf["HEIGHT"]), int(conf["WIDTH"]))
+    except ValueError:
+        raise MazeError("[ERROR] Configurtion is in wrong format. "
+            "Please, use integers for HEIGHT, WIDTH, ENTRY & EXIT")
+        raise MazeError()
+    except IndexError:
+        raise MazeError("[ERROR] Entry or exit in wrong format. "
+            "Usage ex.: EXIT=[int],[int]")
 
     """Check that entry and exit are actually different"""
     if entr == exit:
