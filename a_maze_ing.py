@@ -8,6 +8,7 @@ import random as rng
 from signal import SIGINT, signal, raise_signal
 
 
+"""Return selected algorithm string"""
 def select_algo(conf: dict) -> str:
     try:
         if conf["ALGORITHM"].lower() in (
@@ -35,6 +36,8 @@ def main() -> None:
     with open(argv[1]) as f:
         txt = f.read()
         opts = txt.split("\n")
+        if opts[-1] == "":
+            opts.pop()
         tup = [tuple(i.split("=")) for i in opts]
         conf = {i[0].upper(): i[1] for i in tup if i[0][0] != "#"}
     try:
@@ -100,11 +103,12 @@ def main() -> None:
                 out.write(base[maze[i][j]])
             out.write("\n")
         out.write("\n")
-        out.write(f"{entr}          # entry (x,y)\n")
-        out.write(f"{exit}          # exit (x,y)\n")
+        out.write(f"{entr[1]},{entr[0]}\n")
+        out.write(f"{exit[1]},{exit[0]}\n")
         out.write(sol)
 
 
+"""Interruption signal handler (SIGINT, Ctrl+C)"""
 def handler(signum, frame):
     print("\rProgram terminated by user")
     exit(0)
