@@ -121,7 +121,7 @@ def a_star(maze: NDArray, entr: tuple[int], exit: tuple[int]) -> str:
             if node.get_f() < f_cost[i[:]]:
                 f_cost[i[:]] = node.get_f()
                 if check_node(opened, i) is True:
-                    if manhattan(opened[opened.index(i)], entr) > node.get_g():
+                    if manhattan(i, entr) > node.get_g():
                         continue
                 opened.add(node)
 

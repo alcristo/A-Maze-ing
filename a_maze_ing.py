@@ -2,7 +2,7 @@ from sys import argv, stderr
 from numpy import zeros, ones, mean, array
 from numpy.typing import NDArray
 from maze_utils import MazeError, check_errors
-from maze_algos import dfs, prim, wilson, aldous_broder
+from maze_algos import dfs, prim, wilson, aldous_broder, imperfect
 from pathfinding import a_star
 import random as rng
 
@@ -26,7 +26,7 @@ def select_algo(conf: dict) -> str:
         else:
             return "Error"
     except KeyError:
-        return "Wilson"
+        return "Prim"
 
 
 def main() -> None:
@@ -46,7 +46,7 @@ def main() -> None:
     size = (int(conf["HEIGHT"]), int(conf["WIDTH"]))
     maze = ones(size, int) * 15
     visited = zeros(size, int)
-    perfect = bool(conf["PERFECT"])
+    perfect = bool(conf["PERFECT"].lower() != "false")
     if visited.shape[0] < 6 or visited.shape[1] < 8:
         is_42 = 0
         print("The '42' cannot be printed in a maze this size.")
@@ -66,7 +66,7 @@ def main() -> None:
             visited[i[0]][i[1]] = -1
 
     """Place first tile in the maze"""
-    current = [rng.randrange(0, size[0] - 1), rng.randrange(0, size[1] - 1)]
+    current = [rng.randint(0, size[0] - 1), rng.randint(0, size[1] - 1)]
     visited[current[0]][current[1]] = 1
     """Algorithm"""
     algo = select_algo(conf)
@@ -81,6 +81,8 @@ def main() -> None:
     else:
         print("Unknown or not implemented algorithm", file=stderr)
         return
+    if perfect is False:
+        imperfect(maze)
     """Solution"""
     start = conf["ENTRY"].split(",")
     end = conf["EXIT"].split(",")

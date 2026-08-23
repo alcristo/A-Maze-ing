@@ -1,6 +1,6 @@
 from numpy.typing import NDArray
 import random as rng
-from maze_utils import manhattan
+from maze_utils import manhattan, get_walls
 
 
 """Initialize the first tile of the maze"""
@@ -20,17 +20,16 @@ def maze_init(maze: NDArray, visited: NDArray) -> tuple[int]:
 def connect(maze: NDArray, curr: tuple[int], neigh: tuple[int]) -> None:
     if manhattan(curr, neigh) != 1:
         return
-        
-    if curr[0] == neigh[0] + 1:
+    if curr[0] == neigh[0] + 1 and get_walls(maze[curr[:]])[0] == 1:
         maze[curr[0]][curr[1]] -= 1
         maze[neigh[0]][neigh[1]] -= 4
-    if curr[0] == neigh[0] - 1:
+    if curr[0] == neigh[0] - 1 and get_walls(maze[curr[:]])[2] == 1:
         maze[curr[0]][curr[1]] -= 4
         maze[neigh[0]][neigh[1]] -= 1
-    if curr[1] == neigh[1] - 1:
+    if curr[1] == neigh[1] - 1 and get_walls(maze[curr[:]])[1] == 1:
         maze[curr[0]][curr[1]] -= 2
         maze[neigh[0]][neigh[1]] -= 8
-    if curr[1] == neigh[1] + 1:
+    if curr[1] == neigh[1] + 1 and get_walls(maze[curr[:]])[3] == 1:
         maze[curr[0]][curr[1]] -= 8
         maze[neigh[0]][neigh[1]] -= 2
 
@@ -48,7 +47,7 @@ def direction() -> tuple[str, int]:
     return (axis, step)
 
 
-"""Return visited cells. Only if I decide to merge both algorithms"""
+"""Return visited cells. Only if I decide to merge Aldous-Broder and Wilson"""
 def count_visited(visited: NDArray) -> int:
     n = 0
     for i in range(visited.shape[0]):
@@ -200,3 +199,84 @@ def wilson(maze: NDArray, visited: NDArray) -> None:
             current = path[-1]
             path.pop()
         path.clear()
+
+
+"""Connect the chosen tiles"""
+def break_wall(maze: NDArray, tile: tuple[int], op: str) -> None:
+    i, j = tile[:]
+    if op == "N":
+        connect(maze, tile, (i - 1, j))
+    elif op == "E":
+        connect(maze, tile, (i, j + 1))
+    elif op == "S":
+        connect(maze, tile, (i + 1, j))
+    elif op == "W":
+        connect(maze, tile, (i, j - 1))
+
+
+"""Check for neighbouring removable walls"""
+def remove_walls(maze: NDArray, tile: tuple[int], prob: float = 1) -> None:
+    if maze[tile[:]] == 15 or prob < 0 or prob > 1:
+        return
+    i, j = tile[:]
+    walls = get_walls(maze[tile[:]])
+    r_walls = []
+    if i > 0:
+        if maze[i - 1][j] != 15 and walls[0] == 1:
+            r_walls.append("N")
+    if j < maze.shape[1] - 1:
+        if maze[i][j + 1] != 15 and walls[1] == 1:
+            r_walls.append("E")
+    if i < maze.shape[0] - 1:
+        if maze[i + 1][j] != 15 and walls[2] == 1:
+            r_walls.append("S")
+    if j > 0:
+        if maze[i][j - 1] != 15 and walls[3] == 1:
+            r_walls.append("W")
+    if len(r_walls) > 0 and rng.random() < prob:
+        break_wall(maze, tile, rng.choice(r_walls))
+
+
+def imperfect(maze: NDArray) -> None:
+    h, w = maze.shape
+    """ Start connecting the four corners"""
+    connect(maze, (0, 0), (0, 1))
+    connect(maze, (0, 0), (1, 0))
+    connect(maze, (0, w - 1), (0, w - 2))
+    connect(maze, (0, w - 1), (1, w - 1))
+    connect(maze, (h - 1, w - 1), (h - 1, w - 2))
+    connect(maze, (h - 1, w - 1), (h - 2, w - 1))
+    connect(maze, (h - 1, 0), (h - 1, 1))
+    connect(maze, (h - 1, 0), (h - 2, 0))
+
+    """Remove random walls in random tiles"""
+    for _  in range(h * w // 3):
+        tile = (rng.randrange(h), rng.randrange(w))
+        remove_walls(maze, tile, .5)
+    dead_ends = (7, 11, 13, 14)
+    s_wall = (0, 1, 2, 4, 8)
+    adm_walls = [1, 2, 3, 4, 5, 6, 8, 9, 10, 12]
+
+    """Remove dead ends; ignores 42"""
+    for i in range(h):
+        for j in range(w):
+            if maze[i, j] in dead_ends:
+                remove_walls(maze, (i, j))
+
+    """Check for areas > 3x3; fill them in such case"""
+    for i in range(h):
+        for j in range(w):
+            if maze[i, j] == 0:
+                adj_tiles = [(i - 1, j), (i, j + 1), (i + 1, j), (i, j - 1)]
+                adj_walls = [maze[k[:]] in s_wall for k in adj_tiles]
+                if False not in adj_walls:
+                    maze[i, j] = rng.choice(adm_walls)
+                    walls = get_walls(maze[i, j])
+                    if walls[0] == 1:
+                        maze[i - 1][j] += 4
+                    if walls[1] == 1:
+                        maze[i][j + 1] += 8
+                    if walls[2] == 1:
+                        maze[i + 1][j] += 1
+                    if walls[3] == 1:
+                        maze[i][j - 1] += 2

@@ -53,7 +53,7 @@ def check_errors(conf: dict):
             "Entrance or exit of the maze seem to be out of bounds"
         )
     
-    if size[0] > 5 or size[1] > 7:
+    if size[0] > 5 and size[1] > 7:
         if True in [entr in pos_42, exit in pos_42]:
             raise MazeError(
                 "Entrance or exit of the maze seem to be inside the 42"
