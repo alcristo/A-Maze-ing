@@ -6,13 +6,13 @@ class MazeError(Exception):
         self.msg = msg
 
 
-"""Manhattan heuristic, return distance"""
 def manhattan(curr: tuple[int], neigh: tuple[int]) -> int:
+    """Manhattan heuristic, return distance"""
     return abs(curr[0] - neigh[0]) + abs(curr[1] - neigh[1])
 
 
-"""Check for errors in the configuration"""
 def check_errors(conf: dict):
+    """Check for errors in the configuration"""
     start = conf["ENTRY"].split(",")
     end = conf["EXIT"].split(",")
     try:
@@ -68,8 +68,8 @@ def check_errors(conf: dict):
             )
 
 
-"""Get the walls in a tile, return bit tuple"""
 def get_walls(n: int) -> tuple[int]:
+    """Get the walls in a tile, return bit tuple"""
     if n > 15 or n < 0:
         raise ValueError
     bits = []
@@ -84,8 +84,8 @@ def get_walls(n: int) -> tuple[int]:
     return tuple(bits)
 
 
-"""Check coherence between tile walls"""
 def check_tile(maze: NDArray, coords: tuple[int]):
+    """Check coherence between tile walls"""
     i, j = coords
     tile = int(maze[i, j])
     msg = f"Maze tile {coords} has incoherent walls"

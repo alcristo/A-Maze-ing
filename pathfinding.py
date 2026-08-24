@@ -3,8 +3,8 @@ from numpy import inf, ones
 from maze_utils import get_walls, manhattan
 
 
-"""Node class to track down the path"""
 class Node():
+    """Node class to track down the path"""
     def __init__(self, value):
         self.val = value
         self._g = inf
@@ -47,8 +47,8 @@ class Node():
         self._set_f(self.get_g() + self.get_h())
 
 
-"""Return reachable neighbours list from a maze tile"""
 def neighbours(maze: NDArray, current: tuple[int]) -> list[tuple]:
+    """Return reachable neighbours list from a maze tile"""
     n = maze[current[:]]
     neighs = []
     walls: tuple[int] = get_walls(n)
@@ -63,8 +63,8 @@ def neighbours(maze: NDArray, current: tuple[int]) -> list[tuple]:
     return neighs
 
 
-"""Return most promising point to evaluate"""
 def choose_current(f: NDArray, points: list[Node], exit: tuple[int]) -> Node:
+    """Return most promising point to evaluate"""
     f_cost = []
     for i in points:
         p = i.val
@@ -85,16 +85,17 @@ def choose_current(f: NDArray, points: list[Node], exit: tuple[int]) -> Node:
     return current
 
 
-"""Check point in a set"""
 def check_node(set: set[Node], point = tuple[int]) -> bool:
+    """Check point in a set"""
     for i in set:
         if i.val == point:
             return True
     return False
 
 
-"""A* pathfinding algorithm with Manhattan heuristic"""
 def a_star(maze: NDArray, entr: tuple[int], exit: tuple[int]) -> str:
+    """A* pathfinding algorithm with Manhattan heuristic"""
+
     """Initialize lists and F cost array"""
     opened, closed = set(), set()
     f_cost = inf * ones(maze.shape[:], int)
