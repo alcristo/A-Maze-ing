@@ -1,5 +1,5 @@
 from sys import argv, stderr, exit
-from numpy import zeros, ones, mean, array
+from numpy import zeros, ones
 from numpy.typing import NDArray
 from maze_utils import MazeError, check_errors
 from maze_algos import dfs, prim, wilson, aldous_broder, imperfect

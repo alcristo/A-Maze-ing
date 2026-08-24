@@ -1,5 +1,5 @@
 from numpy.typing import NDArray
-from numpy import Inf, ones
+from numpy import inf, ones
 from maze_utils import get_walls, manhattan
 
 
@@ -7,9 +7,9 @@ from maze_utils import get_walls, manhattan
 class Node():
     def __init__(self, value):
         self.val = value
-        self._g = Inf
-        self._h = Inf
-        self._f = Inf
+        self._g = inf
+        self._h = inf
+        self._f = inf
         self.next = None
 
     def add_front(self, newnode) -> None:
@@ -21,7 +21,7 @@ class Node():
     def size(self) -> int:
         first = self
         n = 1
-        while self.next != None and self.next is not first:
+        while self.next is not None and self.next is not first:
             n += 1
             self = self.next
         return n
@@ -51,7 +51,7 @@ class Node():
 def neighbours(maze: NDArray, current: tuple[int]) -> list[tuple]:
     n = maze[current[:]]
     neighs = []
-    walls = get_walls(n)
+    walls: tuple[int] = get_walls(n)
     if walls[0] == 0:
         neighs.append((current[0] - 1, current[1]))
     if walls[1] == 0:
@@ -65,7 +65,6 @@ def neighbours(maze: NDArray, current: tuple[int]) -> list[tuple]:
 
 """Return most promising point to evaluate"""
 def choose_current(f: NDArray, points: list[Node], exit: tuple[int]) -> Node:
-    n = Inf
     f_cost = []
     for i in points:
         p = i.val
@@ -77,7 +76,7 @@ def choose_current(f: NDArray, points: list[Node], exit: tuple[int]) -> Node:
     for j in range(len(f_cost)):
         if f_cost[j] == min_f:
             to_select.append(points[j])
-    min_h = Inf
+    min_h = inf
     for k in to_select:
         h = manhattan(k.val, exit)
         if h < min_h:
@@ -98,7 +97,7 @@ def check_node(set: set[Node], point = tuple[int]) -> bool:
 def a_star(maze: NDArray, entr: tuple[int], exit: tuple[int]) -> str:
     """Initialize lists and F cost array"""
     opened, closed = set(), set()
-    f_cost = Inf * ones(maze.shape[:], int)
+    f_cost = inf * ones(maze.shape[:], int)
     opened.add(Node(entr))
     f_cost[entr[:]] = manhattan(entr, exit)
     while len(opened) > 0:

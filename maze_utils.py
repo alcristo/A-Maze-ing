@@ -1,5 +1,4 @@
 from numpy.typing import NDArray
-from sys import stderr
 
 
 class MazeError(Exception):

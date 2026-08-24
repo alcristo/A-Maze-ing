@@ -254,7 +254,7 @@ def imperfect(maze: NDArray) -> None:
         tile = (rng.randrange(h), rng.randrange(w))
         remove_walls(maze, tile, .5)
     dead_ends = (7, 11, 13, 14)
-    s_wall = (0, 1, 2, 4, 8)
+    s_wall = ((0, 1), (0, 2), (0, 4), (0, 8))
     adm_walls = [1, 2, 3, 4, 5, 6, 8, 9, 10, 12]
 
     """Remove dead ends; ignores 42"""
@@ -268,7 +268,9 @@ def imperfect(maze: NDArray) -> None:
         for j in range(w):
             if maze[i, j] == 0:
                 adj_tiles = [(i - 1, j), (i, j + 1), (i + 1, j), (i, j - 1)]
-                adj_walls = [maze[k[:]] in s_wall for k in adj_tiles]
+                adj_walls = [
+                    maze[adj_tiles[k][:]] in s_wall[k] for k in range(len(adj_tiles))
+                ]
                 if False not in adj_walls:
                     maze[i, j] = rng.choice(adm_walls)
                     walls = get_walls(maze[i, j])

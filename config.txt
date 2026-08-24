@@ -6,12 +6,3 @@ OUTPUT_FILE=maze.txt
 PERFECT=False
 Seed=42
 Algorithm=Wilson
-# To solve: 4 unreachable tiles
-#Height=201
-#WIDTH=201
-#ENTRY=0,0
-#EXIT=200,200
-#OUTPUT_FILE=maze.txt
-#PERFECT=False
-#Seed=42
-#Algorithm=Wilson
