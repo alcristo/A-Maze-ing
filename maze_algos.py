@@ -109,8 +109,8 @@ def dfs(maze: NDArray, visited: NDArray) -> None:
 
 def prim(maze: NDArray, visited: NDArray) -> None:
     current = maze_init(maze, visited)
-    opened = set()
-    opened.add(tuple(current))
+    opened: set[tuple[int, int]] = set()
+    opened.add(current)
     while len(opened) > 0:
         nvis = set()
         h, w = current[:]
