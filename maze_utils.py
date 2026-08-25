@@ -6,7 +6,7 @@ class MazeError(Exception):
         self.msg = msg
 
 
-def manhattan(curr: tuple[int], neigh: tuple[int]) -> int:
+def manhattan(curr: tuple[int, int], neigh: tuple[int, int]) -> int:
     """Manhattan heuristic, return distance"""
     return abs(curr[0] - neigh[0]) + abs(curr[1] - neigh[1])
 
@@ -20,12 +20,15 @@ def check_errors(conf: dict):
         exit = (int(end[0]), int(end[1]))
         size = (int(conf["HEIGHT"]), int(conf["WIDTH"]))
     except ValueError:
-        raise MazeError("[ERROR] Configurtion is in wrong format. "
-            "Please, use integers for HEIGHT, WIDTH, ENTRY & EXIT")
-        raise MazeError()
+        raise MazeError(
+            "[ERROR] Configurtion is in wrong format. "
+            "Please, use integers for HEIGHT, WIDTH, ENTRY & EXIT"
+        )
     except IndexError:
-        raise MazeError("[ERROR] Entry or exit in wrong format. "
-            "Usage ex.: EXIT=[int],[int]")
+        raise MazeError(
+            "[ERROR] Entry or exit in wrong format. "
+            "Usage ex.: EXIT=[int],[int]"
+        )
 
     """Check that entry and exit are actually different"""
     if entr == exit:
@@ -34,7 +37,7 @@ def check_errors(conf: dict):
     """Check positive height and width"""
     if size[0] <= 0 or size[1] <= 0:
         raise MazeError("Maze dimensions must be positive")
-    
+
     in_bounds = [
         entr[0] >= 0,
         entr[1] >= 0,
@@ -60,7 +63,7 @@ def check_errors(conf: dict):
         raise MazeError(
             "Entrance or exit of the maze seem to be out of bounds"
         )
-    
+
     if size[0] > 5 and size[1] > 7:
         if True in [entr in pos_42, exit in pos_42]:
             raise MazeError(
@@ -68,7 +71,7 @@ def check_errors(conf: dict):
             )
 
 
-def get_walls(n: int) -> tuple[int]:
+def get_walls(n: int) -> tuple[int, ...]:
     """Get the walls in a tile, return bit tuple"""
     if n > 15 or n < 0:
         raise ValueError
@@ -84,7 +87,7 @@ def get_walls(n: int) -> tuple[int]:
     return tuple(bits)
 
 
-def check_tile(maze: NDArray, coords: tuple[int]):
+def check_tile(maze: NDArray, coords: tuple[int, int]):
     """Check coherence between tile walls"""
     i, j = coords
     tile = int(maze[i, j])

@@ -1,6 +1,5 @@
 from sys import argv, stderr, exit
 from numpy import zeros, ones
-from numpy.typing import NDArray
 from maze_utils import MazeError, check_errors
 from maze_algos import dfs, prim, wilson, aldous_broder, imperfect
 from pathfinding import a_star
@@ -8,15 +7,16 @@ import random as rng
 from signal import SIGINT, signal, raise_signal
 
 
-"""Return selected algorithm string"""
 def select_algo(conf: dict) -> str:
+    """Return selected algorithm string"""
     try:
         if conf["ALGORITHM"].lower() in (
             "aldous broder", "aldousbroder", "aldous_broder", "aldous-broder"
         ):
             return "AldousBroder"
         elif conf["ALGORITHM"].lower() in (
-            "dfs", "depthfirstsearch", "depth first search", "depth_first_search",
+            "dfs", "depthfirstsearch", "depth first search",
+            "depth_first_search",
             "recursivebacktracker", "recursive backtracker",
             "recursive_backtracker"
         ):
@@ -52,10 +52,8 @@ def main() -> None:
     visited = zeros(size, int)
     perfect = bool(conf["PERFECT"].lower() != "false")
     if visited.shape[0] < 6 or visited.shape[1] < 8:
-        is_42 = 0
         print("The '42' cannot be printed in a maze this size.")
     else:
-        is_42 = 1
         hs = (visited.shape[0] - 1) // 2 - 2
         ws = (visited.shape[1] - 1) // 2 - 3
         pos_42 = (
@@ -108,8 +106,8 @@ def main() -> None:
         out.write(sol)
 
 
-"""Interruption signal handler (SIGINT, Ctrl+C)"""
 def handler(signum, frame):
+    """Interruption signal handler (SIGINT, Ctrl+C)"""
     print("\rProgram terminated by user")
     exit(0)
 

@@ -47,11 +47,11 @@ class Node():
         self._set_f(self.get_g() + self.get_h())
 
 
-def neighbours(maze: NDArray, current: tuple[int]) -> list[tuple]:
+def neighbours(maze: NDArray, current: tuple[int, int]) -> list[tuple]:
     """Return reachable neighbours list from a maze tile"""
     n = maze[current[:]]
     neighs = []
-    walls: tuple[int] = get_walls(n)
+    walls = get_walls(n)
     if walls[0] == 0:
         neighs.append((current[0] - 1, current[1]))
     if walls[1] == 0:
@@ -63,7 +63,9 @@ def neighbours(maze: NDArray, current: tuple[int]) -> list[tuple]:
     return neighs
 
 
-def choose_current(f: NDArray, points: list[Node], exit: tuple[int]) -> Node:
+def choose_current(
+        f: NDArray, points: list[Node], exit: tuple[int, int]
+) -> Node:
     """Return most promising point to evaluate"""
     f_cost = []
     for i in points:
@@ -85,7 +87,7 @@ def choose_current(f: NDArray, points: list[Node], exit: tuple[int]) -> Node:
     return current
 
 
-def check_node(set: set[Node], point = tuple[int]) -> bool:
+def check_node(set: set[Node], point: tuple[int, int]) -> bool:
     """Check point in a set"""
     for i in set:
         if i.val == point:
@@ -93,7 +95,7 @@ def check_node(set: set[Node], point = tuple[int]) -> bool:
     return False
 
 
-def a_star(maze: NDArray, entr: tuple[int], exit: tuple[int]) -> str:
+def a_star(maze: NDArray, entr: tuple[int, int], exit: tuple[int, int]) -> str:
     """A* pathfinding algorithm with Manhattan heuristic"""
 
     """Initialize lists and F cost array"""

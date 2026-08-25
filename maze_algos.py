@@ -3,7 +3,7 @@ import random as rng
 from maze_utils import manhattan, get_walls
 
 
-def maze_init(maze: NDArray, visited: NDArray) -> tuple[int]:
+def maze_init(maze: NDArray, visited: NDArray) -> tuple[int, int]:
     """Initialize the first tile of the maze"""
     h, w = maze.shape[:]
     v = -1
@@ -16,7 +16,9 @@ def maze_init(maze: NDArray, visited: NDArray) -> tuple[int]:
     return current
 
 
-def connect(maze: NDArray, curr: tuple[int], neigh: tuple[int]) -> None:
+def connect(
+    maze: NDArray, curr: tuple[int, int], neigh: tuple[int, int]
+) -> None:
     """Connect two maze tiles"""
     if manhattan(curr, neigh) != 1:
         return
@@ -48,7 +50,7 @@ def direction() -> tuple[str, int]:
 
 
 def count_visited(visited: NDArray) -> int:
-    """Return visited cells. Only if I decide to merge Aldous-Broder and Wilson"""
+    """Return visited cells. Only if I merge Aldous-Broder and Wilson"""
     n = 0
     for i in range(visited.shape[0]):
         for j in range(visited.shape[1]):
@@ -58,7 +60,7 @@ def count_visited(visited: NDArray) -> int:
 
 
 def wilson_erase(
-    visited: NDArray, path: list[tuple], point: tuple[int]
+    visited: NDArray, path: list[tuple[int, int]], point: tuple[int, int]
 ) -> None:
     """Erase a loop during random walk"""
     while path[-1] != point:
@@ -107,7 +109,6 @@ def dfs(maze: NDArray, visited: NDArray) -> None:
 
 def prim(maze: NDArray, visited: NDArray) -> None:
     current = maze_init(maze, visited)
-    yet = unvisited_set(visited)
     opened = set()
     opened.add(tuple(current))
     while len(opened) > 0:
@@ -153,7 +154,7 @@ def aldous_broder(maze: NDArray, visited: NDArray) -> None:
         if visited[neighbour[0], neighbour[1]] == -1:
             continue
         elif visited[neighbour[0], neighbour[1]] == 0:
-            connect(maze, tuple(current), tuple(neighbour))
+            connect(maze, tuple[int, int](current), tuple[int, int](neighbour))
             yet.discard(neighbour)
         current = neighbour
         visited[current[0], current[1]] = 1
@@ -203,7 +204,7 @@ def wilson(maze: NDArray, visited: NDArray) -> None:
         path.clear()
 
 
-def break_wall(maze: NDArray, tile: tuple[int], op: str) -> None:
+def break_wall(maze: NDArray, tile: tuple[int, int], op: str) -> None:
     """Connect the chosen tiles"""
     i, j = tile[:]
     if op == "N":
@@ -216,7 +217,9 @@ def break_wall(maze: NDArray, tile: tuple[int], op: str) -> None:
         connect(maze, tile, (i, j - 1))
 
 
-def remove_walls(maze: NDArray, tile: tuple[int], prob: float = 1) -> None:
+def remove_walls(
+    maze: NDArray, tile: tuple[int, int], prob: float = 1
+) -> None:
     """Check for neighbouring removable walls"""
     if maze[tile[:]] == 15 or prob < 0 or prob > 1:
         return
@@ -252,7 +255,7 @@ def imperfect(maze: NDArray) -> None:
     connect(maze, (h - 1, 0), (h - 2, 0))
 
     """Remove random walls in random tiles"""
-    for _  in range(h * w // 3):
+    for _ in range(h * w // 3):
         tile = (rng.randrange(h), rng.randrange(w))
         remove_walls(maze, tile, .5)
     dead_ends = (7, 11, 13, 14)
