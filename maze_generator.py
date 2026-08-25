@@ -7,7 +7,7 @@ import random as rng
 class _Algorithm(ABC):
 
     @abstractmethod
-    def generate(self, maze: NDArray):
+    def generate(self, maze: NDArray, seed: int | None = None):
         pass
 
     @staticmethod
@@ -95,9 +95,10 @@ class _Algorithm(ABC):
 
 
 class _DFS(_Algorithm):
-    def generate(self, maze: NDArray):
+    def generate(self, maze: NDArray, seed: int | None = None):
         self.gen_visited(maze)
         visited = self._visited
+        rng.seed(seed)
         current = self.maze_init(maze, visited)
         lst = [current]
         while len(lst) > 0:
@@ -130,9 +131,10 @@ class _DFS(_Algorithm):
 
 class _Prim(_Algorithm):
 
-    def generate(self, maze: NDArray):
+    def generate(self, maze: NDArray, seed: int | None = None):
         self.gen_visited(maze)
         visited = self._visited
+        rng.seed(seed)
         current = self.maze_init(maze, visited)
         opened: set[tuple[int, int]] = set()
         opened.add(current)
@@ -172,9 +174,10 @@ class _Wilson(_Algorithm):
             visited[path[-1][:]] = 0
             path.pop()
 
-    def generate(self, maze: NDArray):
+    def generate(self, maze: NDArray, seed: int | None = None):
         self.gen_visited(maze)
         visited = self._visited
+        rng.seed(seed)
         yet = self.unvisited_set(visited)
         while len(yet) > 0:
             path = []
@@ -221,9 +224,10 @@ class _Wilson(_Algorithm):
 
 
 class _AldousBroder(_Algorithm):
-    def generate(self, maze: NDArray):
+    def generate(self, maze: NDArray, seed: int | None = None):
         self.gen_visited(maze)
         visited = self._visited
+        rng.seed(seed)
         current = self.maze_init(maze, visited)
         yet = self.unvisited_set(visited)
         while len(yet) > 0:
@@ -287,7 +291,7 @@ class _Imperfect(_Algorithm):
         if len(r_walls) > 0 and rng.random() < prob:
             _Imperfect.break_wall(maze, tile, rng.choice(r_walls))
 
-    def generate(self, maze: NDArray):
+    def generate(self, maze: NDArray, seed: int | None = None):
         h, w = maze.shape
         """ Start connecting the four corners"""
         self.connect(maze, (0, 0), (0, 1))
@@ -385,6 +389,8 @@ class _Maze:
             "dfs", "recursive backtracker", "depth first search"
         ):
             algo = _DFS()
+        elif self._algorithm.lower() == "prim":
+            algo = _Prim()
         elif self._algorithm.lower() in (
             "ab", "aldous broder", "aldous-broder"
         ):
@@ -392,7 +398,7 @@ class _Maze:
         elif self._algorithm.lower() == "wilson":
             algo = _Wilson()
         else:
-            algo = _Prim()
+            print("[ERROR] Invalid")
         algo.generate(self._maze, self._seed)
         if self._perfect is False:
             imp = _Imperfect()
@@ -418,12 +424,12 @@ class _Maze:
     def algorithm(self):
         return self._algorithm
 
+    @property
+    def maze(self):
+        return self._maze
+
 
 class _Path:
-    def __init__(self, entry: tuple[int, int], exit: tuple[int, int]):
-        self.entry = entry
-        self.exit = exit
-        self._path = ""
 
     class _Node:
         def __init__(self, val: tuple[int, int]):
@@ -466,6 +472,17 @@ class _Path:
         def set_h(self, h: int) -> None:
             self._h = h
             self._set_f(self.get_g() + self.get_h())
+
+    def __init__(
+        self,
+        maze: NDArray,
+        entry: tuple[int, int],
+        exit: tuple[int, int]
+    ):
+        self._entry = entry
+        self._exit = exit
+        self._maze = maze
+        self._path = ""
 
     @staticmethod
     def neighbours(
@@ -517,36 +534,34 @@ class _Path:
                 return True
         return False
 
-    def solve(
-        self, maze: NDArray, entr: tuple[int, int], exit: tuple[int, int]
-    ) -> None:
+    def solve(self) -> None:
         """A* pathfinding algorithm with Manhattan heuristic"""
 
         opened, closed = set(), set()
-        f_cost = inf * ones(maze.shape[:], int)
-        opened.add(self._Node(entr))
-        f_cost[entr[:]] = _Maze.manhattan(entr, exit)
+        f_cost = inf * ones(self._maze.shape[:], int)
+        opened.add(self._Node(self._entry))
+        f_cost[self._entry[:]] = _Maze.manhattan(self._entry, self._exit)
         while len(opened) > 0:
             """Choose current node, move from open list to closed list"""
-            current = self.choose_current(f_cost, list(opened), exit)
+            current = self.choose_current(f_cost, list(opened), self._exit)
             opened.remove(current)
             closed.add(current)
             """If node is the exit, path has been found"""
             if current.val == exit:
                 break
-            for i in self.neighbours(maze, current.val):
+            for i in self.neighbours(self._maze, current.val):
                 """If node is already closed, continue"""
                 if self.check_node(closed, i) is True:
                     continue
                 node = self._Node(i)
                 node.next = current
                 node.set_g(node.size() - 1)
-                node.set_h(_Maze.manhattan(i, exit))
+                node.set_h(_Maze.manhattan(i, self._exit))
                 """Update F cost if is lower"""
                 if node.get_f() < f_cost[i[:]]:
                     f_cost[i[:]] = node.get_f()
                     if self.check_node(opened, i) is True:
-                        if _Maze.manhattan(i, entr) > node.get_g():
+                        if _Maze.manhattan(i, self._entry) > node.get_g():
                             continue
                     opened.add(node)
 
@@ -571,16 +586,52 @@ class _Path:
 
 class MazeGenerator:
 
-    def __init__(
+    """def __init__(
         self,
         height: int,
         width: int,
         entry: tuple[int, int],
         exit: tuple[int, int],
-        perfect: bool,
+        perfect: bool = True,
         seed: int | None = None,
         algorithm: str = "Prim"
     ):
+        self._maze = _Maze(height, width, perfect, seed, algorithm)
+        self._entry = entry
+        self._exit = exit"""
+
+    def __init__(self, config_file: str):
+        with open(config_file) as f:
+            txt = f.read()
+            opts = txt.split("\n")
+            tup = [tuple(i.split("=")) for i in opts]
+            conf = {i[0].upper(): i[1] for i in tup if i[0][0] != "#"}
+            conf.pop("")
+        try:
+            height = int(conf["HEIGHT"])
+            width = int(conf["WIDTH"])
+            en = conf["ENTRY"].split(",")
+            entry = (int(en[0]), int(en[1]))
+            ex = conf["EXIT"].split(",")
+            exit = (int(ex[0]), int(ex[1]))
+        except KeyError as e:
+            print(f"[ERROR] Invalid configuration: {e}")
+            return
+        except ValueError as e:
+            print(f"[ERROR] Configuration in wrong format: {e}")
+            return
+        except IndexError:
+            print(
+                "[ERROR] Entry/exit in wrong format. "
+                "Usage ex.: EXIT=0,0"
+            )
+            return
+        perfect = conf.get("PERFECT", "True").lower() != "false"
+        try:
+            seed = int(conf["SEED"])
+        except KeyError:
+            seed = None
+        algorithm = conf.get("ALGORITHM", "Prim")
         self._maze = _Maze(height, width, perfect, seed, algorithm)
         self._entry = entry
         self._exit = exit
@@ -589,12 +640,28 @@ class MazeGenerator:
         self._maze.generate()
 
     def solve(self):
-        path = self.Path(self._entry, self.exit)
-        self._solution = path.solve(self._maze)
+        path = self.Path(self._maze, self._entry, self._exit)
+        self._solution = path.solve()
 
     def draw(self):
         """Draw the maze"""
-        pass
+        base = "0123456789abcdef"
+        for i in range(self._maze.shape[0]):
+            for j in range(self._maze.shape[1]):
+                try:
+                    if self._maze[i][j] < 0:
+                        raise ValueError
+                    print(base[self._maze[i][j]], end="")
+                except ValueError:
+                    print("[ERROR] Maze incorrectly generated")
+                except IndexError:
+                    print("[ERROR] Maze incorrectly generated")
+            print()
+
+    def regen(self):
+        self.generate()
+        self.solve()
+        self.draw()
 
     @property
     def entry(self):
