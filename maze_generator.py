@@ -381,6 +381,23 @@ class _Maze:
         self._seed = seed
         self._algorithm = algorithm
 
+    def __str__(self) -> None:
+        base = "0123456789abcdef"
+        if not self._maze:
+            print("[ERROR] Maze doesn't exist")
+            return
+        for i in range(self._maze.shape[0]):
+            for j in range(self._maze.shape[1]):
+                try:
+                    if False not in [k >= 0 and k < 16 for k in (i, j)]
+                        print(base[self._maze[i][j]], end="")
+                    else:
+                        raise IndexError
+                except IndexError:
+                    print("\r[ERROR] Maze can't be displayed")
+                    return
+            print()
+
     def generate(self):
         self._maze = 15 * ones([self._height, self._width])
         if self._solution:
@@ -398,7 +415,7 @@ class _Maze:
         elif self._algorithm.lower() == "wilson":
             algo = _Wilson()
         else:
-            print("[ERROR] Invalid")
+            print("[ERROR] Invalid algorithm")
         algo.generate(self._maze, self._seed)
         if self._perfect is False:
             imp = _Imperfect()
@@ -621,10 +638,7 @@ class MazeGenerator:
             print(f"[ERROR] Configuration in wrong format: {e}")
             return
         except IndexError:
-            print(
-                "[ERROR] Entry/exit in wrong format. "
-                "Usage ex.: EXIT=0,0"
-            )
+            print("[ERROR] Entry/Exit in wrong format. Usage ex.: EXIT=0,0")
             return
         perfect = conf.get("PERFECT", "True").lower() != "false"
         try:
@@ -635,6 +649,7 @@ class MazeGenerator:
         self._maze = _Maze(height, width, perfect, seed, algorithm)
         self._entry = entry
         self._exit = exit
+        self._output_file = conf.get("OUTPUT_FILE", "output_maze.txt")
 
     def generate(self):
         self._maze.generate()
@@ -645,7 +660,7 @@ class MazeGenerator:
 
     def draw(self):
         """Draw the maze"""
-        base = "0123456789abcdef"
+        """base = "0123456789abcdef"
         for i in range(self._maze.shape[0]):
             for j in range(self._maze.shape[1]):
                 try:
@@ -656,7 +671,20 @@ class MazeGenerator:
                     print("[ERROR] Maze incorrectly generated")
                 except IndexError:
                     print("[ERROR] Maze incorrectly generated")
-            print()
+            print()"""
+        print(self._maze)
+
+    def output(self):
+        with open(self._output_file, 'w') as out:
+            out.write(self._maze)
+            """for i in range(size[0]):
+                for j in range(size[1]):
+                    out.write(base[self._maze[i][j]])
+                out.write("\n")"""
+            out.write("\n")
+            out.write(f"{self._entry}")
+            out.write(f"{self._exit}")
+            out.write(self._solution)
 
     def regen(self):
         self.generate()
