@@ -3,7 +3,6 @@ from numpy import zeros, ones
 from maze_utils import MazeError, check_errors
 from maze_algos import dfs, prim, wilson, aldous_broder, imperfect
 from pathfinding import a_star
-import random as rng
 from signal import SIGINT, signal, raise_signal
 
 
@@ -67,9 +66,6 @@ def main() -> None:
         for i in pos_42:
             visited[i[0]][i[1]] = -1
 
-    """Place first tile in the maze"""
-    current = [rng.randint(0, size[0] - 1), rng.randint(0, size[1] - 1)]
-    visited[current[0]][current[1]] = 1
     """Algorithm"""
     algo = select_algo(conf)
     if algo == "AldousBroder":

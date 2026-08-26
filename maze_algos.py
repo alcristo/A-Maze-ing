@@ -161,6 +161,7 @@ def aldous_broder(maze: NDArray, visited: NDArray) -> None:
 
 
 def wilson(maze: NDArray, visited: NDArray) -> None:
+    current = maze_init(maze, visited)
     yet = unvisited_set(visited)
     while len(yet) > 0:
         path = []
