@@ -63,8 +63,8 @@ def main() -> None:
             (hs + 3, ws + 4), (hs + 4, ws + 4), (hs + 4, ws + 5),
             (hs + 4, ws + 6)
         )
-        for i in pos_42:
-            visited[i[0]][i[1]] = -1
+        for tile in pos_42:
+            visited[tile[0]][tile[1]] = -1
 
     """Algorithm"""
     algo = select_algo(conf)
