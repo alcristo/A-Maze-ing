@@ -1,7 +1,29 @@
 from numpy import zeros, ones, inf
 from numpy.typing import NDArray
 from abc import ABC, abstractmethod
+import sys
 import random as rng
+
+
+def get_walls(n: int) -> tuple[int, ...]:
+    """Get the walls in a tile, return bit tuple"""
+    if n > 15 or n < 0:
+        raise ValueError
+    bits = []
+    bits.append(n // 8)
+    n %= 8
+    bits.append(n // 4)
+    n %= 4
+    bits.append(n // 2)
+    n %= 2
+    bits.append(n)
+    bits.reverse()
+    return tuple(bits)
+
+
+def manhattan(curr: tuple[int, int], neigh: tuple[int, int]) -> int:
+    """Manhattan heuristic, return distance"""
+    return abs(curr[0] - neigh[0]) + abs(curr[1] - neigh[1])
 
 
 class _Algorithm(ABC):
@@ -21,9 +43,24 @@ class _Algorithm(ABC):
         return yet
 
     @staticmethod
-    def maze_init(maze: NDArray, visited: NDArray) -> tuple[int, int]:
+    def maze_init(
+        maze: NDArray, visited: NDArray, seed: None | int
+    ) -> tuple[int, int]:
         h, w = maze.shape[:]
+        hs = (h - 1) // 2 - 2
+        ws = (w - 1) // 2 - 3
+        pos_42 = (
+            (hs, ws), (hs + 1, ws), (hs + 2, ws), (hs + 2, ws + 1),
+            (hs + 2, ws + 2), (hs + 3, ws + 2), (hs + 4, ws + 2),
+            (hs, ws + 4), (hs, ws + 5), (hs, ws + 6), (hs + 1, ws + 6),
+            (hs + 2, ws + 6), (hs + 2, ws + 5), (hs + 2, ws + 4),
+            (hs + 3, ws + 4), (hs + 4, ws + 4), (hs + 4, ws + 5),
+            (hs + 4, ws + 6)
+        )
+        for i in pos_42:
+            visited[i[0]][i[1]] = -1
         v = -1
+        rng.seed(seed)
         while v == -1:
             current = (
                 rng.randrange(0, h - 1), rng.randrange(0, w - 1)
@@ -37,24 +74,24 @@ class _Algorithm(ABC):
         maze: NDArray, curr: tuple[int, int], neigh: tuple[int, int]
     ) -> None:
         """Connect two maze tiles"""
-        if _Maze.manhattan(curr, neigh) != 1:
+        if manhattan(curr, neigh) != 1:
             return
-        if curr[0] == neigh[0] + 1 and _Maze.get_walls(
+        if curr[0] == neigh[0] + 1 and get_walls(
             maze[curr[:]]
         )[0] == 1:
             maze[curr[0]][curr[1]] -= 1
             maze[neigh[0]][neigh[1]] -= 4
-        if curr[0] == neigh[0] - 1 and _Maze.get_walls(
+        if curr[0] == neigh[0] - 1 and get_walls(
             maze[curr[:]]
         )[2] == 1:
             maze[curr[0]][curr[1]] -= 4
             maze[neigh[0]][neigh[1]] -= 1
-        if curr[1] == neigh[1] - 1 and _Maze.get_walls(
+        if curr[1] == neigh[1] - 1 and get_walls(
             maze[curr[:]]
         )[1] == 1:
             maze[curr[0]][curr[1]] -= 2
             maze[neigh[0]][neigh[1]] -= 8
-        if curr[1] == neigh[1] + 1 and _Maze.get_walls(
+        if curr[1] == neigh[1] + 1 and get_walls(
             maze[curr[:]]
         )[3] == 1:
             maze[curr[0]][curr[1]] -= 8
@@ -98,8 +135,7 @@ class _DFS(_Algorithm):
     def generate(self, maze: NDArray, seed: int | None = None):
         self.gen_visited(maze)
         visited = self._visited
-        rng.seed(seed)
-        current = self.maze_init(maze, visited)
+        current = self.maze_init(maze, visited, seed)
         lst = [current]
         while len(lst) > 0:
             nvis = set()
@@ -135,7 +171,7 @@ class _Prim(_Algorithm):
         self.gen_visited(maze)
         visited = self._visited
         rng.seed(seed)
-        current = self.maze_init(maze, visited)
+        current = self.maze_init(maze, visited, seed)
         opened: set[tuple[int, int]] = set()
         opened.add(current)
         while len(opened) > 0:
@@ -177,7 +213,7 @@ class _Wilson(_Algorithm):
     def generate(self, maze: NDArray, seed: int | None = None):
         self.gen_visited(maze)
         visited = self._visited
-        rng.seed(seed)
+        current = self.maze_init(maze, visited, seed)
         yet = self.unvisited_set(visited)
         while len(yet) > 0:
             path = []
@@ -228,10 +264,10 @@ class _AldousBroder(_Algorithm):
         self.gen_visited(maze)
         visited = self._visited
         rng.seed(seed)
-        current = self.maze_init(maze, visited)
+        current = self.maze_init(maze, visited, seed)
         yet = self.unvisited_set(visited)
         while len(yet) > 0:
-            direct = _Algorithm.direction()
+            direct = self.direction()
             try:
                 if direct[0] == "V":
                     neighbour = (current[0] + direct[1], current[1])
@@ -253,28 +289,28 @@ class _AldousBroder(_Algorithm):
 
 
 class _Imperfect(_Algorithm):
-    @staticmethod
-    def break_wall(maze: NDArray, tile: tuple[int, int], op: str) -> None:
+    def break_wall(
+        self, maze: NDArray, tile: tuple[int, int], op: str
+    ) -> None:
         """Connect the chosen tiles"""
         i, j = tile[:]
         if op == "N":
-            _Algorithm.connect(maze, tile, (i - 1, j))
+            self.connect(maze, tile, (i - 1, j))
         elif op == "E":
-            _Algorithm.connect(maze, tile, (i, j + 1))
+            self.connect(maze, tile, (i, j + 1))
         elif op == "S":
-            _Algorithm.connect(maze, tile, (i + 1, j))
+            self.connect(maze, tile, (i + 1, j))
         elif op == "W":
-            _Algorithm.connect(maze, tile, (i, j - 1))
+            self.connect(maze, tile, (i, j - 1))
 
-    @staticmethod
     def remove_walls(
-        maze: NDArray, tile: tuple[int, int], prob: float = 1
+        self, maze: NDArray, tile: tuple[int, int], prob: float = 1
     ) -> None:
         """Check for neighbouring removable walls"""
         if maze[tile[:]] == 15 or prob < 0 or prob > 1:
             return
         i, j = tile[:]
-        walls = _Maze.get_walls(maze[tile[:]])
+        walls = get_walls(maze[tile[:]])
         r_walls = []
         if i > 0:
             if maze[i - 1][j] != 15 and walls[0] == 1:
@@ -289,7 +325,7 @@ class _Imperfect(_Algorithm):
             if maze[i][j - 1] != 15 and walls[3] == 1:
                 r_walls.append("W")
         if len(r_walls) > 0 and rng.random() < prob:
-            _Imperfect.break_wall(maze, tile, rng.choice(r_walls))
+            self.break_wall(maze, tile, rng.choice(r_walls))
 
     def generate(self, maze: NDArray, seed: int | None = None):
         h, w = maze.shape
@@ -306,7 +342,7 @@ class _Imperfect(_Algorithm):
         """Remove random walls in random tiles"""
         for _ in range(h * w // 3):
             tile = (rng.randrange(h), rng.randrange(w))
-            _Imperfect.remove_walls(maze, tile, .5)
+            self.remove_walls(maze, tile, .5)
         dead_ends = (7, 11, 13, 14)
         s_wall = ((0, 1), (0, 2), (0, 4), (0, 8))
         adm_walls = [1, 2, 3, 4, 5, 6, 8, 9, 10, 12]
@@ -315,7 +351,7 @@ class _Imperfect(_Algorithm):
         for i in range(h):
             for j in range(w):
                 if maze[i, j] in dead_ends:
-                    _Imperfect.remove_walls(maze, (i, j))
+                    self.remove_walls(maze, (i, j))
 
         """Check for areas > 3x3; fill them in such case"""
         for i in range(h):
@@ -334,7 +370,7 @@ class _Imperfect(_Algorithm):
                     ]
                     if False not in adj_walls:
                         maze[i, j] = rng.choice(adm_walls)
-                        walls = _Maze.get_walls(maze[i, j])
+                        walls = get_walls(maze[i, j])
                         if walls[0] == 1:
                             maze[i - 1][j] += 4
                         if walls[1] == 1:
@@ -346,26 +382,6 @@ class _Imperfect(_Algorithm):
 
 
 class _Maze:
-    @staticmethod
-    def get_walls(n: int) -> tuple[int, ...]:
-        """Get the walls in a tile, return bit tuple"""
-        if n > 15 or n < 0:
-            raise ValueError
-        bits = []
-        bits.append(n // 8)
-        n %= 8
-        bits.append(n // 4)
-        n %= 4
-        bits.append(n // 2)
-        n %= 2
-        bits.append(n)
-        bits.reverse()
-        return tuple(bits)
-
-    @staticmethod
-    def manhattan(curr: tuple[int, int], neigh: tuple[int, int]) -> int:
-        """Manhattan heuristic, return distance"""
-        return abs(curr[0] - neigh[0]) + abs(curr[1] - neigh[1])
 
     def __init__(
         self,
@@ -379,44 +395,43 @@ class _Maze:
         self._width = width
         self._perfect = perfect
         self._seed = seed
-        self._algorithm = algorithm
+        self._algo: None | _DFS | _Prim | _AldousBroder | _Wilson = None
+        if algorithm.lower() in (
+            "dfs", "recursive backtracker", "depth first search"
+        ):
+            self._algo = _DFS()
+        elif algorithm.lower() == "prim":
+            self._algo = _Prim()
+        elif algorithm.lower() in (
+            "ab", "aldous broder", "aldous-broder"
+        ):
+            self._algo = _AldousBroder()
+        elif algorithm.lower() == "wilson":
+            self._algo = _Wilson()
+        else:
+            print("[ERROR] Invalid algorithm", file=sys.stderr)
+            sys.exit(1)
 
-    def __str__(self) -> None:
+    def __str__(self) -> str:
         base = "0123456789abcdef"
-        if not self._maze:
-            print("[ERROR] Maze doesn't exist")
-            return
+        s = ""
         for i in range(self._maze.shape[0]):
             for j in range(self._maze.shape[1]):
                 try:
-                    if False not in [k >= 0 and k < 16 for k in (i, j)]
-                        print(base[self._maze[i][j]], end="")
+                    if self._maze[i, j] >= 0 and self._maze[i, j] < 16:
+                        s += base[self._maze[i][j]]
                     else:
+                        print(f"({i}, {j}): {self._maze[i, j]}")
                         raise IndexError
                 except IndexError:
-                    print("\r[ERROR] Maze can't be displayed")
-                    return
-            print()
+                    print("\r[ERROR] Maze can't be displayed", file=sys.stderr)
+                    sys.exit(1)
+            s += "\n"
+        return s
 
     def generate(self):
-        self._maze = 15 * ones([self._height, self._width])
-        if self._solution:
-            self.solution = ""
-        if self._algorithm.lower() in (
-            "dfs", "recursive backtracker", "depth first search"
-        ):
-            algo = _DFS()
-        elif self._algorithm.lower() == "prim":
-            algo = _Prim()
-        elif self._algorithm.lower() in (
-            "ab", "aldous broder", "aldous-broder"
-        ):
-            algo = _AldousBroder()
-        elif self._algorithm.lower() == "wilson":
-            algo = _Wilson()
-        else:
-            print("[ERROR] Invalid algorithm")
-        algo.generate(self._maze, self._seed)
+        self._maze = 15 * ones([self._height, self._width], int)
+        self._algo.generate(self._maze, self._seed)
         if self._perfect is False:
             imp = _Imperfect()
             imp.generate(self._maze, self._seed)
@@ -439,7 +454,7 @@ class _Maze:
 
     @property
     def algorithm(self):
-        return self._algorithm
+        return self._algo
 
     @property
     def maze(self):
@@ -449,35 +464,35 @@ class _Maze:
 class _Path:
 
     class _Node:
-        def __init__(self, val: tuple[int, int]):
-            self.val = val
+        def __init__(self, value):
+            self.val = value
             self._g = inf
             self._h = inf
             self._f = inf
-            self.next: None | _Path._Node = None
+            self.next = None
 
-        def add_front(self, new):
-            new.next = self
-            self = new
+        def add_front(self, newnode) -> None:
+            if newnode is None:
+                return
+            newnode.next = self
+            self = newnode
 
         def size(self) -> int:
+            first = self
             n = 1
-            current = self
-            while current.next is not None:
-                current = current.next
-                if current is self:
-                    break
+            while self.next is not None and self.next is not first:
                 n += 1
+                self = self.next
             return n
 
         def get_g(self) -> int:
-            return int(self._g)
+            return self._g
 
         def get_h(self) -> int:
-            return int(self._h)
+            return self._h
 
         def get_f(self) -> int:
-            return int(self._f)
+            return self._f
 
         def _set_f(self, f: int) -> None:
             self._f = f
@@ -500,6 +515,10 @@ class _Path:
         self._exit = exit
         self._maze = maze
         self._path = ""
+        self._checked = 0
+
+    def __str__(self):
+        return self._path
 
     @staticmethod
     def neighbours(
@@ -508,7 +527,7 @@ class _Path:
         """Return reachable neighbours list from a maze tile"""
         n = maze[current[:]]
         neighs = []
-        walls = _Maze.get_walls(n)
+        walls = get_walls(n)
         if walls[0] == 0:
             neighs.append((current[0] - 1, current[1]))
         if walls[1] == 0:
@@ -537,7 +556,7 @@ class _Path:
                 to_select.append(points[j])
         min_h = inf
         for k in to_select:
-            h = _Maze.manhattan(k.val, exit)
+            h = manhattan(k.val, exit)
             if h < min_h:
                 min_h = h
                 current = k
@@ -557,14 +576,15 @@ class _Path:
         opened, closed = set(), set()
         f_cost = inf * ones(self._maze.shape[:], int)
         opened.add(self._Node(self._entry))
-        f_cost[self._entry[:]] = _Maze.manhattan(self._entry, self._exit)
+        f_cost[self._entry[:]] = manhattan(self._entry, self._exit)
         while len(opened) > 0:
             """Choose current node, move from open list to closed list"""
             current = self.choose_current(f_cost, list(opened), self._exit)
             opened.remove(current)
             closed.add(current)
+            self._checked += 1
             """If node is the exit, path has been found"""
-            if current.val == exit:
+            if current.val == self._exit:
                 break
             for i in self.neighbours(self._maze, current.val):
                 """If node is already closed, continue"""
@@ -573,12 +593,12 @@ class _Path:
                 node = self._Node(i)
                 node.next = current
                 node.set_g(node.size() - 1)
-                node.set_h(_Maze.manhattan(i, self._exit))
+                node.set_h(manhattan(i, self._exit))
                 """Update F cost if is lower"""
                 if node.get_f() < f_cost[i[:]]:
                     f_cost[i[:]] = node.get_f()
                     if self.check_node(opened, i) is True:
-                        if _Maze.manhattan(i, self._entry) > node.get_g():
+                        if manhattan(i, self._entry) > node.get_g():
                             continue
                     opened.add(node)
 
@@ -597,8 +617,48 @@ class _Path:
         self._path = sol
 
     @property
+    def checked(self):
+        return self._checked
+
+    @property
     def path(self):
         return self._path
+
+
+def valid_entry_exit(
+    size: tuple[int, int], entry: tuple[int, int], exit: tuple[int, int]
+) -> None:
+    en = (
+        entry[0] < 0 or entry[0] >= size[0],
+        entry[1] < 0 or entry[1] >= size[1]
+    )
+    if True in en:
+        print("[ERROR] Entry is out of bounds", file=sys.stderr)
+        raise ValueError
+    ex = (
+        exit[0] < 0 or exit[0] >= size[0],
+        exit[1] < 0 or exit[1] >= size[1]
+    )
+    if True in ex:
+        print("[ERROR] Exit is out of bounds", file=sys.stderr)
+    if size[0] < 6 or size[1] < 8:
+        print("The '42' cannot be printed in a maze this size.")
+    else:
+        hs, ws = (size[0] - 1) // 2 - 2, (size[1] - 1) // 2 - 3
+        pos_42 = (
+            (hs, ws), (hs + 1, ws), (hs + 2, ws), (hs + 2, ws + 1),
+            (hs + 2, ws + 2), (hs + 3, ws + 2), (hs + 4, ws + 2),
+            (hs, ws + 4), (hs, ws + 5), (hs, ws + 6), (hs + 1, ws + 6),
+            (hs + 2, ws + 6), (hs + 2, ws + 5), (hs + 2, ws + 4),
+            (hs + 3, ws + 4), (hs + 4, ws + 4), (hs + 4, ws + 5),
+            (hs + 4, ws + 6)
+        )
+        if entry in pos_42:
+            print("[ERROR] Entry is inside '42'", file=sys.stderr)
+            raise ValueError
+        if exit in pos_42:
+            print("[ERROR] Exit is inside '42'", file=sys.stderr)
+            raise ValueError
 
 
 class MazeGenerator:
@@ -623,7 +683,8 @@ class MazeGenerator:
             opts = txt.split("\n")
             tup = [tuple(i.split("=")) for i in opts]
             conf = {i[0].upper(): i[1] for i in tup if i[0][0] != "#"}
-            conf.pop("")
+            if "" in conf.keys():
+                conf.pop("")
         try:
             height = int(conf["HEIGHT"])
             width = int(conf["WIDTH"])
@@ -633,13 +694,17 @@ class MazeGenerator:
             exit = (int(ex[0]), int(ex[1]))
         except KeyError as e:
             print(f"[ERROR] Invalid configuration: {e}")
-            return
+            sys.exit(1)
         except ValueError as e:
             print(f"[ERROR] Configuration in wrong format: {e}")
-            return
+            sys.exit(1)
         except IndexError:
             print("[ERROR] Entry/Exit in wrong format. Usage ex.: EXIT=0,0")
-            return
+            sys.exit(1)
+        try:
+            valid_entry_exit((height, width), entry, exit)
+        except ValueError:
+            sys.exit(1)
         perfect = conf.get("PERFECT", "True").lower() != "false"
         try:
             seed = int(conf["SEED"])
@@ -655,7 +720,7 @@ class MazeGenerator:
         self._maze.generate()
 
     def solve(self):
-        path = self.Path(self._maze, self._entry, self._exit)
+        path = _Path(self._maze._maze, self._entry, self._exit)
         self._solution = path.solve()
 
     def draw(self):
@@ -675,12 +740,12 @@ class MazeGenerator:
         print(self._maze)
 
     def output(self):
+        base = "0123456789abcdef"
         with open(self._output_file, 'w') as out:
-            out.write(self._maze)
-            """for i in range(size[0]):
-                for j in range(size[1]):
-                    out.write(base[self._maze[i][j]])
-                out.write("\n")"""
+            for i in range(self._maze.height):
+                for j in range(self._maze.width):
+                    out.write(base[self._maze._maze[i][j]])
+                out.write("\n")
             out.write("\n")
             out.write(f"{self._entry}")
             out.write(f"{self._exit}")
