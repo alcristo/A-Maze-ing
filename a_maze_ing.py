@@ -51,7 +51,7 @@ def main() -> None:
     maze = ones(size, int) * 15
     visited = zeros(size, int)
     perfect = bool(conf["PERFECT"].lower() != "false")
-    if visited.shape[0] < 6 or visited.shape[1] < 8:
+    if visited.shape[0] < 7 or visited.shape[1] < 9:
         print("The '42' cannot be printed in a maze this size.")
     else:
         hs = (visited.shape[0] - 1) // 2 - 2

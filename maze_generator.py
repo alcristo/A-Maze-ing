@@ -110,7 +110,7 @@ class _Algorithm(ABC):
 
     def gen_visited(self, maze: NDArray) -> None:
         visited = zeros(maze.shape, int)
-        if visited.shape[0] > 5 and visited.shape[1] > 7:
+        if visited.shape[0] > 6 and visited.shape[1] > 8:
             hs = (visited.shape[0] - 1) // 2 - 2
             ws = (visited.shape[1] - 1) // 2 - 3
             pos_42 = (
@@ -322,14 +322,12 @@ class _Imperfect(_Algorithm):
             self.break_wall(maze, tile, rng.choice(r_walls))
 
     def generate(self, maze: NDArray, seed: int | None = None):
-        print(maze)
         h, w = maze.shape
         """ Start connecting the four corners"""
-        if w != 8:
-            self.connect(maze, (0, 0), (0, 1))
-            self.connect(maze, (0, 0), (1, 0))
-            self.connect(maze, (0, w - 1), (0, w - 2))
-            self.connect(maze, (0, w - 1), (1, w - 1))
+        self.connect(maze, (0, 0), (0, 1))
+        self.connect(maze, (0, 0), (1, 0))
+        self.connect(maze, (0, w - 1), (0, w - 2))
+        self.connect(maze, (0, w - 1), (1, w - 1))
         self.connect(maze, (h - 1, w - 1), (h - 1, w - 2))
         self.connect(maze, (h - 1, w - 1), (h - 2, w - 1))
         self.connect(maze, (h - 1, 0), (h - 1, 1))
@@ -375,7 +373,6 @@ class _Imperfect(_Algorithm):
                             maze[i + 1][j] += 1
                         if walls[3] == 1:
                             maze[i][j - 1] += 2
-        print(maze)
 
 
 class _Maze:
@@ -642,7 +639,7 @@ def valid_entry_exit(
     if True in ex:
         print("[ERROR] Exit is out of bounds", file=sys.stderr)
         raise ValueError
-    if size[0] < 6 or size[1] < 8:
+    if size[0] < 7 or size[1] < 9:
         print("The '42' cannot be printed in a maze this size.")
     else:
         hs, ws = (size[0] - 1) // 2 - 2, (size[1] - 1) // 2 - 3
@@ -740,8 +737,8 @@ class MazeGenerator:
                     out.write(base[self._maze._maze[i, j]])
                 out.write("\n")
             out.write("\n")
-            out.write(f"{self._entry}")
-            out.write(f"{self._exit}")
+            out.write(f"{self._entry[1]},{self._entry[0]}\n")
+            out.write(f"{self._exit[1]},{self._exit[0]}\n")
             print(self._solution)
             out.write(self._solution)
 

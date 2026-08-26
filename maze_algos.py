@@ -245,11 +245,10 @@ def remove_walls(
 def imperfect(maze: NDArray) -> None:
     h, w = maze.shape
     """ Start connecting the four corners"""
-    if w != 8:
-        connect(maze, (0, 0), (0, 1))
-        connect(maze, (0, 0), (1, 0))
-        connect(maze, (0, w - 1), (0, w - 2))
-        connect(maze, (0, w - 1), (1, w - 1))
+    connect(maze, (0, 0), (0, 1))
+    connect(maze, (0, 0), (1, 0))
+    connect(maze, (0, w - 1), (0, w - 2))
+    connect(maze, (0, w - 1), (1, w - 1))
     connect(maze, (h - 1, w - 1), (h - 1, w - 2))
     connect(maze, (h - 1, w - 1), (h - 2, w - 1))
     connect(maze, (h - 1, 0), (h - 1, 1))
