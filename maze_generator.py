@@ -688,10 +688,8 @@ class MazeGenerator:
         with open(config_file) as f:
             txt = f.read()
             opts = txt.split("\n")
-            tup = [tuple(i.split("=")) for i in opts]
+            tup = [tuple(i.split("=")) for i in opts if "=" in i]
             conf = {i[0].upper(): i[1] for i in tup if i[0][0] != "#"}
-            if "" in conf.keys():
-                conf.pop("")
         try:
             height = int(conf["HEIGHT"])
             width = int(conf["WIDTH"])
@@ -838,6 +836,40 @@ class MazeGenerator:
             self._draw()
         except AttributeError:
             return
+        clear = "\x1bc"
+        while True:
+            print("=== A-Maze-ing ===")
+            print("1. Generate a new maze")
+            print("2. Show/hide solution")
+            print("3. Change colors")
+            print("q. Quit")
+            opt = input()
+            if opt == "1":
+                print(f"{clear}")
+                self.regen()
+                continue
+            elif opt == "2":
+                print(self._solution)
+                continue
+            elif opt == "3":
+                R = int(input("R:"))
+                if R < 0 or R > 255:
+                    print("Invalid color")
+                    continue
+                G = int(input("G:"))
+                if G < 0 or G > 255:
+                    print("Invalid color")
+                    continue
+                B = int(input("B:"))
+                if B < 0 or B > 255:
+                    print("Invalid color")
+                    continue
+                print("Color: {hex(R)}{hex(G)}{hex(B)}")
+                continue
+            elif opt == "q":
+                sys.exit()
+            else:
+                continue
 
     @property
     def entry(self):

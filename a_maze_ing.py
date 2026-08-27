@@ -37,9 +37,7 @@ def main() -> None:
     with open(argv[1]) as f:
         txt = f.read()
         opts = txt.split("\n")
-        if opts[-1] == "":
-            opts.pop()
-        tup = [tuple(i.split("=")) for i in opts]
+        tup = [tuple(i.split("=")) for i in opts if "=" in i]
         conf = {i[0].upper(): i[1] for i in tup if i[0][0] != "#"}
     try:
         check_errors(conf)
