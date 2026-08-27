@@ -16,8 +16,8 @@ def check_errors(conf: dict):
     start = conf["ENTRY"].split(",")
     end = conf["EXIT"].split(",")
     try:
-        entr = (int(start[0]), int(start[1]))
-        exit = (int(end[0]), int(end[1]))
+        entr = (int(start[1]), int(start[0]))
+        exit = (int(end[1]), int(end[0]))
         size = (int(conf["HEIGHT"]), int(conf["WIDTH"]))
     except ValueError:
         raise MazeError(

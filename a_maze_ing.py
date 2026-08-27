@@ -3,6 +3,7 @@ from numpy import zeros, ones
 from maze_utils import MazeError, check_errors
 from maze_algos import dfs, prim, wilson, aldous_broder, imperfect
 from pathfinding import a_star
+from maze_draw import maze_draw
 from signal import SIGINT, signal, raise_signal
 
 
@@ -84,8 +85,8 @@ def main() -> None:
     """Solution"""
     start = conf["ENTRY"].split(",")
     end = conf["EXIT"].split(",")
-    entr = (int(start[0]), int(start[1]))
-    exit = (int(end[0]), int(end[1]))
+    entr = (int(start[1]), int(start[0]))
+    exit = (int(end[1]), int(end[0]))
     sol = a_star(maze, entr, exit)
 
     """Save the file"""
@@ -100,6 +101,9 @@ def main() -> None:
         out.write(f"{entr[1]},{entr[0]}\n")
         out.write(f"{exit[1]},{exit[0]}\n")
         out.write(sol)
+
+    """Draw the maze"""
+    maze_draw(conf["OUTPUT_FILE"])
 
 
 def handler(signum, frame):
