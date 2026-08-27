@@ -696,9 +696,9 @@ class MazeGenerator:
             assert height > 0
             assert width > 0
             en = conf["ENTRY"].split(",")
-            entry = (int(en[0]), int(en[1]))
+            entry = (int(en[1]), int(en[0]))
             ex = conf["EXIT"].split(",")
-            exit = (int(ex[0]), int(ex[1]))
+            exit = (int(ex[1]), int(ex[0]))
         except AssertionError:
             print("[ERROR] Maze dimensions must be positive", file=sys.stderr)
             return
