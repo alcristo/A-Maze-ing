@@ -3,6 +3,6 @@ WIDTH=19
 ENTRY=0,0
 EXIT=12,18
 OUTPUT_FILE=maze.txt
-PERFECT=True
+PERFECT=False
 Seed=42
 Algorithm=Wilson
