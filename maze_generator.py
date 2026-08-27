@@ -564,19 +564,37 @@ class _Path:
                 return True
         return False
 
+    @staticmethod
+    def rm_node(
+        set: set[_Node], point: tuple[int, int], new: _Node
+    ) -> None:
+        alt_path = []
+        for n in set:
+            if n.val == new.val:
+                alt_path.append(n)
+
+        for n in alt_path:
+            if new.get_g() < n.get_g():
+                set.remove(n)
+        if len(alt_path) == 0:
+            set.add(new)
+
     def solve(self) -> str:
         """A* pathfinding algorithm with Manhattan heuristic"""
 
         opened, closed = set(), set()
+        g_cost = inf * ones(self._maze.shape[:], int)
         f_cost = inf * ones(self._maze.shape[:], int)
         opened.add(self._Node(self._entry))
         f_cost[self._entry[:]] = manhattan(self._entry, self._exit)
+        g_cost[self._entry[:]] = 0
+        n = 0
         while len(opened) > 0:
+            n += 1
             """Choose current node, move from open list to closed list"""
             current = self.choose_current(f_cost, list(opened), self._exit)
             opened.remove(current)
             closed.add(current)
-            self._checked += 1
             """If node is the exit, path has been found"""
             if current.val == self._exit:
                 break
@@ -587,14 +605,19 @@ class _Path:
                 node = self._Node(i)
                 node.next = current
                 node.set_g(node.size() - 1)
+                if node.get_g() < g_cost[i[:]]:
+                    g_cost[i[:]] = node.get_g()
+                    self.rm_node(opened, i, node)
+                else:
+                    continue
                 node.set_h(manhattan(i, self._exit))
                 """Update F cost if is lower"""
-                if node.get_f() < f_cost[i[:]]:
+                if node.get_f() < f_cost[i[:]] or self.check_node(
+                    opened, i
+                ) is False:
                     f_cost[i[:]] = node.get_f()
-                    if self.check_node(opened, i) is True:
-                        if manhattan(i, self._entry) > node.get_g():
-                            continue
-                    opened.add(node)
+                    if self.check_node(opened, i) is False:
+                        opened.add(node)
 
         """Return the maze solution via backtracking"""
         sol = ""
@@ -719,10 +742,76 @@ class MazeGenerator:
             print("[ERROR] No maze to solve", file=sys.stderr)
 
     def _draw(self) -> None:
-        try:
-            print(self._maze)
-        except AttributeError:
-            print("[ERROR] No maze to print", file=sys.stderr)
+        pathtiles = []
+        curr = self._entry
+        for dir in self._solution:
+            if dir == "N":
+                curr = (curr[0] - 1, curr[1])
+            elif dir == "S":
+                curr = (curr[0] + 1, curr[1])
+            elif dir == "W":
+                curr = (curr[0], curr[1] - 1)
+            elif dir == "E":
+                curr = (curr[0], curr[1] + 1)
+            else:
+                break
+            if curr == self._exit:
+                break
+            pathtiles.append(curr)
+        pathtiles.append(self._exit)
+        pathtiles.insert(0, self._entry)
+
+        reset = "\x1b[0m"
+        black = "\x1b[40m"
+        red = "\x1b[41m"
+        green = "\x1b[42m"
+        # yellow = "\x1b[43m"
+        blue = "\x1b[44m"
+        magenta = "\x1b[45m"
+        # cyan = "\x1b[46m"
+        white = "\x1b[47m"
+
+        h, w = self._maze._maze.shape
+        for _ in range(2 * w + 1):
+            print(f"{black}  {reset}", end="")
+        print()
+        i = 0
+        for i in range(h):
+            print(f"{black}  {reset}", end="")
+            for j in range(w):
+                n = self._maze._maze[i, j]
+                if n == 15:
+                    print(f"{red}  {reset}", end="")
+                elif (i, j) == self._entry:
+                    print(f"{magenta}  {reset}", end="")
+                elif (i, j) == self._exit:
+                    print(f"{green}  {reset}", end="")
+                elif (i, j) in pathtiles:
+                    print(f"{blue}  {reset}", end="")
+                else:
+                    print(f"{white}  {reset}", end="")
+                if (i, j) in pathtiles and (
+                    i, j + 1
+                ) in pathtiles and get_walls(n)[1] == 0:
+                    print(f"{blue}  {reset}", end="")
+                elif get_walls(n)[1] == 0:
+                    print(f"{white}  {reset}", end="")
+                else:
+                    print(f"{black}  {reset}", end="")
+            print()
+            print(f"{black}  {reset}", end="")
+            for j in range(w):
+                n = self._maze._maze[i, j]
+                if (i, j) in pathtiles and (
+                    i + 1, j
+                ) in pathtiles and get_walls(n)[2] == 0:
+                    print(f"{blue}  {reset}", end="")
+                elif get_walls(n)[2] == 0:
+                    print(f"{white}  {reset}", end="")
+                else:
+                    print(f"{black}  {reset}", end="")
+                print(f"{black}  {reset}", end="")
+            print()
 
     def _output(self) -> None:
         base = "0123456789abcdef"
@@ -752,11 +841,11 @@ class MazeGenerator:
 
     @property
     def entry(self):
-        return self._entry
+        return (self._entry[1], self._entry[0])
 
     @property
     def exit(self):
-        return self._exit
+        return (self._exit[1], self._exit[0])
 
     @property
     def solution(self):

@@ -46,6 +46,17 @@ def maze_draw(maze_file: str) -> None:
     # cyan = "\x1b[46m"
     white = "\x1b[47m"
 
+    """reset = "\x1b[0m"
+    black = "\x1b[48;2;0;0;0m"
+    red = "\x1b[48;2;255;0;0m"
+    green = "\x1b[48;2;0;255;0m"
+    # yellow = "\x1b[48;2;255;255;0m"
+    blue = "\x1b[48;2;0;0;255m"
+    magenta = "\x1b[48;2;255;0;255m"
+    # cyan = "\x1b[448;2;0;255;255m"
+    white = "\x1b[48;2;255;255;255m"
+"""
+
     for _ in range(2 * w + 1):
         print(f"{black}  {reset}", end="")
     print()
