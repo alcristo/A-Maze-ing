@@ -4,6 +4,7 @@ from maze_utils import MazeError, check_errors
 from maze_algos import dfs, prim, wilson, aldous_broder, imperfect
 from pathfinding import a_star
 from maze_draw import maze_draw
+import random
 from signal import SIGINT, signal, raise_signal
 
 
@@ -68,6 +69,7 @@ def main() -> None:
             visited[tile[0]][tile[1]] = -1
 
     """Algorithm"""
+    random.seed(conf.get("SEED"))
     algo = select_algo(conf)
     if algo == "AldousBroder":
         aldous_broder(maze, visited)

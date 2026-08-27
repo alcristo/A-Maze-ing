@@ -95,15 +95,32 @@ def check_node(set: set[Node], point: tuple[int, int]) -> bool:
     return False
 
 
+def rm_node(set: set[Node], point: tuple[int, int], new: Node) -> None:
+    alt_path: list[Node] = []
+    for n in set:
+        if n.val == new.val:
+            alt_path.append(n)
+
+    for n in alt_path:
+        if new.get_g() < n.get_g():
+            set.remove(n)
+    if len(alt_path) == 0:
+        set.add(new)
+
+
 def a_star(maze: NDArray, entr: tuple[int, int], exit: tuple[int, int]) -> str:
     """A* pathfinding algorithm with Manhattan heuristic"""
 
     """Initialize lists and F cost array"""
     opened, closed = set(), set()
+    g_cost = inf * ones(maze.shape[:], int)
     f_cost = inf * ones(maze.shape[:], int)
     opened.add(Node(entr))
     f_cost[entr[:]] = manhattan(entr, exit)
+    g_cost[entr[:]] = 0
+    n = 0
     while len(opened) > 0:
+        n += 1
         """Choose current node, move from open list to closed list"""
         current = choose_current(f_cost, list(opened), exit)
         opened.remove(current)
@@ -118,14 +135,17 @@ def a_star(maze: NDArray, entr: tuple[int, int], exit: tuple[int, int]) -> str:
             node = Node(i)
             node.next = current
             node.set_g(node.size() - 1)
+            if node.get_g() < g_cost[i[:]]:
+                g_cost[i[:]] = node.get_g()
+                rm_node(opened, i, node)
+            else:
+                continue
             node.set_h(manhattan(i, exit))
             """Update F cost if is lower"""
-            if node.get_f() < f_cost[i[:]]:
+            if node.get_f() < f_cost[i[:]] or check_node(opened, i) is False:
                 f_cost[i[:]] = node.get_f()
-                if check_node(opened, i) is True:
-                    if manhattan(i, entr) > node.get_g():
-                        continue
-                opened.add(node)
+                if check_node(opened, i) is False:
+                    opened.add(node)
 
     """Return the maze solution via backtracking"""
     sol = ""
