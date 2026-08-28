@@ -110,7 +110,7 @@ def change_colors(opts: _MazeOptions) -> None:
     old_pal = opts._palette.copy()
     print("\x1b[s")
     while True:
-        print("\x1b[u\x1b[0J")
+        print("\x1b[u\x1b[1A\x1b[0J")
         print("== Change colors ==")
         print(f"1. Tile  {opts._palette['tile']}  {reset}")
         print(f"2. Wall  {opts._palette['wall']}  {reset}")
@@ -120,7 +120,7 @@ def change_colors(opts: _MazeOptions) -> None:
         print(f"6. Block {opts._palette['block']}  {reset}")
         print("d. Default palette")
         print("q. Quit palette selector")
-        opt = input("Select option: ")
+        opt = input("\x1b[KSelect option: ")
         if opt == "1":
             opts._select_color("tile")
         elif opt == "2":
@@ -167,7 +167,7 @@ def menu(maze: str, opts: _MazeOptions = _MazeOptions()) -> None:
         print("2. Show/hide solution")
         print("3. Change colors")
         print("q. Quit")
-        opt = input("Select option: ")
+        opt = input("\x1b[KSelect option: ")
         if opt == "1":
             print(f"{clear}")
             maze = generate(sys.argv[1])
@@ -188,7 +188,7 @@ def menu(maze: str, opts: _MazeOptions = _MazeOptions()) -> None:
 
 def handler(signum: Any, frame: Any) -> None:
     """Interruption signal handler (SIGINT, Ctrl+C)"""
-    print("\rProgram terminated by user")
+    print("\nProgram terminated by user")
     exit()
 
 
