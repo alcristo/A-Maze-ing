@@ -1,12 +1,9 @@
 import sys
 from numpy import zeros, ones
-from maze_utils import MazeError, check_errors
+from maze_utils import MazeError, check_errors, _MazeOptions
 from maze_algos import dfs, prim, wilson, aldous_broder, imperfect
 from pathfinding import a_star
 from maze_draw import maze_draw
-from typing import Any
-from functools import wraps
-from collections.abc import Callable
 import random
 from signal import SIGINT, signal, raise_signal
 
@@ -104,89 +101,50 @@ def generate(conf_file: str) -> str:
         out.write(f"{entr[1]},{entr[0]}\n")
         out.write(f"{exit[1]},{exit[0]}\n")
         out.write(sol)
-
-    """Draw the maze"""
-    maze_draw(conf["OUTPUT_FILE"])
     return conf['OUTPUT_FILE']
 
 
-def handler(signum, frame):
-    """Interruption signal handler (SIGINT, Ctrl+C)"""
-    print("\rProgram terminated by user")
-    exit()
-
-
-def uint8(func: Callable[[Any], Any]) -> Callable[[Any], Any]:
-    """Decorator to validate 0 <= value <= 255"""
-    @wraps(func)
-    def validate(*args: Any, **kwargs: Any) -> Any:
-        if args[0] < 0 or args[0] > 255:
-            raise ValueError
-        return func(*args, **kwargs)
-    return validate
-
-
-@uint8
-def validate_color(channel: int) -> None:
-    pass
-
-
-def select_color(palette: dict[str, str], key: str) -> None:
-    print(f"Currently selected: {key}   {palette.get(key)}  \x1b[0m")
-    try:
-        R = int(input("Insert red (R) intensity [0-255]:   "))
-        validate_color(R)
-        G = int(input("Insert green (G) intensity [0-255]: "))
-        validate_color(G)
-        B = int(input("Insert blue (B) intensity [0-255]:  "))
-        validate_color(B)
-        palette.update({key: f"\x1b[48;2;{R};{G};{B}m"})
-    except ValueError:
-        print("[ERROR] Invalid color value. Aborting.")
-        return
-
-
-def change_colors(palette: dict[str, str]) -> None:
+def change_colors(opts: _MazeOptions) -> None:
     reset = "\x1b[0m"
-    old_pal = palette.copy()
+    old_pal = opts._palette.copy()
     while True:
         print("== Change colors ==")
-        print(f"1. Tile  {palette['tile']}  {reset}")
-        print(f"2. Wall  {palette['wall']}  {reset}")
-        print(f"3. Entry {palette['entry']}  {reset}")
-        print(f"4. Exit  {palette['exit']}  {reset}")
-        print(f"5. Path  {palette['path']}  {reset}")
-        print(f"6. Block {palette['block']}  {reset}")
+        print(f"1. Tile  {opts._palette['tile']}  {reset}")
+        print(f"2. Wall  {opts._palette['wall']}  {reset}")
+        print(f"3. Entry {opts._palette['entry']}  {reset}")
+        print(f"4. Exit  {opts._palette['exit']}  {reset}")
+        print(f"5. Path  {opts._palette['path']}  {reset}")
+        print(f"6. Block {opts._palette['block']}  {reset}")
         print("d. Default palette")
         print("q. Quit palette selector")
-        opt = input()
+        opt = input("Select option: ")
         if opt == "1":
-            select_color(palette, "tile")
+            opts._select_color("tile")
         elif opt == "2":
-            select_color(palette, "wall")
+            opts._select_color("wall")
         elif opt == "3":
-            select_color(palette, "entry")
+            opts._select_color("entry")
         elif opt == "4":
-            select_color(palette, "exit")
+            opts._select_color("exit")
         elif opt == "5":
-            select_color(palette, "path")
+            opts._select_color("path")
         elif opt == "6":
-            select_color(palette, "block")
+            opts._select_color("block")
         elif opt == "d":
-            palette.update({"tile": "\x1b[47m"})
-            palette.update({"wall": "\x1b[40m"})
-            palette.update({"entry": "\x1b[45m"})
-            palette.update({"exit": "\x1b[42m"})
-            palette.update({"path": "\x1b[44m"})
-            palette.update({"block": "\x1b[41m"})
+            opts._palette.update({"tile": "\x1b[47m"})
+            opts._palette.update({"wall": "\x1b[40m"})
+            opts._palette.update({"entry": "\x1b[45m"})
+            opts._palette.update({"exit": "\x1b[42m"})
+            opts._palette.update({"path": "\x1b[44m"})
+            opts._palette.update({"block": "\x1b[41m"})
         elif opt == "q":
-            if palette == old_pal:
+            if opts._palette == old_pal:
                 return
             save = input("Save changes? Y/n   ")
             if save.lower() in ("", "y", "yes", "yea"):
                 return
             if save.lower() in ("n", "no", "nay"):
-                palette = old_pal.copy()
+                opts._palette = old_pal.copy()
                 del old_pal
                 return
             else:
@@ -196,18 +154,8 @@ def change_colors(palette: dict[str, str]) -> None:
     return
 
 
-def menu(maze: str) -> None:
+def menu(maze: str, opts: _MazeOptions = _MazeOptions()) -> None:
     clear = "\x1bc"
-    draw_path = False
-    def_palette = {
-        "tile": "\x1b[47m",
-        "wall": "\x1b[40m",
-        "entry": "\x1b[45m",
-        "exit": "\x1b[42m",
-        "path": "\x1b[44m",
-        "block": "\x1b[41m"
-    }
-    palette = def_palette.copy()
     while True:
         print("=== A-Maze-ing ===")
         print("1. Generate a new maze")
@@ -218,17 +166,24 @@ def menu(maze: str) -> None:
         if opt == "1":
             print(f"{clear}")
             maze = generate(sys.argv[1])
-            return menu(maze)
+            maze_draw(maze, opts)
+            return menu(maze, opts)
         elif opt == "2":
-            draw_path = draw_path is False
-            maze_draw(maze, draw_path, palette)
+            opts._show_hide()
+            maze_draw(maze, opts)
         elif opt == "3":
-            change_colors(palette)
-            maze_draw(maze, draw_path, palette)
+            change_colors(opts)
+            maze_draw(maze, opts)
         elif opt.lower() == "q":
             sys.exit()
         else:
             continue
+
+
+def handler(signum, frame):
+    """Interruption signal handler (SIGINT, Ctrl+C)"""
+    print("\rProgram terminated by user")
+    exit()
 
 
 if __name__ == "__main__":
@@ -238,6 +193,7 @@ if __name__ == "__main__":
     else:
         try:
             file = generate(sys.argv[1])
+            maze_draw(file)
             menu(file)
         except MemoryError:
             print("[ERROR] Out of memory", file=sys.stderr)

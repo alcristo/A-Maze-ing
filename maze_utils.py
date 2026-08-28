@@ -1,9 +1,75 @@
 from numpy.typing import NDArray
+from typing import Any
+from functools import wraps
+from collections.abc import Callable
 
 
 class MazeError(Exception):
     def __init__(self, msg: str = ""):
         self.msg = msg
+
+
+def uint8(func: Callable[[Any], Any]) -> Callable[[Any], Any]:
+    """Decorator to validate 0 <= value <= 255"""
+    @wraps(func)
+    def validate(*args: Any, **kwargs: Any) -> Any:
+        if args[0] < 0 or args[0] > 255:
+            raise ValueError
+        return func(*args, **kwargs)
+    return validate
+
+
+@uint8
+def validate_color(channel: int) -> None:
+    pass
+
+
+class _MazeOptions:
+    def __init__(self) -> None:
+        self._solution = False
+        self._palette = {
+            "tile": "\x1b[47m",
+            "wall": "\x1b[40m",
+            "entry": "\x1b[45m",
+            "exit": "\x1b[42m",
+            "path": "\x1b[44m",
+            "block": "\x1b[41m"
+        }
+
+    def _show_hide(self) -> None:
+        self._solution = self._solution is False
+
+    @staticmethod
+    def _uint8(func: Callable[[Any], Any]) -> Callable[[Any], Any]:
+        """Decorator to validate 0 <= value <= 255"""
+        @wraps(func)
+        def validate(*args: Any, **kwargs: Any) -> Any:
+            if args[0] < 0 or args[0] > 255:
+                raise ValueError
+            return func(*args, **kwargs)
+        return validate
+
+    @staticmethod
+    @_uint8
+    def _validate_color(channel: int) -> None:
+        pass
+
+    def _select_color(self, key: str) -> None:
+        if key not in self._palette.keys():
+            print("Option not in palette.")
+            return
+        print(f"Currently selected: {key} {self._palette.get(key)}  \x1b[0m")
+        try:
+            R = int(input("Insert red (R) intensity [0-255]:   "))
+            validate_color(R)
+            G = int(input("Insert green (G) intensity [0-255]: "))
+            validate_color(G)
+            B = int(input("Insert blue (B) intensity [0-255]:  "))
+            validate_color(B)
+            self._palette.update({key: f"\x1b[48;2;{R};{G};{B}m"})
+        except ValueError:
+            print("[ERROR] Invalid color value. Aborting.")
+            return
 
 
 def manhattan(curr: tuple[int, int], neigh: tuple[int, int]) -> int:

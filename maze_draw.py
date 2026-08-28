@@ -1,18 +1,7 @@
-from maze_utils import get_walls
+from maze_utils import get_walls, _MazeOptions
 
 
-def maze_draw(
-    maze_file: str,
-    draw_path: bool = False,
-    palette: dict[str, str] = {
-        "tile": "\x1b[47m",
-        "wall": "\x1b[40m",
-        "entry": "\x1b[45m",
-        "exit": "\x1b[42m",
-        "path": "\x1b[44m",
-        "block": "\x1b[41m"
-    }
-) -> None:
+def maze_draw(maze_file: str, opts: _MazeOptions = _MazeOptions()) -> None:
     with open(maze_file) as f:
         line = f.readline()
         maze = []
@@ -29,7 +18,7 @@ def maze_draw(
         path = f.readline()
 
     pathtiles = []
-    if draw_path is True:
+    if opts._solution is True:
         curr = entry
         for dir in path:
             if dir == "N":
@@ -80,45 +69,45 @@ def maze_draw(
 
     print("\x1bc")
     for _ in range(2 * w + 1):
-        print(f"{palette['wall']}  {reset}", end="")
+        print(f"{opts._palette['wall']}  {reset}", end="")
     print()
     h = len(maze)
     i = 0
     base = "0123456789abcdef"
     for i in range(h):
         row = maze[i]
-        print(f"{palette['wall']}  {reset}", end="")
+        print(f"{opts._palette['wall']}  {reset}", end="")
         for j in range(w):
             c = row[j]
             if c == "f":
-                print(f"{palette['block']}  {reset}", end="")
+                print(f"{opts._palette['block']}  {reset}", end="")
             elif (i, j) == entry:
-                print(f"{palette['entry']}  {reset}", end="")
+                print(f"{opts._palette['entry']}  {reset}", end="")
             elif (i, j) == exit:
-                print(f"{palette['exit']}  {reset}", end="")
-            elif (i, j) in pathtiles and draw_path is True:
-                print(f"{palette['path']}  {reset}", end="")
+                print(f"{opts._palette['exit']}  {reset}", end="")
+            elif (i, j) in pathtiles and opts._solution is True:
+                print(f"{opts._palette['path']}  {reset}", end="")
             else:
-                print(f"{palette['tile']}  {reset}", end="")
+                print(f"{opts._palette['tile']}  {reset}", end="")
             if (i, j) in pathtiles and (i, j + 1) in pathtiles and get_walls(
                 base.index(c)
             )[1] == 0:
-                print(f"{palette['path']}  {reset}", end="")
+                print(f"{opts._palette['path']}  {reset}", end="")
             elif get_walls(base.index(c))[1] == 0:
-                print(f"{palette['tile']}  {reset}", end="")
+                print(f"{opts._palette['tile']}  {reset}", end="")
             else:
-                print(f"{palette['wall']}  {reset}", end="")
+                print(f"{opts._palette['wall']}  {reset}", end="")
         print()
-        print(f"{palette['wall']}  {reset}", end="")
+        print(f"{opts._palette['wall']}  {reset}", end="")
         for j in range(w):
             c = row[j]
             if (i, j) in pathtiles and (i + 1, j) in pathtiles and get_walls(
                 base.index(c)
             )[2] == 0:
-                print(f"{palette['path']}  {reset}", end="")
+                print(f"{opts._palette['path']}  {reset}", end="")
             elif get_walls(base.index(c))[2] == 0:
-                print(f"{palette['tile']}  {reset}", end="")
+                print(f"{opts._palette['tile']}  {reset}", end="")
             else:
-                print(f"{palette['wall']}  {reset}", end="")
-            print(f"{palette['wall']}  {reset}", end="")
+                print(f"{opts._palette['wall']}  {reset}", end="")
+            print(f"{opts._palette['wall']}  {reset}", end="")
         print()
