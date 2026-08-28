@@ -107,7 +107,9 @@ def generate(conf_file: str) -> str:
 def change_colors(opts: _MazeOptions) -> None:
     reset = "\x1b[0m"
     old_pal = opts._palette.copy()
+    print("\x1b[s")
     while True:
+        print("\x1b[u\x1b[0J")
         print("== Change colors ==")
         print(f"1. Tile  {opts._palette['tile']}  {reset}")
         print(f"2. Wall  {opts._palette['wall']}  {reset}")
@@ -141,11 +143,12 @@ def change_colors(opts: _MazeOptions) -> None:
             if opts._palette == old_pal:
                 return
             save = input("Save changes? Y/n   ")
-            if save.lower() in ("", "y", "yes", "yea"):
+            if save.lower() in ("", "y", "yes", "yea", "yup"):
                 return
-            if save.lower() in ("n", "no", "nay"):
+            if save.lower() in ("n", "no", "nay", "nope"):
                 opts._palette = old_pal.copy()
                 del old_pal
+                print("\x1b[u\x1b[0J")
                 return
             else:
                 print("Cancelling exit.")
@@ -157,6 +160,7 @@ def change_colors(opts: _MazeOptions) -> None:
 def menu(maze: str, opts: _MazeOptions = _MazeOptions()) -> None:
     clear = "\x1bc"
     while True:
+        # print("\x1b[s")
         print("=== A-Maze-ing ===")
         print("1. Generate a new maze")
         print("2. Show/hide solution")
@@ -172,12 +176,13 @@ def menu(maze: str, opts: _MazeOptions = _MazeOptions()) -> None:
             opts._show_hide()
             maze_draw(maze, opts)
         elif opt == "3":
+            print("\x1b[7F\x1bJ")
             change_colors(opts)
             maze_draw(maze, opts)
         elif opt.lower() == "q":
             sys.exit()
         else:
-            continue
+            print("\x1b[7F\x1bJ")
 
 
 def handler(signum, frame):
@@ -202,5 +207,7 @@ if __name__ == "__main__":
                 "[ERROR] Calculations exceed computer limits. "
                 "Please, try lower maze size.", file=sys.stderr
             )
+        except EOFError:
+            print("\nProgram terminated by user")
         except KeyboardInterrupt:
             raise_signal(SIGINT)
