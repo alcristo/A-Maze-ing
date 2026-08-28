@@ -1,9 +1,10 @@
 from numpy.typing import NDArray
 import random as rng
+from typing import Any
 from maze_utils import manhattan, get_walls
 
 
-def maze_init(maze: NDArray, visited: NDArray) -> tuple[int, int]:
+def maze_init(maze: NDArray[Any], visited: NDArray[Any]) -> tuple[int, int]:
     """Initialize the first tile of the maze"""
     h, w = maze.shape[:]
     v = -1
@@ -17,7 +18,7 @@ def maze_init(maze: NDArray, visited: NDArray) -> tuple[int, int]:
 
 
 def connect(
-    maze: NDArray, curr: tuple[int, int], neigh: tuple[int, int]
+    maze: NDArray[Any], curr: tuple[int, int], neigh: tuple[int, int]
 ) -> None:
     """Connect two maze tiles"""
     if manhattan(curr, neigh) != 1:
@@ -49,7 +50,7 @@ def direction() -> tuple[str, int]:
     return (axis, step)
 
 
-def count_visited(visited: NDArray) -> int:
+def count_visited(visited: NDArray[Any]) -> int:
     """Return visited cells. Only if I merge Aldous-Broder and Wilson"""
     n = 0
     for i in range(visited.shape[0]):
@@ -60,7 +61,7 @@ def count_visited(visited: NDArray) -> int:
 
 
 def wilson_erase(
-    visited: NDArray, path: list[tuple[int, int]], point: tuple[int, int]
+    visited: NDArray[Any], path: list[tuple[int, int]], point: tuple[int, int]
 ) -> None:
     """Erase a loop during random walk"""
     while path[-1] != point:
@@ -68,7 +69,7 @@ def wilson_erase(
         path.pop()
 
 
-def unvisited_set(visited: NDArray) -> set:
+def unvisited_set(visited: NDArray[Any]) -> set[tuple[int, int]]:
     """Make the unvisited tiles set"""
     yet = set()
     for i in range(visited.shape[0]):
@@ -78,7 +79,7 @@ def unvisited_set(visited: NDArray) -> set:
     return yet
 
 
-def dfs(maze: NDArray, visited: NDArray) -> None:
+def dfs(maze: NDArray[Any], visited: NDArray[Any]) -> None:
     current = maze_init(maze, visited)
     lst = [current]
     while len(lst) > 0:
@@ -107,7 +108,7 @@ def dfs(maze: NDArray, visited: NDArray) -> None:
             pass
 
 
-def prim(maze: NDArray, visited: NDArray) -> None:
+def prim(maze: NDArray[Any], visited: NDArray[Any]) -> None:
     current = maze_init(maze, visited)
     opened: set[tuple[int, int]] = set()
     opened.add(current)
@@ -135,7 +136,7 @@ def prim(maze: NDArray, visited: NDArray) -> None:
             current = rng.choice([*opened])
 
 
-def aldous_broder(maze: NDArray, visited: NDArray) -> None:
+def aldous_broder(maze: NDArray[Any], visited: NDArray[Any]) -> None:
     current = maze_init(maze, visited)
     yet = unvisited_set(visited)
     while len(yet) > 0:
@@ -160,7 +161,7 @@ def aldous_broder(maze: NDArray, visited: NDArray) -> None:
         visited[current[0], current[1]] = 1
 
 
-def wilson(maze: NDArray, visited: NDArray) -> None:
+def wilson(maze: NDArray[Any], visited: NDArray[Any]) -> None:
     current = maze_init(maze, visited)
     yet = unvisited_set(visited)
     while len(yet) > 0:
@@ -168,7 +169,7 @@ def wilson(maze: NDArray, visited: NDArray) -> None:
         current = rng.choice([*yet])
         visited[current[0], current[1]] = 2
         path.append(current)
-        last_direction = ()
+        last_direction = ("x", 0)
         while current in yet:
             direct = direction()
             while last_direction == direct:
@@ -205,7 +206,7 @@ def wilson(maze: NDArray, visited: NDArray) -> None:
         path.clear()
 
 
-def break_wall(maze: NDArray, tile: tuple[int, int], op: str) -> None:
+def break_wall(maze: NDArray[Any], tile: tuple[int, int], op: str) -> None:
     """Connect the chosen tiles"""
     i, j = tile[:]
     if op == "N":
@@ -219,7 +220,7 @@ def break_wall(maze: NDArray, tile: tuple[int, int], op: str) -> None:
 
 
 def remove_walls(
-    maze: NDArray, tile: tuple[int, int], prob: float = 1
+    maze: NDArray[Any], tile: tuple[int, int], prob: float = 1
 ) -> None:
     """Check for neighbouring removable walls"""
     if maze[tile[:]] == 15 or prob < 0 or prob > 1:
@@ -243,7 +244,7 @@ def remove_walls(
         break_wall(maze, tile, rng.choice(r_walls))
 
 
-def imperfect(maze: NDArray) -> None:
+def imperfect(maze: NDArray[Any]) -> None:
     h, w = maze.shape
     """ Start connecting the four corners"""
     connect(maze, (0, 0), (0, 1))

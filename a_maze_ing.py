@@ -1,14 +1,15 @@
-import sys
 from numpy import zeros, ones
 from maze_utils import MazeError, check_errors, _MazeOptions
 from maze_algos import dfs, prim, wilson, aldous_broder, imperfect
 from pathfinding import a_star
 from maze_draw import maze_draw
+import sys
 import random
+from typing import Any
 from signal import SIGINT, signal, raise_signal
 
 
-def select_algo(conf: dict) -> str:
+def select_algo(conf: dict[str, str]) -> str:
     """Return selected algorithm string"""
     try:
         if conf["ALGORITHM"].lower() in (
@@ -185,7 +186,7 @@ def menu(maze: str, opts: _MazeOptions = _MazeOptions()) -> None:
             print("\x1b[7F\x1bJ")
 
 
-def handler(signum, frame):
+def handler(signum: Any, frame: Any) -> None:
     """Interruption signal handler (SIGINT, Ctrl+C)"""
     print("\rProgram terminated by user")
     exit()

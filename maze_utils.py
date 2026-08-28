@@ -77,7 +77,7 @@ def manhattan(curr: tuple[int, int], neigh: tuple[int, int]) -> int:
     return abs(curr[0] - neigh[0]) + abs(curr[1] - neigh[1])
 
 
-def check_errors(conf: dict):
+def check_errors(conf: dict[str, str]) -> None:
     """Check for errors in the configuration"""
     start = conf["ENTRY"].split(",")
     end = conf["EXIT"].split(",")
@@ -153,7 +153,7 @@ def get_walls(n: int) -> tuple[int, ...]:
     return tuple(bits)
 
 
-def check_tile(maze: NDArray, coords: tuple[int, int]):
+def check_tile(maze: NDArray[Any], coords: tuple[int, int]) -> None:
     """Check coherence between tile walls"""
     i, j = coords
     tile = int(maze[i, j])

@@ -1,22 +1,17 @@
 from numpy.typing import NDArray
 from numpy import inf, ones
+from typing import Any
 from maze_utils import get_walls, manhattan
 
 
-class Node():
+class Node:
     """Node class to track down the path"""
-    def __init__(self, value):
+    def __init__(self, value: Any) -> None:
         self.val = value
-        self._g = inf
-        self._h = inf
-        self._f = inf
-        self.next = None
-
-    def add_front(self, newnode) -> None:
-        if newnode is None:
-            return
-        newnode.next = self
-        self = newnode
+        self._g: float | int = inf
+        self._h: float | int = inf
+        self._f: float | int = inf
+        self.next: Any = None
 
     def size(self) -> int:
         first = self
@@ -26,28 +21,30 @@ class Node():
             self = self.next
         return n
 
-    def get_g(self) -> int:
+    def get_g(self) -> int | float:
         return self._g
 
-    def get_h(self) -> int:
+    def get_h(self) -> int | float:
         return self._h
 
-    def get_f(self) -> int:
+    def get_f(self) -> int | float:
         return self._f
 
-    def _set_f(self, f: int) -> None:
+    def _set_f(self, f: int | float) -> None:
         self._f = f
 
-    def set_g(self, g: int) -> None:
+    def set_g(self, g: int | float) -> None:
         self._g = g
         self._set_f(self.get_g() + self.get_h())
 
-    def set_h(self, h: int) -> None:
+    def set_h(self, h: int | float) -> None:
         self._h = h
         self._set_f(self.get_g() + self.get_h())
 
 
-def neighbours(maze: NDArray, current: tuple[int, int]) -> list[tuple]:
+def neighbours(
+    maze: NDArray[Any], current: tuple[int, int]
+) -> list[tuple[int, int]]:
     """Return reachable neighbours list from a maze tile"""
     n = maze[current[:]]
     neighs = []
@@ -64,7 +61,7 @@ def neighbours(maze: NDArray, current: tuple[int, int]) -> list[tuple]:
 
 
 def choose_current(
-        f: NDArray, points: list[Node], exit: tuple[int, int]
+        f: NDArray[Any], points: list[Node], exit: tuple[int, int]
 ) -> Node:
     """Return most promising point to evaluate"""
     f_cost = []
@@ -108,11 +105,20 @@ def rm_node(set: set[Node], point: tuple[int, int], new: Node) -> None:
         set.add(new)
 
 
-def a_star(maze: NDArray, entr: tuple[int, int], exit: tuple[int, int]) -> str:
+def add_front(current: Node, new: Node) -> None:
+    if new is None:
+        return
+    new.next = current
+
+
+def a_star(
+    maze: NDArray[Any], entr: tuple[int, int], exit: tuple[int, int]
+) -> str:
     """A* pathfinding algorithm with Manhattan heuristic"""
 
     """Initialize lists and F cost array"""
-    opened, closed = set(), set()
+    opened: set[Node] = set()
+    closed: set[Node] = set()
     g_cost = inf * ones(maze.shape[:], int)
     f_cost = inf * ones(maze.shape[:], int)
     opened.add(Node(entr))
@@ -133,7 +139,8 @@ def a_star(maze: NDArray, entr: tuple[int, int], exit: tuple[int, int]) -> str:
             if check_node(closed, i) is True:
                 continue
             node = Node(i)
-            node.next = current
+            add_front(current, node)
+            # node.next = current
             node.set_g(node.size() - 1)
             if node.get_g() < g_cost[i[:]]:
                 g_cost[i[:]] = node.get_g()
