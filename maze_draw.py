@@ -38,34 +38,6 @@ def maze_draw(maze_file: str, opts: _MazeOptions = _MazeOptions()) -> None:
         pathtiles.insert(0, entry)
 
     reset = "\x1b[0m"
-    """palette = {
-        "tile": "\x1b[47m",
-        "wall": "\x1b[40m",
-        "entry": "\x1b[45m",
-        "exit": "\x1b[42m",
-        "path": "\x1b[44m",
-        "block": "\x1b[41m"
-    }"""
-    """black = "\x1b[40m"
-    red = "\x1b[41m"
-    green = "\x1b[42m"
-    # yellow = "\x1b[43m"
-    blue = "\x1b[44m"
-    magenta = "\x1b[45m"
-    # cyan = "\x1b[46m"
-    white = "\x1b[47m"
-    """
-
-    """reset = "\x1b[0m"
-    black = "\x1b[48;2;0;0;0m"
-    red = "\x1b[48;2;255;0;0m"
-    green = "\x1b[48;2;0;255;0m"
-    # yellow = "\x1b[48;2;255;255;0m"
-    blue = "\x1b[48;2;0;0;255m"
-    magenta = "\x1b[48;2;255;0;255m"
-    # cyan = "\x1b[448;2;0;255;255m"
-    white = "\x1b[48;2;255;255;255m"
-"""
 
     print("\x1bc")
     for _ in range(2 * w + 1):
