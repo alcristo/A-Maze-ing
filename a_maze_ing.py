@@ -38,7 +38,9 @@ def generate(conf_file: str) -> str:
     with open(conf_file) as f:
         txt = f.read()
         opts = txt.split("\n")
-        tup = [tuple(i.split("=")) for i in opts if "=" in i]
+        tup = [
+            tuple(i.split("=")) for i in opts if "=" in i and i.count("=") == 1
+        ]
         conf = {i[0].upper(): i[1] for i in tup if i[0][0] != "#"}
     try:
         check_errors(conf)
