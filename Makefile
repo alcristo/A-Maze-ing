@@ -16,7 +16,7 @@ install:
 	pip install $(REQUIREMENTS)
 
 run:
-	$(PYTHON) $(NAME) $(CONFIG)
+	$(PYTHON) $(NAME) $(CONFIG) && make clean
 
 debug:
 	pdb $(NAME) $(CONFIG)
@@ -25,7 +25,7 @@ clean:
 	$(RM) $(CACHE)
 
 lint:
-	flake8 && mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
+	flake8 && mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs && make clean
 
 lint-strict:
-	flake8 && mypy . --strict
+	flake8 && mypy . --strict&& make clean
