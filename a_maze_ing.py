@@ -13,14 +13,15 @@ def select_algo(conf: dict[str, str]) -> str:
     """Return selected algorithm string"""
     try:
         if conf["ALGORITHM"].lower() in (
-            "aldous broder", "aldousbroder", "aldous_broder", "aldous-broder"
+            "aldous broder", "aldousbroder", "aldous_broder", "aldous-broder",
+            "ab"
         ):
             return "AldousBroder"
         elif conf["ALGORITHM"].lower() in (
             "dfs", "depthfirstsearch", "depth first search",
             "depth_first_search",
             "recursivebacktracker", "recursive backtracker",
-            "recursive_backtracker"
+            "recursive_backtracker", "rb"
         ):
             return "DFS"
         elif conf["ALGORITHM"].lower() == "prim":
