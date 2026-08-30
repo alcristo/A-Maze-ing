@@ -36,6 +36,12 @@ def select_algo(conf: dict[str, str]) -> str:
 
 def generate(conf_file: str) -> str:
     """Open the configuration file and set everything"""
+    try:
+        f = open(conf_file)
+        f.close()
+    except FileNotFoundError as e:
+        print(e)
+        sys.exit()
     with open(conf_file) as f:
         txt = f.read()
         opts = txt.split("\n")
