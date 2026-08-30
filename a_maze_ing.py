@@ -113,7 +113,7 @@ def change_colors(opts: _MazeOptions) -> None:
     old_pal = opts._palette.copy()
     print("\x1b[s")
     while True:
-        print("\x1b[u\x1b[1A\x1b[0J")
+        print("\x1b[u\x1b[0J")
         print("== Change colors ==")
         print(f"1. Tile  {opts._palette['tile']}  {reset}")
         print(f"2. Wall  {opts._palette['wall']}  {reset}")
