@@ -242,12 +242,6 @@ def menu(maze: str, opts: _MazeOptions) -> None:
 
 def maze_config(conf_file: str) -> dict[str, str]:
     """Open the configuration file and set everything"""
-    try:
-        f = open(conf_file)
-        f.close()
-    except FileNotFoundError as e:
-        print(e)
-        sys.exit()
     with open(conf_file) as f:
         txt = f.read()
         opts = txt.split("\n")
@@ -378,9 +372,18 @@ if __name__ == "__main__":
     try:
         try:
             conf = maze_config(sys.argv[1])
+            opts = _MazeOptions(conf)
+            file = generate(opts._conf)
+            maze_draw(file, opts)
+            menu(file, opts)
         except IndexError:
             conf = init_config()
-        finally:
+            opts = _MazeOptions(conf)
+            file = generate(opts._conf)
+            maze_draw(file, opts)
+            menu(file, opts)
+        except FileNotFoundError:
+            conf = init_config()
             opts = _MazeOptions(conf)
             file = generate(opts._conf)
             maze_draw(file, opts)
