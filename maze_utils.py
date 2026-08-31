@@ -25,7 +25,8 @@ def validate_color(channel: int) -> None:
 
 
 class _MazeOptions:
-    def __init__(self) -> None:
+    def __init__(self, conf: dict[str, str]) -> None:
+        self._conf = conf
         self._solution = False
         self._palette = {
             "tile": "\x1b[47m",

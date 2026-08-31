@@ -34,26 +34,7 @@ def select_algo(conf: dict[str, str]) -> str:
         return "Prim"
 
 
-def generate(conf_file: str) -> str:
-    """Open the configuration file and set everything"""
-    try:
-        f = open(conf_file)
-        f.close()
-    except FileNotFoundError as e:
-        print(e)
-        sys.exit()
-    with open(conf_file) as f:
-        txt = f.read()
-        opts = txt.split("\n")
-        tup = [
-            tuple(i.split("=")) for i in opts if "=" in i and i.count("=") == 1
-        ]
-        conf = {i[0].upper(): i[1] for i in tup if i[0][0] != "#"}
-    try:
-        check_errors(conf)
-    except MazeError as e:
-        print(e.msg, file=sys.stderr)
-        sys.exit()
+def generate(conf: dict[str, str]) -> str:
 
     """Create the maze and visited tiles arrays"""
     size = (int(conf["HEIGHT"]), int(conf["WIDTH"]))
@@ -101,7 +82,6 @@ def generate(conf_file: str) -> str:
 
     """Save the file"""
     base = "0123456789abcdef"
-    txt = ""
     with open(conf['OUTPUT_FILE'], 'w') as out:
         for i in range(size[0]):
             for j in range(size[1]):
@@ -167,7 +147,7 @@ def change_colors(opts: _MazeOptions) -> None:
     return
 
 
-def menu(maze: str, opts: _MazeOptions = _MazeOptions()) -> None:
+def menu(maze: str, opts: _MazeOptions) -> None:
     clear = "\x1bc"
     while True:
         # print("\x1b[s")
@@ -179,7 +159,7 @@ def menu(maze: str, opts: _MazeOptions = _MazeOptions()) -> None:
         opt = input("\x1b[KSelect option: ")
         if opt == "1":
             print(f"{clear}")
-            maze = generate(sys.argv[1])
+            maze = generate(opts._conf)
             maze_draw(maze, opts)
             return menu(maze, opts)
         elif opt == "2":
@@ -195,6 +175,131 @@ def menu(maze: str, opts: _MazeOptions = _MazeOptions()) -> None:
             print("\x1b[7F\x1bJ")
 
 
+def maze_config(conf_file: str) -> dict[str, str]:
+    """Open the configuration file and set everything"""
+    try:
+        f = open(conf_file)
+        f.close()
+    except FileNotFoundError as e:
+        print(e)
+        sys.exit()
+    with open(conf_file) as f:
+        txt = f.read()
+        opts = txt.split("\n")
+        tup = [
+            tuple(i.split("=")) for i in opts if "=" in i and i.count("=") == 1
+        ]
+        conf = {i[0].upper(): i[1] for i in tup if i[0][0] != "#"}
+    try:
+        check_errors(conf)
+    except MazeError as e:
+        print(e.msg, file=sys.stderr)
+        sys.exit()
+    return conf
+
+
+def init_config() -> dict[str, str]:
+    conf: dict[str, str] = {}
+    while True:
+        try:
+            h = input(
+                f"Enter maze height (int > 0); current {conf.get('HEIGHT')}: "
+            )
+            if h == "" and conf.get("HEIGHT") is not None:
+                pass
+            elif conf.get("HEIGHT") is None or conf.get("HEIGHT") != h:
+                he = int(h)
+                assert he > 0
+                conf.update({"HEIGHT": h})
+            w = input(
+                f"Enter maze width (int > 0); current {conf.get('WIDTH')}: "
+            )
+            if w == "" and conf.get("WIDTH") is not None:
+                pass
+            elif conf.get("WIDTH") is None or conf.get("WIDTH") != w:
+                wi = int(w)
+                assert wi > 0
+                conf.update({"WIDTH": w})
+            en = input(
+                "Enter maze entry (0 ≤ x,y < width,height); "
+                f"current {conf.get('ENTRY')}: "
+            )
+            if en == "" and conf.get("ENTRY") is not None:
+                pass
+            elif conf.get("ENTRY") is None or conf.get("ENTRY") != en:
+                ent = en.split(",")
+                entry = (int(ent[0]), int(ent[1]))
+                conds = (
+                    entry[0] >= 0, entry[0] < he, entry[1] >= 0, entry[1] < wi
+                )
+                assert [i for i in conds]
+                conf.update({"ENTRY": en})
+            ex = input(
+                "Enter maze exit (0 ≤ x,y < width,height); "
+                f"current {conf.get('EXIT')}: "
+            )
+            if ex == "" and conf.get("EXIT") is not None:
+                pass
+            elif conf.get("EXIT") is None or conf.get("EXIT") != ex:
+                assert en != ex
+                exi = ex.split(",")
+                ext = (int(exi[0]), int(exi[1]))
+                conds = (ext[0] >= 0, ext[0] < he, ext[1] >= 0, ext[1] < wi)
+                assert [i for i in conds]
+                conf.update({"EXIT": ex})
+        except ValueError as e:
+            print(e)
+            continue
+        except AssertionError:
+            print("The displayed condition is not satisfied")
+            continue
+        except IndexError as e:
+            print(e)
+            continue
+        try:
+            check_errors(conf)
+            break
+        except MazeError as e:
+            print(e.msg)
+            continue
+    perfect = input("Print a perfect maze? (Y/n): ")
+    if perfect.lower() in ("n", "no", "nay", "nope"):
+        conf.update({"PERFECT": "False"})
+    else:
+        conf.update({"PERFECT": "True"})
+    out = input("Enter the maze output file (default: maze.txt): ")
+    if out == "":
+        conf.update({"OUTPUT_FILE": "maze.txt"})
+    else:
+        conf.update({"OUTPUT_FILE": out})
+    seed = input("Enter the maze seed (leave in blank for random): ")
+    if seed != "":
+        conf.update({"SEED": seed})
+    valid_algos = (
+        "wilson", "prim", "dfs", "ab", "aldous broder", "aldousbroder", "rb",
+        "aldous_broder", "aldous-broder", "depth first search",
+        "depthfirstserach", "depth_first_search", "recursivebacktracker",
+        "recursive backtracker", "recursive_backtracker"
+    )
+    while True:
+        print(
+            "Enter the maze generation algorithm "
+            "(Depth First Search/Recursive Backtracker, Prim, Wilson, "
+            "Aldous-Broder; defaults to Prim): "
+        )
+        algo = input()
+        if algo == "":
+            break
+        try:
+            assert algo.lower() in valid_algos
+            conf.update({"ALGORITHM": algo})
+            break
+        except AssertionError:
+            print("Invalid algorithm")
+            continue
+    return conf
+
+
 def handler(signum: Any, frame: Any) -> None:
     """Interruption signal handler (SIGINT, Ctrl+C)"""
     print("\nProgram terminated by user")
@@ -203,13 +308,18 @@ def handler(signum: Any, frame: Any) -> None:
 
 if __name__ == "__main__":
     signal(SIGINT, handler)
-    if len(sys.argv) != 2:
+    if len(sys.argv) > 2:
         print("Only one configuration file is allowed", file=sys.stderr)
     else:
         try:
-            file = generate(sys.argv[1])
-            maze_draw(file)
-            menu(file)
+            conf = maze_config(sys.argv[1])
+        except IndexError:
+            conf = init_config()
+        try:
+            opts = _MazeOptions(conf)
+            file = generate(opts._conf)
+            maze_draw(file, opts)
+            menu(file, opts)
         except MemoryError:
             print("[ERROR] Out of memory", file=sys.stderr)
         except OverflowError:

@@ -1,7 +1,7 @@
 from maze_utils import get_walls, _MazeOptions
 
 
-def maze_draw(maze_file: str, opts: _MazeOptions = _MazeOptions()) -> None:
+def maze_draw(maze_file: str, opts: _MazeOptions) -> None:
     with open(maze_file) as f:
         line = f.readline()
         maze = []
@@ -81,7 +81,6 @@ def maze_draw(maze_file: str, opts: _MazeOptions = _MazeOptions()) -> None:
                 print(f"{opts._palette['tile']}  {reset}", end="")
             else:
                 print(f"{opts._palette['wall']}  {reset}", end="")
-            # print(f"{opts._palette['wall']}  {reset}", end="")
             if i != range(h)[-1] and j != range(w)[-1]:
                 p_path = [
                     get_walls(base.index(c))[1] == 0,
