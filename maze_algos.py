@@ -10,7 +10,7 @@ def maze_init(maze: NDArray[Any], visited: NDArray[Any]) -> tuple[int, int]:
     v = -1
     while v == -1:
         current = (
-            rng.randrange(0, h - 1), rng.randrange(0, w - 1)
+            rng.randrange(0, h), rng.randrange(0, w)
         )
         v = visited[current[:]]
     visited[current[:]] = 1

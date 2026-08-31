@@ -94,12 +94,12 @@ def generate(conf: dict[str, str]) -> str:
     return conf['OUTPUT_FILE']
 
 
-def change_colors(opts: _MazeOptions) -> None:
+def change_colors(maze: str, opts: _MazeOptions) -> None:
     reset = "\x1b[0m"
     old_pal = opts._palette.copy()
-    print("\x1b[s")
     while True:
-        print("\x1b[u\x1b[0J")
+        print("\x1b[H\x1b[0J", end="")
+        maze_draw(maze, opts)
         print("== Change colors ==")
         print(f"1. Tile  {opts._palette['tile']}  {reset}")
         print(f"2. Wall  {opts._palette['wall']}  {reset}")
@@ -138,20 +138,18 @@ def change_colors(opts: _MazeOptions) -> None:
             if save.lower() in ("n", "no", "nay", "nope"):
                 opts._palette = old_pal.copy()
                 del old_pal
-                print("\x1b[u\x1b[0J")
                 return
             else:
                 print("Cancelling exit.")
         else:
-            print("Incorrect input")
-    return
+            pass
 
 
-def change_config(opts: _MazeOptions) -> None:
+def change_config(maze: str, opts: _MazeOptions) -> None:
     old_conf = opts._conf.copy()
-    print("\x1b[s")
     while True:
-        print("\x1b[u\x1b[0J")
+        print("\x1b[H\x1b[0J", end="")
+        maze_draw(maze, opts)
         print("== Change configuration ==")
         print(f"1. Height:      {opts._conf.get('HEIGHT')}")
         print(f"2. Width:       {opts._conf.get('WIDTH')}")
@@ -200,17 +198,18 @@ def change_config(opts: _MazeOptions) -> None:
             if save.lower() in ("n", "no", "nay", "nope"):
                 opts._conf = old_conf.copy()
                 del old_conf
-                print("\x1b[u\x1b[0J")
                 return
             else:
-                print("Cancelling exit.")
+                pass
         else:
-            print("Incorrect input")
+            pass
 
 
 def menu(maze: str, opts: _MazeOptions) -> None:
     clear = "\x1bc"
     while True:
+        print("\x1b[H\x1b[J", end="")
+        maze_draw(maze, opts)
         print("=== A-Maze-ing ===")
         print("1. Generate a new maze")
         print("2. Show/hide solution")
@@ -221,23 +220,17 @@ def menu(maze: str, opts: _MazeOptions) -> None:
         if opt == "1":
             print(f"{clear}")
             maze = generate(opts._conf)
-            maze_draw(maze, opts)
             return menu(maze, opts)
         elif opt == "2":
             opts._show_hide()
-            maze_draw(maze, opts)
         elif opt == "3":
-            print("\x1b[8F\x1bJ")
-            change_colors(opts)
-            maze_draw(maze, opts)
+            change_colors(maze, opts)
         elif opt == "4":
-            print("\x1b[8F\x1bJ")
-            change_config(opts)
-            maze_draw(maze, opts)
+            change_config(maze, opts)
         elif opt.lower() == "q":
             sys.exit()
         else:
-            print("\x1b[8F\x1bJ")
+            pass
 
 
 def maze_config(conf_file: str) -> dict[str, str]:

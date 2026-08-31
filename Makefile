@@ -19,13 +19,13 @@ run:
 	$(PYTHON) $(NAME) $(CONFIG) && make clean
 
 debug:
-	pdb $(NAME) $(CONFIG)
+	$(PYTHON) -m pdb $(NAME) $(CONFIG)
 
 clean:
 	$(RM) $(CACHE)
 
 lint:
-	flake8 && mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs && make clean
+	$(PYTHON) -m flake8 && $(PYTHON) -m mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs && make clean
 
 lint-strict:
-	flake8 && mypy . --strict&& make clean
+	$(PYTHON) -m flake8 && $(PYTHON) -m mypy . --strict && make clean
