@@ -81,5 +81,20 @@ def maze_draw(maze_file: str, opts: _MazeOptions = _MazeOptions()) -> None:
                 print(f"{opts._palette['tile']}  {reset}", end="")
             else:
                 print(f"{opts._palette['wall']}  {reset}", end="")
-            print(f"{opts._palette['wall']}  {reset}", end="")
+            # print(f"{opts._palette['wall']}  {reset}", end="")
+            if i != range(h)[-1] and j != range(w)[-1]:
+                p_path = [
+                    get_walls(base.index(c))[1] == 0,
+                    get_walls(base.index(c))[2] == 0,
+                    get_walls(base.index(maze[i + 1][j]))[0] == 0,
+                    get_walls(base.index(maze[i + 1][j]))[1] == 0,
+                    get_walls(base.index(row[j + 1]))[2] == 0,
+                    get_walls(base.index(row[j + 1]))[3] == 0
+                ]
+                if False not in p_path:
+                    print(f"{opts._palette['tile']}  {reset}", end="")
+                else:
+                    print(f"{opts._palette['wall']}  {reset}", end="")
+            else:
+                print(f"{opts._palette['wall']}  {reset}", end="")
         print()
