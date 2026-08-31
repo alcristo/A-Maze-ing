@@ -72,6 +72,127 @@ class _MazeOptions:
             print("[ERROR] Invalid color value. Aborting.")
             return
 
+    def _select_config(self, key: str) -> None:
+        he = int(self._conf["HEIGHT"])
+        wi = int(self._conf["WIDTH"])
+        if key == "HEIGHT":
+            try:
+                h = input(
+                    f"New maze height (current {self._conf.get('HEIGHT')}): "
+                )
+                he = int(h)
+                if h == "":
+                    return
+                assert he > 0
+                self._conf.update({"HEIGHT": h})
+            except ValueError as e:
+                print(e)
+                return
+            except AssertionError:
+                print("Height must be positive")
+                return
+        elif key == "WIDTH":
+            try:
+                w = input(
+                    f"New maze width (current {self._conf.get('WIDTH')}): "
+                )
+                if w == "":
+                    return
+                assert wi > 0
+                self._conf.update({"WIDTH": w})
+            except ValueError as e:
+                print(e)
+                return
+            except AssertionError:
+                print("Width must be positive")
+                return
+        elif key == "ENTRY":
+            en = input(
+                "New maze entry (0 ≤ x,y < width,height); "
+                f"(current {self._conf.get('ENTRY')}): "
+            )
+            if en == "":
+                return
+            try:
+                ent = en.split(",")
+                entry = (int(ent[0]), int(ent[1]))
+                conds = (
+                    entry[0] >= 0, entry[0] < he, entry[1] >= 0, entry[1] < wi
+                )
+                assert [i for i in conds]
+                self._conf.update({"ENTRY": en})
+            except ValueError as e:
+                print(e)
+                return
+            except IndexError as e:
+                print(e)
+                return
+            except AssertionError:
+                print("Entry must be in bounds")
+        elif key == "EXIT":
+            ex = input(
+                "New maze exit (0 ≤ x,y < width,height); "
+                f"(current {self._conf.get('EXIT')}): "
+            )
+            if ex == "":
+                return
+            try:
+                exi = ex.split(",")
+                ext = (int(exi[0]), int(exi[1]))
+                conds = (ext[0] >= 0, ext[0] < he, ext[1] >= 0, ext[1] < wi)
+                assert [i for i in conds]
+                self._conf.update({"EXIT": ex})
+            except ValueError as e:
+                print(e)
+                return
+            except IndexError as e:
+                print(e)
+                return
+            except AssertionError:
+                print("Exit must be in bounds")
+                return
+        elif key == "PERFECT":
+            perfect = input("Print a perfect maze? (Y/n): ")
+            if perfect.lower() in ("n", "no", "nay", "nope"):
+                self._conf.update({"PERFECT": "False"})
+            else:
+                self._conf.update({"PERFECT": "True"})
+        elif key == "OUTPUT_FILE":
+            out = input("New maze output file (default: maze.txt): ")
+            if out == "":
+                self._conf.update({"OUTPUT_FILE": "maze.txt"})
+            else:
+                self._conf.update({"OUTPUT_FILE": out})
+        elif key == "SEED":
+            seed = input("Enter the maze seed (leave in blank for random): ")
+            if seed != "":
+                self._conf.update({"SEED": seed})
+            else:
+                if self._conf.get("SEED") is not None:
+                    self._conf.pop("SEED")
+        elif key == "ALGORITHM":
+            valid_algos = (
+                "wilson", "prim", "dfs", "ab", "aldous broder", "aldousbroder",
+                "rb", "aldous_broder", "aldous-broder", "depth first search",
+                "depthfirstserach", "depth_first_search",
+                "recursivebacktracker", "recursive backtracker",
+                "recursive_backtracker"
+            )
+            print(
+                "Enter the maze generation algorithm "
+                "(Depth First Search/Recursive Backtracker, Prim, Wilson, "
+                "Aldous-Broder; defaults to Prim): "
+            )
+            algo = input()
+            if algo == "":
+                return
+            try:
+                assert algo.lower() in valid_algos
+                self._conf.update({"ALGORITHM": algo})
+            except AssertionError:
+                print("Invalid algorithm")
+                return
+
 
 def manhattan(curr: tuple[int, int], neigh: tuple[int, int]) -> int:
     """Manhattan heuristic, return distance"""

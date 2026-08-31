@@ -147,14 +147,75 @@ def change_colors(opts: _MazeOptions) -> None:
     return
 
 
+def change_config(opts: _MazeOptions) -> None:
+    old_conf = opts._conf.copy()
+    print("\x1b[s")
+    while True:
+        print("\x1b[u\x1b[0J")
+        print("== Change configuration ==")
+        print(f"1. Height:      {opts._conf.get('HEIGHT')}")
+        print(f"2. Width:       {opts._conf.get('WIDTH')}")
+        print(f"3. Entry:       {opts._conf.get('ENTRY')}")
+        print(f"4. Exit:        {opts._conf.get('EXIT')}")
+        print(f"5. Perfect:     {opts._conf.get('PERFECT')}")
+        print(f"6. Output file: {opts._conf.get('OUTPUT_FILE')}")
+        print(f"7. Seed:        {opts._conf.get('SEED')}")
+        print(f"8. Algorithm:   {opts._conf.get('ALGORITHM')}")
+        print("u. Undo changes")
+        print("q. Quit configuration selector")
+        try:
+            check_errors(opts._conf)
+        except MazeError as e:
+            print(e)
+        opt = input("\x1b[KSelect option: ")
+        if opt == "1":
+            opts._select_config("HEIGHT")
+        elif opt == "2":
+            opts._select_config("WIDTH")
+        elif opt == "3":
+            opts._select_config("ENTRY")
+        elif opt == "4":
+            opts._select_config("EXIT")
+        elif opt == "5":
+            opts._select_config("PERFECT")
+        elif opt == "6":
+            opts._select_config("OUTPUT_FILE")
+        elif opt == "7":
+            opts._select_config("SEED")
+        elif opt == "8":
+            opts._select_config("ALGORITHM")
+        elif opt == "u":
+            opts._conf = old_conf.copy()
+        elif opt == "q":
+            if opts._conf == old_conf:
+                return
+            try:
+                check_errors(opts._conf)
+            except MazeError as e:
+                print(e.msg)
+                continue
+            save = input("Save changes? Y/n   ")
+            if save.lower() in ("", "y", "yes", "yea", "yup"):
+                return
+            if save.lower() in ("n", "no", "nay", "nope"):
+                opts._conf = old_conf.copy()
+                del old_conf
+                print("\x1b[u\x1b[0J")
+                return
+            else:
+                print("Cancelling exit.")
+        else:
+            print("Incorrect input")
+
+
 def menu(maze: str, opts: _MazeOptions) -> None:
     clear = "\x1bc"
     while True:
-        # print("\x1b[s")
         print("=== A-Maze-ing ===")
         print("1. Generate a new maze")
         print("2. Show/hide solution")
         print("3. Change colors")
+        print("4. Change configuration")
         print("q. Quit")
         opt = input("\x1b[KSelect option: ")
         if opt == "1":
@@ -166,13 +227,17 @@ def menu(maze: str, opts: _MazeOptions) -> None:
             opts._show_hide()
             maze_draw(maze, opts)
         elif opt == "3":
-            print("\x1b[7F\x1bJ")
+            print("\x1b[8F\x1bJ")
             change_colors(opts)
+            maze_draw(maze, opts)
+        elif opt == "4":
+            print("\x1b[8F\x1bJ")
+            change_config(opts)
             maze_draw(maze, opts)
         elif opt.lower() == "q":
             sys.exit()
         else:
-            print("\x1b[7F\x1bJ")
+            print("\x1b[8F\x1bJ")
 
 
 def maze_config(conf_file: str) -> dict[str, str]:
@@ -310,24 +375,24 @@ if __name__ == "__main__":
     signal(SIGINT, handler)
     if len(sys.argv) > 2:
         print("Only one configuration file is allowed", file=sys.stderr)
-    else:
+    try:
         try:
             conf = maze_config(sys.argv[1])
         except IndexError:
             conf = init_config()
-        try:
+        finally:
             opts = _MazeOptions(conf)
             file = generate(opts._conf)
             maze_draw(file, opts)
             menu(file, opts)
-        except MemoryError:
-            print("[ERROR] Out of memory", file=sys.stderr)
-        except OverflowError:
-            print(
-                "[ERROR] Calculations exceed computer limits. "
-                "Please, try lower maze size.", file=sys.stderr
-            )
-        except EOFError:
-            print("\nProgram terminated by user")
-        except KeyboardInterrupt:
-            raise_signal(SIGINT)
+    except MemoryError:
+        print("[ERROR] Out of memory", file=sys.stderr)
+    except OverflowError:
+        print(
+            "[ERROR] Calculations exceed computer limits. "
+            "Please, try lower maze size.", file=sys.stderr
+        )
+    except EOFError:
+        print("\nProgram terminated by user")
+    except KeyboardInterrupt:
+        raise_signal(SIGINT)
