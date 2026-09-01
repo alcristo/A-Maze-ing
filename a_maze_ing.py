@@ -159,6 +159,7 @@ def change_config(maze: str, opts: _MazeOptions) -> None:
         print(f"6. Output file: {opts._conf.get('OUTPUT_FILE')}")
         print(f"7. Seed:        {opts._conf.get('SEED')}")
         print(f"8. Algorithm:   {opts._conf.get('ALGORITHM')}")
+        print("d. Default playable maze")
         print("u. Undo changes")
         print("q. Quit configuration selector")
         try:
@@ -182,9 +183,20 @@ def change_config(maze: str, opts: _MazeOptions) -> None:
             opts._select_config("SEED")
         elif opt == "8":
             opts._select_config("ALGORITHM")
-        elif opt == "u":
+        elif opt.lower() == "d":
+            opts._conf = {
+                "HEIGHT": "15",
+                "WIDTH": "31",
+                "ENTRY": "0,7",
+                "EXIT": "30,7",
+                "PERFECT": "False",
+                "OUTPUT_FILE": "default_maze.txt",
+                "SEED": "alcristo",
+                "ALGORITHM": "Wilson"
+            }
+        elif opt.lower() == "u":
             opts._conf = old_conf.copy()
-        elif opt == "q":
+        elif opt.lower() == "q":
             if opts._conf == old_conf:
                 return
             try:
