@@ -56,3 +56,20 @@ A-MAZE-ING PLAN:
 	Coordenadas de entrada.
 	Coordenadas de salida.
 	Solución en direcciones cardinales de avance.
+
+
+9. Interacciones de usuario:
+	Regenerar el laberinto y mostrarlo:
+	Quitar semilla (si no está animado)
+	Generar, resolver y dibujar.
+
+	Mostrar/ocultar el camino más corto:
+	Mover cursor con ANSI
+	Borrar espacios, poner color y poner espacios (inmediato).
+	Mejor: refrescar: borrar toda la pantalla e imprimir de nuevo.
+	
+	Cambiar colores:
+	Guardar colores en paleta
+	Input de colores (RGB, uint8)
+	Mirar a ver si hay que cambiar todas las celdas una a una o si se cambia  automáticamente.
+	Mejor: refrescar: borrar toda la pantalla e imprimir de nuevo.

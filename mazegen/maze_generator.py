@@ -99,6 +99,7 @@ class _Algorithm(ABC):
         return (axis, step)
 
     def gen_visited(self, maze: NDArray[Any]) -> None:
+        """Generate auxiliar array to keep track of visited tiles"""
         visited = zeros(maze.shape, int)
         if visited.shape[0] > 6 and visited.shape[1] > 8:
             hs = (visited.shape[0] - 1) // 2 - 2
@@ -415,6 +416,7 @@ class _Maze:
         return s
 
     def generate(self) -> None:
+        """Generate the maze"""
         self._maze = 15 * ones([self._height, self._width], int)
         self._algo.generate(self._maze, self._seed)
         if self._perfect is False:
@@ -455,6 +457,7 @@ class _Node:
         self.next: Any = None
 
     def size(self) -> int:
+        """Get the length of the node chain"""
         first = self
         n = 1
         while self.next is not None and self.next is not first:
@@ -590,6 +593,7 @@ class _Path:
     def rm_node(
         set: set[_Node], point: tuple[int, int], new: _Node
     ) -> None:
+        """Remove a node from a set"""
         alt_path = []
         for n in set:
             if n.val == new.val:
@@ -603,6 +607,7 @@ class _Path:
 
     @staticmethod
     def add_front(old: _Node, newnode: _Node) -> None:
+        """Add a new node pointing to the old node"""
         if newnode is None:
             return
         newnode.next = old
@@ -673,6 +678,7 @@ class _Path:
 def valid_entry_exit(
     size: tuple[int, int], entry: tuple[int, int], exit: tuple[int, int]
 ) -> None:
+    """Check entry and exit are valid"""
     if entry == exit:
         print("[ERROR] Entry and exit must not be equal", file=sys.stderr)
         raise ValueError
@@ -755,12 +761,14 @@ class MazeGenerator:
         self._output_file = conf.get("OUTPUT_FILE", "output_maze.txt")
 
     def _generate(self) -> None:
+        """Generate the maze"""
         try:
             self._maze.generate()
         except AttributeError:
             return
 
     def _solve(self) -> None:
+        """Solve the maze"""
         try:
             path = _Path(self._maze._maze, self._entry, self._exit)
             self._solution = path.solve()
@@ -768,6 +776,7 @@ class MazeGenerator:
             print("[ERROR] No maze to solve", file=sys.stderr)
 
     def _draw(self) -> None:
+        """Draw the maze"""
         pathtiles = []
         curr = self._entry
         for dir in self._solution:
@@ -840,6 +849,7 @@ class MazeGenerator:
             print()
 
     def _output(self) -> None:
+        """Save the maze in an output file"""
         base = "0123456789abcdef"
         try:
             self._maze
@@ -858,46 +868,13 @@ class MazeGenerator:
             out.write(self._solution)
 
     def regen(self) -> None:
+        """Regenerate the maze"""
         try:
             self._generate()
             self._solve()
             self._draw()
         except AttributeError:
             return
-        clear = "\x1bc"
-        while True:
-            print("=== A-Maze-ing ===")
-            print("1. Generate a new maze")
-            print("2. Show/hide solution")
-            print("3. Change colors")
-            print("q. Quit")
-            opt = input()
-            if opt == "1":
-                print(f"{clear}")
-                self.regen()
-                continue
-            elif opt == "2":
-                print(self._solution)
-                continue
-            elif opt == "3":
-                R = int(input("R:"))
-                if R < 0 or R > 255:
-                    print("Invalid color")
-                    continue
-                G = int(input("G:"))
-                if G < 0 or G > 255:
-                    print("Invalid color")
-                    continue
-                B = int(input("B:"))
-                if B < 0 or B > 255:
-                    print("Invalid color")
-                    continue
-                print("Color: {hex(R)}{hex(G)}{hex(B)}")
-                continue
-            elif opt == "q":
-                sys.exit()
-            else:
-                continue
 
     @property
     def maze(self) -> _Maze:
