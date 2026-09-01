@@ -3,6 +3,7 @@ from maze_utils import MazeError, check_errors, _MazeOptions
 from maze_algos import dfs, prim, wilson, aldous_broder, imperfect
 from pathfinding import a_star
 from maze_draw import maze_draw
+from gameplay import Player
 import sys
 import random
 from typing import Any
@@ -207,6 +208,8 @@ def change_config(maze: str, opts: _MazeOptions) -> None:
 
 def menu(maze: str, opts: _MazeOptions) -> None:
     clear = "\x1bc"
+
+    player = Player(opts)
     while True:
         print("\x1b[H\x1b[J", end="")
         maze_draw(maze, opts)
@@ -215,6 +218,7 @@ def menu(maze: str, opts: _MazeOptions) -> None:
         print("2. Show/hide solution")
         print("3. Change colors")
         print("4. Change configuration")
+        print("5. Play")
         print("q. Quit")
         opt = input("\x1b[KSelect option: ")
         if opt == "1":
@@ -227,6 +231,8 @@ def menu(maze: str, opts: _MazeOptions) -> None:
             change_colors(maze, opts)
         elif opt == "4":
             change_config(maze, opts)
+        elif opt == "5":
+            player._show_player()
         elif opt.lower() == "q":
             sys.exit()
         else:
