@@ -34,7 +34,8 @@ class _MazeOptions:
             "entry": "\x1b[45m",
             "exit": "\x1b[42m",
             "path": "\x1b[44m",
-            "block": "\x1b[41m"
+            "block": "\x1b[41m",
+            "player": "\x1b[46m"
         }
 
     def _show_hide(self) -> None:
