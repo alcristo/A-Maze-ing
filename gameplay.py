@@ -2,6 +2,7 @@ from maze_utils import get_walls, _MazeOptions
 import sys
 import termios
 import tty
+import time
 
 
 class Player:
@@ -88,6 +89,8 @@ class Player:
                 else:
                     print(f"{self._opts._palette['wall']}  {reset}", end="")
             print()
+        print("=== A-Maze-ing ===")
+        print("q. Quit")
 
     def leer_tecla(self) -> str:
         fd = sys.stdin.fileno()
@@ -122,6 +125,7 @@ class Player:
                 self._pos = self._entry
                 self._playable = False
                 break
+            time.sleep(0.1)
 
     def set_maze(self, maze: list) -> None:
         self._maze = maze
