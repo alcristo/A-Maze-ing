@@ -1,7 +1,98 @@
 from numpy.typing import NDArray
 import random as rng
 from typing import Any
-from maze_utils import manhattan, get_walls
+from maze_utils import manhattan, get_walls, _MazeOptions
+from pathfinding import a_star
+import time
+
+
+def creation_draw(
+        maze_file: str, opts: _MazeOptions) -> None:
+    with open(maze_file) as f:
+        line = f.readline()
+        maze = []
+        w = 0
+        while line != "\n":
+            maze.append(line.strip("\n"))
+            if w == 0:
+                w = len(line) - 1
+            line = f.readline()
+        en = f.readline().split(",")
+        entry = (int(en[1]), int(en[0]))
+        ex = f.readline().split(",")
+        exit = (int(ex[1]), int(ex[0]))
+
+    reset = "\x1b[0m"
+
+    print("\x1bc")
+    for _ in range(2 * w + 1):
+        print(f"{opts._palette['wall']}  {reset}", end="")
+    print()
+    h = len(maze)
+    i = 0
+    base = "0123456789abcdef"
+    for i in range(h):
+        row = maze[i]
+        print(f"{opts._palette['wall']}  {reset}", end="")
+        for j in range(w):
+            c = row[j]
+            if c == "f":
+                print(f"{opts._palette['block']}  {reset}", end="")
+            elif (i, j) == entry:
+                print(f"{opts._palette['entry']}  {reset}", end="")
+            elif (i, j) == exit:
+                print(f"{opts._palette['exit']}  {reset}", end="")
+            else:
+                print(f"{opts._palette['tile']}  {reset}", end="")
+            if get_walls(base.index(c))[1] == 0:
+                print(f"{opts._palette['tile']}  {reset}", end="")
+            else:
+                print(f"{opts._palette['wall']}  {reset}", end="")
+        print()
+        print(f"{opts._palette['wall']}  {reset}", end="")
+        for j in range(w):
+            c = row[j]
+            if get_walls(base.index(c))[2] == 0:
+                print(f"{opts._palette['tile']}  {reset}", end="")
+            else:
+                print(f"{opts._palette['wall']}  {reset}", end="")
+            if i != range(h)[-1] and j != range(w)[-1]:
+                p_path = [
+                    get_walls(base.index(c))[1] == 0,
+                    get_walls(base.index(c))[2] == 0,
+                    get_walls(base.index(maze[i + 1][j]))[0] == 0,
+                    get_walls(base.index(maze[i + 1][j]))[1] == 0,
+                    get_walls(base.index(row[j + 1]))[2] == 0,
+                    get_walls(base.index(row[j + 1]))[3] == 0
+                ]
+                if False not in p_path:
+                    print(f"{opts._palette['tile']}  {reset}", end="")
+                else:
+                    print(f"{opts._palette['wall']}  {reset}", end="")
+            else:
+                print(f"{opts._palette['wall']}  {reset}", end="")
+        print()
+
+
+def write_path(maze: NDArray[Any], opts: _MazeOptions) -> None:
+    size = (int(opts._conf["HEIGHT"]), int(opts._conf["WIDTH"]))
+    start = opts._conf["ENTRY"].split(",")
+    end = opts._conf["EXIT"].split(",")
+    entr = (int(start[1]), int(start[0]))
+    exit = (int(end[1]), int(end[0]))
+    base = "0123456789abcdef"
+    sol = a_star(maze, entr, exit)
+    with open(opts._conf['OUTPUT_FILE'], 'w') as out:
+        for i in range(size[0]):
+            for j in range(size[1]):
+                out.write(base[maze[i][j]])
+            out.write("\n")
+        out.write("\n")
+        out.write(f"{entr[1]},{entr[0]}\n")
+        out.write(f"{exit[1]},{exit[0]}\n")
+        out.write(sol)
+    creation_draw(opts._conf['OUTPUT_FILE'], opts)
+    time.sleep(1 / 16)
 
 
 def maze_init(maze: NDArray[Any], visited: NDArray[Any]) -> tuple[int, int]:
@@ -79,7 +170,8 @@ def unvisited_set(visited: NDArray[Any]) -> set[tuple[int, int]]:
     return yet
 
 
-def dfs(maze: NDArray[Any], visited: NDArray[Any]) -> None:
+def dfs(
+        maze: NDArray[Any], visited: NDArray[Any], opts: _MazeOptions) -> None:
     current = maze_init(maze, visited)
     lst = [current]
     while len(lst) > 0:
@@ -102,13 +194,15 @@ def dfs(maze: NDArray[Any], visited: NDArray[Any]) -> None:
             connect(maze, current, new)
             visited[new[:]] = 1
             lst.append(new)
+            write_path(maze, opts)
         try:
             current = lst[-1]
         except IndexError:
             pass
 
 
-def prim(maze: NDArray[Any], visited: NDArray[Any]) -> None:
+def prim(
+        maze: NDArray[Any], visited: NDArray[Any], opts: _MazeOptions) -> None:
     current = maze_init(maze, visited)
     opened: set[tuple[int, int]] = set()
     opened.add(current)
@@ -132,11 +226,13 @@ def prim(maze: NDArray[Any], visited: NDArray[Any]) -> None:
             connect(maze, current, new)
             visited[new[:]] = 1
             opened.add(new)
+            write_path(maze, opts)
         if len(opened) > 0:
             current = rng.choice([*opened])
 
 
-def aldous_broder(maze: NDArray[Any], visited: NDArray[Any]) -> None:
+def aldous_broder(
+        maze: NDArray[Any], visited: NDArray[Any], opts: _MazeOptions) -> None:
     current = maze_init(maze, visited)
     yet = unvisited_set(visited)
     while len(yet) > 0:
@@ -156,12 +252,14 @@ def aldous_broder(maze: NDArray[Any], visited: NDArray[Any]) -> None:
             continue
         elif visited[neighbour[0], neighbour[1]] == 0:
             connect(maze, tuple[int, int](current), tuple[int, int](neighbour))
+            write_path(maze, opts)
             yet.discard(neighbour)
         current = neighbour
         visited[current[0], current[1]] = 1
 
 
-def wilson(maze: NDArray[Any], visited: NDArray[Any]) -> None:
+def wilson(
+        maze: NDArray[Any], visited: NDArray[Any], opts: _MazeOptions) -> None:
     current = maze_init(maze, visited)
     yet = unvisited_set(visited)
     while len(yet) > 0:
@@ -201,6 +299,7 @@ def wilson(maze: NDArray[Any], visited: NDArray[Any]) -> None:
             yet.discard(tile)
         while len(path) > 1:
             connect(maze, path[-2], path[-1])
+            write_path(maze, opts)
             current = path[-1]
             path.pop()
         path.clear()

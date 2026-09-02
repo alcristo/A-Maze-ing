@@ -35,7 +35,7 @@ def select_algo(conf: dict[str, str]) -> str:
         return "Prim"
 
 
-def generate(conf: dict[str, str]) -> str:
+def generate(opts: _MazeOptions, conf: dict[str, str]) -> str:
 
     """Create the maze and visited tiles arrays"""
     size = (int(conf["HEIGHT"]), int(conf["WIDTH"]))
@@ -62,13 +62,13 @@ def generate(conf: dict[str, str]) -> str:
     random.seed(conf.get("SEED"))
     algo = select_algo(conf)
     if algo == "AldousBroder":
-        aldous_broder(maze, visited)
+        aldous_broder(maze, visited, opts)
     elif algo == "DFS":
-        dfs(maze, visited)
+        dfs(maze, visited, opts)
     elif algo == "Prim":
-        prim(maze, visited)
+        prim(maze, visited, opts)
     elif algo == "Wilson":
-        wilson(maze, visited)
+        wilson(maze, visited, opts)
     else:
         print("Unknown or not implemented algorithm", file=sys.stderr)
         sys.exit()
@@ -238,7 +238,7 @@ def menu(maze: str, opts: _MazeOptions) -> None:
         opt = input("\x1b[KSelect option: ")
         if opt == "1":
             print(f"{clear}")
-            maze = generate(opts._conf)
+            maze = generate(opts, opts._conf)
             return menu(maze, opts)
         elif opt == "2":
             opts._show_hide()
@@ -388,19 +388,19 @@ if __name__ == "__main__":
         try:
             conf = maze_config(sys.argv[1])
             opts = _MazeOptions(conf)
-            file = generate(opts._conf)
+            file = generate(opts, opts._conf)
             maze_draw(file, opts)
             menu(file, opts)
         except IndexError:
             conf = init_config()
             opts = _MazeOptions(conf)
-            file = generate(opts._conf)
+            file = generate(opts, opts._conf)
             maze_draw(file, opts)
             menu(file, opts)
         except FileNotFoundError:
             conf = init_config()
             opts = _MazeOptions(conf)
-            file = generate(opts._conf)
+            file = generate(opts, opts._conf)
             maze_draw(file, opts)
             menu(file, opts)
     except MemoryError:
