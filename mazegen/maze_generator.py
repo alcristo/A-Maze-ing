@@ -588,7 +588,7 @@ class _Path:
             return
         newnode.next = old
 
-    def solve(self) -> str:
+    def solve(self) -> None:
         """A* pathfinding algorithm with Manhattan heuristic"""
 
         opened, closed = set(), set()
@@ -629,18 +629,16 @@ class _Path:
                         opened.add(node)
 
         """Return the maze solution via backtracking"""
-        sol = ""
         while current.next is not None:
             if current.val[0] == current.next.val[0] + 1:
-                sol = "S" + sol
+                self._path = "S" + self._path
             elif current.val[0] == current.next.val[0] - 1:
-                sol = "N" + sol
+                self._path = "N" + self._path
             elif current.val[1] == current.next.val[1] + 1:
-                sol = "E" + sol
+                self._path = "E" + self._path
             elif current.val[1] == current.next.val[1] - 1:
-                sol = "W" + sol
+                self._path = "W" + self._path
             current = current.next
-        return sol
 
     @property
     def checked(self) -> int:
@@ -651,7 +649,7 @@ class _Path:
         return self._path
 
 
-def valid_entry_exit(
+def _valid_entry_exit(
     size: tuple[int, int], entry: tuple[int, int], exit: tuple[int, int]
 ) -> None:
     """Check entry and exit are valid"""
@@ -721,7 +719,7 @@ class MazeGenerator:
             print("[ERROR] Entry/Exit in wrong format. Usage ex.: EXIT=0,0")
             return
         try:
-            valid_entry_exit((height, width), entry, exit)
+            _valid_entry_exit((height, width), entry, exit)
         except ValueError:
             return
         self._maze = _Maze(height, width, perfect, seed, algorithm)
@@ -740,8 +738,8 @@ class MazeGenerator:
     def _solve(self) -> None:
         """Solve the maze"""
         try:
-            path = _Path(self._maze._maze, self._entry, self._exit)
-            self._solution = path.solve()
+            self._path = _Path(self._maze._maze, self._entry, self._exit)
+            self._path.solve()
         except AttributeError:
             print("[ERROR] No maze to solve", file=sys.stderr)
 
@@ -881,8 +879,12 @@ class MazeGenerator:
         return self._maze
 
     @property
+    def path(self) -> str:
+        return self._path
+
+    @property
     def solution(self) -> str:
-        return self._solution
+        return self._path.path
 
     @property
     def palette(self) -> dict[str, str]:
