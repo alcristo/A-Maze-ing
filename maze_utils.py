@@ -196,9 +196,9 @@ class _MazeOptions:
         elif key == "ANIMATE":
             perfect = input("Animate the maze generation? (y/N): ")
             if perfect.lower() in ("y", "yes", "yea", "yup"):
-                self._conf.update({"PERFECT": "True"})
+                self._conf.update({"ANIMATE": "True"})
             else:
-                self._conf.update({"PERFECT": "False"})
+                self._conf.update({"ANIMATE": "False"})
 
 
 def manhattan(curr: tuple[int, int], neigh: tuple[int, int]) -> int:

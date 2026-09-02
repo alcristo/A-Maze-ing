@@ -6,3 +6,4 @@ OUTPUT_FILE=maze.txt
 PERFECT=True
 #Seed=42
 Algorithm=Wilson
+ANIMATE=False

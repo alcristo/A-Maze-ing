@@ -7,7 +7,8 @@ import time
 
 
 def creation_draw(
-        maze_file: str, opts: _MazeOptions) -> None:
+        maze_file: str, opts: _MazeOptions
+) -> None:
     with open(maze_file) as f:
         line = f.readline()
         maze = []
@@ -75,6 +76,8 @@ def creation_draw(
 
 
 def write_path(maze: NDArray[Any], opts: _MazeOptions) -> None:
+    if opts._conf.get("ANIMATE", "False").lower() == "false":
+        return
     size = (int(opts._conf["HEIGHT"]), int(opts._conf["WIDTH"]))
     start = opts._conf["ENTRY"].split(",")
     end = opts._conf["EXIT"].split(",")
@@ -171,7 +174,8 @@ def unvisited_set(visited: NDArray[Any]) -> set[tuple[int, int]]:
 
 
 def dfs(
-        maze: NDArray[Any], visited: NDArray[Any], opts: _MazeOptions) -> None:
+        maze: NDArray[Any], visited: NDArray[Any], opts: _MazeOptions
+) -> None:
     current = maze_init(maze, visited)
     lst = [current]
     while len(lst) > 0:
@@ -202,7 +206,8 @@ def dfs(
 
 
 def prim(
-        maze: NDArray[Any], visited: NDArray[Any], opts: _MazeOptions) -> None:
+        maze: NDArray[Any], visited: NDArray[Any], opts: _MazeOptions
+) -> None:
     current = maze_init(maze, visited)
     opened: set[tuple[int, int]] = set()
     opened.add(current)
@@ -232,7 +237,8 @@ def prim(
 
 
 def aldous_broder(
-        maze: NDArray[Any], visited: NDArray[Any], opts: _MazeOptions) -> None:
+        maze: NDArray[Any], visited: NDArray[Any], opts: _MazeOptions
+) -> None:
     current = maze_init(maze, visited)
     yet = unvisited_set(visited)
     while len(yet) > 0:
@@ -259,8 +265,10 @@ def aldous_broder(
 
 
 def wilson(
-        maze: NDArray[Any], visited: NDArray[Any], opts: _MazeOptions) -> None:
+        maze: NDArray[Any], visited: NDArray[Any], opts: _MazeOptions
+) -> None:
     current = maze_init(maze, visited)
+    write_path(maze, opts)
     yet = unvisited_set(visited)
     while len(yet) > 0:
         path = []
@@ -354,6 +362,7 @@ def imperfect(maze: NDArray[Any], opts: _MazeOptions) -> None:
     connect(maze, (h - 1, w - 1), (h - 2, w - 1))
     connect(maze, (h - 1, 0), (h - 1, 1))
     connect(maze, (h - 1, 0), (h - 2, 0))
+    write_path(maze, opts)
 
     """Remove random walls in random tiles"""
     for _ in range(h * w // 3):
@@ -392,3 +401,4 @@ def imperfect(maze: NDArray[Any], opts: _MazeOptions) -> None:
                         maze[i + 1][j] += 1
                     if walls[3] == 1:
                         maze[i][j - 1] += 2
+                    write_path(maze, opts)
