@@ -343,7 +343,7 @@ def remove_walls(
         break_wall(maze, tile, rng.choice(r_walls))
 
 
-def imperfect(maze: NDArray[Any]) -> None:
+def imperfect(maze: NDArray[Any], opts: _MazeOptions) -> None:
     h, w = maze.shape
     """ Start connecting the four corners"""
     connect(maze, (0, 0), (0, 1))
@@ -359,6 +359,7 @@ def imperfect(maze: NDArray[Any]) -> None:
     for _ in range(h * w // 3):
         tile = (rng.randrange(h), rng.randrange(w))
         remove_walls(maze, tile, .5)
+        write_path(maze, opts)
     dead_ends = (7, 11, 13, 14)
     s_wall = ((0, 1), (0, 2), (0, 4), (0, 8))
     adm_walls = [1, 2, 3, 4, 5, 6, 8, 9, 10, 12]
@@ -368,6 +369,7 @@ def imperfect(maze: NDArray[Any]) -> None:
         for j in range(w):
             if maze[i, j] in dead_ends:
                 remove_walls(maze, (i, j))
+                write_path(maze, opts)
 
     """Check for areas > 3x3; fill them in such case"""
     for i in range(h):
