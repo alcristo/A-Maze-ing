@@ -1,4 +1,4 @@
-*This project was made as part of the 42 curriculum by alcristo and*
+*This project was made as part of the 42 curriculum by [alcristo](https://github.com/alcristo) and [pnarvaez](https://github.com/Pau-Narvaez-Roy).*
 
 # A-Maze-ing
 
@@ -119,6 +119,14 @@ The `MazeGenerator` class also has the following properties:
 * `maze`: A `Maze` private class containing the maze information. Printing this class will print its hexaddecimal representation.
 * `solution`: The maze solution from entry to exit as a NESW string.
 * `palette`: A dictionary containing the colors of the maze upon drawing.
+
+### Team and project management
+
+* `alcristo` handled the code structuration, algorithm development, and the maze's creation, solution, graphics, and configuration while  `pnarvaez` handled the maze animation, gameplay mode, and player-related gameplay.
+* 
+* The code in his idea works well, we could have added more playable possibilities like a 3d maze or cleaned some reused code. 
+*
+
 
 ## Instructions
 
