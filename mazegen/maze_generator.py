@@ -31,7 +31,9 @@ def manhattan(curr: tuple[int, int], neigh: tuple[int, int]) -> int:
 class _Algorithm(ABC):
 
     @abstractmethod
-    def generate(self, maze: NDArray[Any], seed: int | None = None) -> None:
+    def generate(
+        self, maze: NDArray[Any], seed: str | int | None = None
+    ) -> None:
         pass
 
     @staticmethod
@@ -46,7 +48,7 @@ class _Algorithm(ABC):
 
     @staticmethod
     def maze_init(
-        maze: NDArray[Any], visited: NDArray[Any], seed: None | int
+        maze: NDArray[Any], visited: NDArray[Any], seed: str | int | None
     ) -> tuple[int, int]:
         h, w = maze.shape[:]
         v = -1
@@ -119,7 +121,9 @@ class _Algorithm(ABC):
 
 
 class _DFS(_Algorithm):
-    def generate(self, maze: NDArray[Any], seed: int | None = None) -> None:
+    def generate(
+        self, maze: NDArray[Any], seed: str | int | None = None
+    ) -> None:
         self.gen_visited(maze)
         visited = self._visited
         current = self.maze_init(maze, visited, seed)
@@ -154,7 +158,9 @@ class _DFS(_Algorithm):
 
 class _Prim(_Algorithm):
 
-    def generate(self, maze: NDArray[Any], seed: int | None = None) -> None:
+    def generate(
+        self, maze: NDArray[Any], seed: str | int | None = None
+    ) -> None:
         self.gen_visited(maze)
         visited = self._visited
         rng.seed(seed)
@@ -199,7 +205,9 @@ class _Wilson(_Algorithm):
             visited[path[-1][:]] = 0
             path.pop()
 
-    def generate(self, maze: NDArray[Any], seed: int | None = None) -> None:
+    def generate(
+        self, maze: NDArray[Any], seed: str | int | None = None
+    ) -> None:
         self.gen_visited(maze)
         visited = self._visited
         current = self.maze_init(maze, visited, seed)
@@ -247,7 +255,9 @@ class _Wilson(_Algorithm):
 
 
 class _AldousBroder(_Algorithm):
-    def generate(self, maze: NDArray[Any], seed: int | None = None) -> None:
+    def generate(
+        self, maze: NDArray[Any], seed: str | int | None = None
+    ) -> None:
         self.gen_visited(maze)
         visited = self._visited
         rng.seed(seed)
@@ -314,7 +324,9 @@ class _Imperfect(_Algorithm):
         if len(r_walls) > 0 and rng.random() < prob:
             self.break_wall(maze, tile, rng.choice(r_walls))
 
-    def generate(self, maze: NDArray[Any], seed: int | None = None) -> None:
+    def generate(
+        self, maze: NDArray[Any], seed: str | int | None = None
+    ) -> None:
         h, w = maze.shape
         """ Start connecting the four corners"""
         self.connect(maze, (0, 0), (0, 1))
@@ -375,7 +387,7 @@ class _Maze:
         height: int,
         width: int,
         perfect: bool,
-        seed: int | None = None,
+        seed: int | str | None = None,
         algorithm: str = "Prim"
     ) -> None:
         self._height = height
@@ -436,7 +448,7 @@ class _Maze:
         return self._perfect
 
     @property
-    def seed(self) -> int | None:
+    def seed(self) -> str | int | None:
         return self._seed
 
     @property
@@ -718,26 +730,26 @@ def valid_entry_exit(
 
 class MazeGenerator:
 
-    def __init__(self, config_file: str) -> None:
-        with open(config_file) as f:
-            txt = f.read()
-            opts = txt.split("\n")
-            tup = [tuple(i.split("=")) for i in opts if "=" in i]
-            conf = {i[0].upper(): i[1] for i in tup if i[0][0] != "#"}
+    def __init__(
+        self,
+        height: int,
+        width: int,
+        start: str,
+        end: str,
+        perfect: bool = False,
+        output_file: str = "maze.txt",
+        seed: str | None = None,
+        algorithm: str = "Prim"
+    ) -> None:
         try:
-            height = int(conf["HEIGHT"])
-            width = int(conf["WIDTH"])
             assert height > 0
             assert width > 0
-            en = conf["ENTRY"].split(",")
+            en = start.split(",")
             entry = (int(en[1]), int(en[0]))
-            ex = conf["EXIT"].split(",")
+            ex = end.split(",")
             exit = (int(ex[1]), int(ex[0]))
         except AssertionError:
             print("[ERROR] Maze dimensions must be positive", file=sys.stderr)
-            return
-        except KeyError as e:
-            print(f"[ERROR] Invalid configuration: {e}")
             return
         except ValueError as e:
             print(f"[ERROR] Configuration in wrong format: {e}")
@@ -749,16 +761,12 @@ class MazeGenerator:
             valid_entry_exit((height, width), entry, exit)
         except ValueError:
             return
-        perfect = conf.get("PERFECT", "True").lower() != "false"
-        try:
-            seed = int(conf["SEED"])
-        except KeyError:
-            seed = None
-        algorithm = conf.get("ALGORITHM", "Prim")
         self._maze = _Maze(height, width, perfect, seed, algorithm)
         self._entry = entry
         self._exit = exit
-        self._output_file = conf.get("OUTPUT_FILE", "output_maze.txt")
+        self._output_file = output_file
+        self._palette: dict[str, str] = {}
+        self.regen()
 
     def _generate(self) -> None:
         """Generate the maze"""
@@ -775,80 +783,97 @@ class MazeGenerator:
         except AttributeError:
             print("[ERROR] No maze to solve", file=sys.stderr)
 
-    def _draw(self) -> None:
+    def color(self, key: str, color: list[int] = []) -> None:
+        """Change the color of a palette"""
+        valid_keys = ("tile", "wall", "entry", "exit", "path", "block")
+        if key.lower() not in valid_keys:
+            return
+        if len(color) != 3:
+            if self._palette.get(key) is not None:
+                self._palette.pop(key)
+            return
+        valid_colors = [i >= 0 and i <= 255 for i in color]
+        if False in valid_colors:
+            if self._palette.get(key) is not None:
+                self._palette.pop(key)
+            return
+        self._palette.update(
+            {key.lower(): f"\x1b[48;2;{color[0]};{color[1]};{color[2]}m"}
+        )
+
+    def draw(self, solution: bool = False) -> None:
         """Draw the maze"""
         pathtiles = []
         curr = self._entry
-        for dir in self._solution:
-            if dir == "N":
-                curr = (curr[0] - 1, curr[1])
-            elif dir == "S":
-                curr = (curr[0] + 1, curr[1])
-            elif dir == "W":
-                curr = (curr[0], curr[1] - 1)
-            elif dir == "E":
-                curr = (curr[0], curr[1] + 1)
-            else:
-                break
-            if curr == self._exit:
-                break
-            pathtiles.append(curr)
-        pathtiles.append(self._exit)
-        pathtiles.insert(0, self._entry)
+        if solution is True:
+            for dir in self._solution:
+                if dir == "N":
+                    curr = (curr[0] - 1, curr[1])
+                elif dir == "S":
+                    curr = (curr[0] + 1, curr[1])
+                elif dir == "W":
+                    curr = (curr[0], curr[1] - 1)
+                elif dir == "E":
+                    curr = (curr[0], curr[1] + 1)
+                else:
+                    break
+                if curr == self._exit:
+                    break
+                pathtiles.append(curr)
+            pathtiles.append(self._exit)
+            pathtiles.insert(0, self._entry)
 
         reset = "\x1b[0m"
-        black = "\x1b[40m"
-        red = "\x1b[41m"
-        green = "\x1b[42m"
-        # yellow = "\x1b[43m"
-        blue = "\x1b[44m"
-        magenta = "\x1b[45m"
-        # cyan = "\x1b[46m"
-        white = "\x1b[47m"
+        tile = self._palette.get("tile", "\x1b[47")
+        wall = self._palette.get("wall", "\x1b[40")
+        entry = self._palette.get("entry", "\x1b[45")
+        exit = self._palette.get("exit", "\x1b[42")
+        path = self._palette.get("path", "\x1b[44")
+        block = self._palette.get("block", "\x1b[41")
 
         h, w = self._maze._maze.shape
         for _ in range(2 * w + 1):
-            print(f"{black}  {reset}", end="")
+            print(f"{wall}  {reset}", end="")
         print()
         i = 0
         for i in range(h):
-            print(f"{black}  {reset}", end="")
+            print(f"{wall}  {reset}", end="")
             for j in range(w):
                 n = self._maze._maze[i, j]
                 if n == 15:
-                    print(f"{red}  {reset}", end="")
+                    print(f"{block}  {reset}", end="")
                 elif (i, j) == self._entry:
-                    print(f"{magenta}  {reset}", end="")
+                    print(f"{entry}  {reset}", end="")
                 elif (i, j) == self._exit:
-                    print(f"{green}  {reset}", end="")
+                    print(f"{exit}  {reset}", end="")
                 elif (i, j) in pathtiles:
-                    print(f"{blue}  {reset}", end="")
+                    print(f"{path}  {reset}", end="")
                 else:
-                    print(f"{white}  {reset}", end="")
+                    print(f"{tile}  {reset}", end="")
                 if (i, j) in pathtiles and (
                     i, j + 1
                 ) in pathtiles and get_walls(n)[1] == 0:
-                    print(f"{blue}  {reset}", end="")
+                    print(f"{path}  {reset}", end="")
                 elif get_walls(n)[1] == 0:
-                    print(f"{white}  {reset}", end="")
+                    print(f"{tile}  {reset}", end="")
                 else:
-                    print(f"{black}  {reset}", end="")
+                    print(f"{wall}  {reset}", end="")
             print()
-            print(f"{black}  {reset}", end="")
+            print(f"{wall}  {reset}", end="")
             for j in range(w):
                 n = self._maze._maze[i, j]
                 if (i, j) in pathtiles and (
                     i + 1, j
                 ) in pathtiles and get_walls(n)[2] == 0:
-                    print(f"{blue}  {reset}", end="")
+                    print(f"{path}  {reset}", end="")
                 elif get_walls(n)[2] == 0:
-                    print(f"{white}  {reset}", end="")
+                    print(f"{tile}  {reset}", end="")
                 else:
-                    print(f"{black}  {reset}", end="")
-                print(f"{black}  {reset}", end="")
+                    print(f"{wall}  {reset}", end="")
+                print(f"{wall}  {reset}", end="")
             print()
 
-    def _output(self) -> None:
+    def output(self) -> None:
         """Save the maze in an output file"""
         base = "0123456789abcdef"
         try:
@@ -872,7 +897,6 @@ class MazeGenerator:
         try:
             self._generate()
             self._solve()
-            self._draw()
         except AttributeError:
             return
 
@@ -883,3 +907,7 @@ class MazeGenerator:
     @property
     def solution(self) -> str:
         return self._solution
+
+    @property
+    def palette(self) -> dict[str, str]:
+        return self._palette
