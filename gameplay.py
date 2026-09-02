@@ -3,6 +3,7 @@ import sys
 import termios
 import tty
 import time
+# import json
 
 
 class Player:
@@ -105,7 +106,7 @@ class Player:
     def player_moves(self) -> None:
         base = "0123456789abcdef"
         self.print_map()
-        tiempo_inicio = time.time()
+        # start_time = time.time()
         while self._playable is True:
             move = self.move()
             walls = get_walls(
@@ -125,23 +126,31 @@ class Player:
                     self._pos = (self._pos[0] - 1, self._pos[1])
             self.print_map()
             if move == "q":
+                self._pos = (self._entry[0], self._entry[1])
                 self._playable = False
                 break
             elif self._pos == self._exit:
-                print("=== A-Maze-ing ===")
+                """current_time = time.time() - start_time
                 user = input("\x1b[KEnter user: ")
-                tiempo_actual = time.time() - tiempo_inicio
-                segundos = int(tiempo_actual % 60)
-                with open("top_players.txt", "a", encoding="utf-8") as f:
-                    f.write(f"{user} with, {segundos} seconds.\n")
+                t = float(current_time)
+                with open("scores.json", "r") as f:
+                    txt = f.read()
+                    if txt == "":
+                        scores: dict[str, float] = {}
+                        break
+                    scores = json.loads(txt)
+                scores.update({user: round(t - start_time, 3)})
+                j = json.dumps(scores)
+                with open("scores.json", "w") as f:
+                    f.write(j)
                 print(
                     f"Your user has been saved as: {user} with",
-                    f"{segundos} seconds"
+                    f"{round(t - start_time, 3)} seconds"
                 )
-                self._pos = self._entry
+                time.sleep(10)"""
+                self._pos = (self._entry[0], self._entry[1])
                 self._playable = False
-                time.sleep(1)
-                break
+                return
             time.sleep(0.1)
 
     def show_player(self) -> None:

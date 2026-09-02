@@ -226,17 +226,17 @@ def change_config(maze: str, opts: _MazeOptions) -> None:
             pass
 
 
-def players_stats(maze: str, opts: _MazeOptions) -> None: 
-    with open("top_players.txt", "r", encoding="utf-8") as f:
-        contenido = f.read()
+def players_stats(maze: str, opts: _MazeOptions) -> None:
+    with open("scores.json", "r", encoding="utf-8") as f:
+        content = f.read()
     maze_draw(maze, opts)
-    print(contenido)
-    char = input("Press q to quit")
+    print(content)
+    char = input("Press q to quit   ")
     while char != "q":
         maze_draw(maze, opts)
-        print(contenido)
+        print(content)
         char = input("Press q to quit: ")
-        continue
+        # continue
 
 
 def menu(maze: str, opts: _MazeOptions) -> None:
@@ -251,13 +251,16 @@ def menu(maze: str, opts: _MazeOptions) -> None:
         print("3. Change colors")
         print("4. Change configuration")
         print("5. Play")
-        print("6. Top players")
+        # print("6. Top players")
         print("q. Quit")
         opt = input("\x1b[KSelect option: ")
         if opt == "1":
             print(f"{clear}")
             maze = generate(opts, opts._conf)
-            return menu(maze, opts)
+            player = Player(maze, opts)
+            # with open("scores.json", "w"):
+            #     pass
+            # return menu(maze, opts)
         elif opt == "2":
             opts._show_hide()
         elif opt == "3":
@@ -266,8 +269,8 @@ def menu(maze: str, opts: _MazeOptions) -> None:
             change_config(maze, opts)
         elif opt == "5":
             player.show_player()
-        elif opt == "6":
-            players_stats(maze, opts)
+        # elif opt == "6":
+            # players_stats(maze, opts)
         elif opt.lower() == "q":
             sys.exit()
         else:
