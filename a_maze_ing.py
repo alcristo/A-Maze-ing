@@ -226,6 +226,19 @@ def change_config(maze: str, opts: _MazeOptions) -> None:
             pass
 
 
+def players_stats(maze: str, opts: _MazeOptions) -> None: 
+    with open("top_players.txt", "r", encoding="utf-8") as f:
+        contenido = f.read()
+    maze_draw(maze, opts)
+    print(contenido)
+    char = input("Press q to quit")
+    while char != "q":
+        maze_draw(maze, opts)
+        print(contenido)
+        char = input("Press q to quit: ")
+        continue
+
+
 def menu(maze: str, opts: _MazeOptions) -> None:
     clear = "\x1bc"
     player = Player(maze, opts)
@@ -238,6 +251,7 @@ def menu(maze: str, opts: _MazeOptions) -> None:
         print("3. Change colors")
         print("4. Change configuration")
         print("5. Play")
+        print("6. Top players")
         print("q. Quit")
         opt = input("\x1b[KSelect option: ")
         if opt == "1":
@@ -252,6 +266,8 @@ def menu(maze: str, opts: _MazeOptions) -> None:
             change_config(maze, opts)
         elif opt == "5":
             player.show_player()
+        elif opt == "6":
+            players_stats(maze, opts)
         elif opt.lower() == "q":
             sys.exit()
         else:

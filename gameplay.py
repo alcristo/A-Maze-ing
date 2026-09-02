@@ -105,6 +105,7 @@ class Player:
     def player_moves(self) -> None:
         base = "0123456789abcdef"
         self.print_map()
+        tiempo_inicio = time.time()
         while self._playable is True:
             move = self.move()
             walls = get_walls(
@@ -123,9 +124,23 @@ class Player:
                 if walls[0] == 0:
                     self._pos = (self._pos[0] - 1, self._pos[1])
             self.print_map()
-            if self._pos == self._exit or move == "q":
+            if move == "q":
+                self._playable = False
+                break
+            elif self._pos == self._exit:
+                print("=== A-Maze-ing ===")
+                user = input("\x1b[KEnter user: ")
+                tiempo_actual = time.time() - tiempo_inicio
+                segundos = int(tiempo_actual % 60)
+                with open("top_players.txt", "a", encoding="utf-8") as f:
+                    f.write(f"{user} with, {segundos} seconds.\n")
+                print(
+                    f"Your user has been saved as: {user} with",
+                    f"{segundos} seconds"
+                )
                 self._pos = self._entry
                 self._playable = False
+                time.sleep(1)
                 break
             time.sleep(0.1)
 
