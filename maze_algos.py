@@ -298,10 +298,10 @@ def wilson(
             visited[tile[0], tile[1]] = 1
             yet.discard(tile)
         while len(path) > 1:
-            connect(maze, path[-2], path[-1])
+            connect(maze, path[0], path[1])
             write_path(maze, opts)
-            current = path[-1]
-            path.pop()
+            current = path[1]
+            path.pop(0)
         path.clear()
 
 
