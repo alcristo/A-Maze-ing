@@ -9,13 +9,10 @@ class Player:
     def __init__(self, maze_file: str, opts: _MazeOptions) -> None:
         self._maze_file = maze_file
         self._opts = opts
-        self._maze = []
         self._w = 0
-        self._exit = 0
         self._path = ""
         self._playable = False
         self.map()
-        self._pos = self._entry
 
     def map(self) -> None:
         with open(self._maze_file) as f:
@@ -27,9 +24,10 @@ class Player:
                 if w == 0:
                     self._w = len(line) - 1
                 line = f.readline()
-            self.set_maze(maze)
+            self._maze = maze
             en = f.readline().split(",")
             self._entry = (int(en[1]), int(en[0]))
+            self._pos = self._entry
             ex = f.readline().split(",")
             self._exit = (int(ex[1]), int(ex[0]))
 
@@ -92,32 +90,36 @@ class Player:
         print("=== A-Maze-ing ===")
         print("q. Quit")
 
-    def leer_tecla(self) -> str:
+    def move(self) -> str:
         fd = sys.stdin.fileno()
-        config_antigua = termios.tcgetattr(fd)
+        old_config = termios.tcgetattr(fd)
         try:
             tty.setraw(sys.stdin.fileno())
-            tecla = sys.stdin.read(1)
+            order = sys.stdin.read(1)
+            if order == "\x1b":
+                order += sys.stdin.read(2)
         finally:
-            termios.tcsetattr(fd, termios.TCSADRAIN, config_antigua)
-        return tecla
+            termios.tcsetattr(fd, termios.TCSADRAIN, old_config)
+        return order
 
     def player_moves(self) -> None:
         base = "0123456789abcdef"
+        self.print_map()
         while self._playable is True:
-            move = self.leer_tecla()
+            move = self.move()
             walls = get_walls(
-                base.index(self._maze[self._pos[0]][self._pos[1]]))
-            if move == "a":
+                base.index(self._maze[self._pos[0]][self._pos[1]])
+            )
+            if move in ("a", "\x1b[D"):
                 if walls[3] == 0:
                     self._pos = (self._pos[0], self._pos[1] - 1)
-            elif move == "s":
+            elif move in ("s", "\x1b[B"):
                 if walls[2] == 0:
                     self._pos = (self._pos[0] + 1, self._pos[1])
-            elif move == "d":
+            elif move in ("d", "\x1b[C"):
                 if walls[1] == 0:
                     self._pos = (self._pos[0], self._pos[1] + 1)
-            elif move == "w":
+            elif move in ("w", "\x1b[A"):
                 if walls[0] == 0:
                     self._pos = (self._pos[0] - 1, self._pos[1])
             self.print_map()
@@ -126,9 +128,6 @@ class Player:
                 self._playable = False
                 break
             time.sleep(0.1)
-
-    def set_maze(self, maze: list) -> None:
-        self._maze = maze
 
     def show_player(self) -> None:
         self._playable = self._playable is False
