@@ -127,7 +127,6 @@ The `MazeGenerator` class also has the following properties:
 * The code in his idea works well, we could have added more playable possibilities like a 3d maze or cleaned some reused code. 
 *
 
-
 ## Instructions
 
 In order to run this project, you need to have a valid configuration file named `config.txt`. Otherwise, a custom configuration menu will appear. Following correctly the instructions of this menu will run the rest of the maze generation.
@@ -189,6 +188,15 @@ Another menu will appear after choosing 'Change the configuration' option:
     q. Quit configuration selector menu
 
 Like the color selection menu, this one will show their current setting. This menu is foolproof: if you try to make a faulty maze (for example, with negative dimensions or entry/exit out of bounds) you would not be able to quit the menu. After exiting this menu with different settings, generating a new maze will draw a maze with the selected settings.
+
+### Gameplay 
+
+The maze have build in game so the studends can play the maze and go from the entry to the exit.
+
+    1. w or up arrow to go north
+    2. s or down arrow to go south
+    3. a or left arrow to go west
+    4. d or right arrow to go east
 
 ## Resources
 
