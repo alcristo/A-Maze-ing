@@ -1,9 +1,9 @@
 Height=15
-WIDTH=15
+WIDTH=31
 ENTRY=0,0
-EXIT=14,14
+EXIT=30,14
 OUTPUT_FILE=maze.txt
 PERFECT=True
 #Seed=42
 Algorithm=Wilson
-ANIMATE=False
+ANIMATE=True

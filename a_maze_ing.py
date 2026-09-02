@@ -292,6 +292,18 @@ def maze_config(conf_file: str) -> dict[str, str]:
     except MazeError as e:
         print(e.msg, file=sys.stderr)
         sys.exit()
+    if str(conf.get("PERFECT")).lower() not in ("true", "false"):
+        conf.update({"PERFECT": "True"})
+    valid_algos = (
+        "wilson", "prim", "dfs", "ab", "aldous broder", "aldousbroder", "rb",
+        "aldous_broder", "aldous-broder", "depth first search",
+        "depthfirstserach", "depth_first_search", "recursivebacktracker",
+        "recursive backtracker", "recursive_backtracker"
+    )
+    if str(conf.get("ALGORITHM")).lower() not in valid_algos:
+        conf.update({"ALGORITHM": "Prim"})
+    if str(conf.get("ANIMATE")).lower() not in ("true", "false"):
+        conf.update({"ANIMATE": "False"})
     return conf
 
 
