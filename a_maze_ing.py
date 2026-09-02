@@ -3,6 +3,7 @@ from maze_utils import MazeError, check_errors, _MazeOptions
 from maze_algos import dfs, prim, wilson, aldous_broder, imperfect
 from pathfinding import a_star
 from maze_draw import maze_draw
+from gameplay import Player
 import sys
 import random
 from typing import Any
@@ -101,12 +102,13 @@ def change_colors(maze: str, opts: _MazeOptions) -> None:
         print("\x1b[H\x1b[0J", end="")
         maze_draw(maze, opts)
         print("== Change colors ==")
-        print(f"1. Tile  {opts._palette['tile']}  {reset}")
-        print(f"2. Wall  {opts._palette['wall']}  {reset}")
-        print(f"3. Entry {opts._palette['entry']}  {reset}")
-        print(f"4. Exit  {opts._palette['exit']}  {reset}")
-        print(f"5. Path  {opts._palette['path']}  {reset}")
-        print(f"6. Block {opts._palette['block']}  {reset}")
+        print(f"1. Tile   {opts._palette['tile']}  {reset}")
+        print(f"2. Wall   {opts._palette['wall']}  {reset}")
+        print(f"3. Entry  {opts._palette['entry']}  {reset}")
+        print(f"4. Exit   {opts._palette['exit']}  {reset}")
+        print(f"5. Path   {opts._palette['path']}  {reset}")
+        print(f"6. Block  {opts._palette['block']}  {reset}")
+        print(f"7. Player {opts._palette['player']}  {reset}")
         print("d. Default palette")
         print("q. Quit palette selector")
         opt = input("\x1b[KSelect option: ")
@@ -122,6 +124,8 @@ def change_colors(maze: str, opts: _MazeOptions) -> None:
             opts._select_color("path")
         elif opt == "6":
             opts._select_color("block")
+        elif opt == "7":
+            opts._select_color("player")
         elif opt == "d":
             opts._palette.update({"tile": "\x1b[47m"})
             opts._palette.update({"wall": "\x1b[40m"})
@@ -129,6 +133,7 @@ def change_colors(maze: str, opts: _MazeOptions) -> None:
             opts._palette.update({"exit": "\x1b[42m"})
             opts._palette.update({"path": "\x1b[44m"})
             opts._palette.update({"block": "\x1b[41m"})
+            opts._palette.update({"player": "\x1b[46m"})
         elif opt == "q":
             if opts._palette == old_pal:
                 return
@@ -159,7 +164,7 @@ def change_config(maze: str, opts: _MazeOptions) -> None:
         print(f"6. Output file: {opts._conf.get('OUTPUT_FILE')}")
         print(f"7. Seed:        {opts._conf.get('SEED')}")
         print(f"8. Algorithm:   {opts._conf.get('ALGORITHM')}")
-        print("d. Default playable maze")
+        #print("d. Default playable maze")
         print("u. Undo changes")
         print("q. Quit configuration selector")
         try:
@@ -219,6 +224,7 @@ def change_config(maze: str, opts: _MazeOptions) -> None:
 
 def menu(maze: str, opts: _MazeOptions) -> None:
     clear = "\x1bc"
+    player = Player(maze, opts)
     while True:
         print("\x1b[H\x1b[J", end="")
         maze_draw(maze, opts)
@@ -227,6 +233,7 @@ def menu(maze: str, opts: _MazeOptions) -> None:
         print("2. Show/hide solution")
         print("3. Change colors")
         print("4. Change configuration")
+        print("5. Play")
         print("q. Quit")
         opt = input("\x1b[KSelect option: ")
         if opt == "1":
@@ -239,6 +246,8 @@ def menu(maze: str, opts: _MazeOptions) -> None:
             change_colors(maze, opts)
         elif opt == "4":
             change_config(maze, opts)
+        elif opt == "5":
+            player.show_player()
         elif opt.lower() == "q":
             sys.exit()
         else:
