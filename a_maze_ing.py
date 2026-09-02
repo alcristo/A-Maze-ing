@@ -164,7 +164,7 @@ def change_config(maze: str, opts: _MazeOptions) -> None:
         print(f"6. Output file: {opts._conf.get('OUTPUT_FILE')}")
         print(f"7. Seed:        {opts._conf.get('SEED')}")
         print(f"8. Algorithm:   {opts._conf.get('ALGORITHM')}")
-        #print("d. Default playable maze")
+        print("d. Default playable maze")
         print("u. Undo changes")
         print("q. Quit configuration selector")
         try:
@@ -252,6 +252,7 @@ def menu(maze: str, opts: _MazeOptions) -> None:
             sys.exit()
         else:
             pass
+        player.player_moves()
 
 
 def maze_config(conf_file: str) -> dict[str, str]:
