@@ -500,42 +500,6 @@ class _Node:
 
 class _Path:
 
-    """class _Node:
-        def __init__(self, value: Any) -> None:
-            self.val = value
-            self._g = inf
-            self._h = inf
-            self._f = inf
-            self.next = None
-
-        def size(self) -> int:
-            first = self
-            n = 1
-            while self.next is not None and self.next is not first:
-                n += 1
-                self = self.next
-            return n
-
-        def get_g(self) -> int | float:
-            return self._g
-
-        def get_h(self) -> int | float:
-            return self._h
-
-        def get_f(self) -> int | float:
-            return self._f
-
-        def _set_f(self, f: int | float) -> None:
-            self._f = f
-
-        def set_g(self, g: int | float) -> None:
-            self._g = g
-            self._set_f(self.get_g() + self.get_h())
-
-        def set_h(self, h: int | float) -> None:
-            self._h = h
-            self._set_f(self.get_g() + self.get_h())"""
-
     def __init__(
         self,
         maze: NDArray[Any],

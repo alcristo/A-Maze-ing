@@ -200,7 +200,8 @@ def change_config(maze: str, opts: _MazeOptions) -> None:
                 "PERFECT": "False",
                 "OUTPUT_FILE": "default_maze.txt",
                 "SEED": "alcristo",
-                "ALGORITHM": "Wilson"
+                "ALGORITHM": "Wilson",
+                "ANIMATE": "False"
             }
         elif opt.lower() == "u":
             opts._conf = old_conf.copy()
@@ -398,19 +399,17 @@ if __name__ == "__main__":
             opts = _MazeOptions(conf)
             file = generate(opts, opts._conf)
             maze_draw(file, opts)
-            menu(file, opts)
         except IndexError:
             conf = init_config()
             opts = _MazeOptions(conf)
             file = generate(opts, opts._conf)
             maze_draw(file, opts)
-            menu(file, opts)
         except FileNotFoundError:
             conf = init_config()
             opts = _MazeOptions(conf)
             file = generate(opts, opts._conf)
             maze_draw(file, opts)
-            menu(file, opts)
+        menu(file, opts)
     except MemoryError:
         print("[ERROR] Out of memory", file=sys.stderr)
     except OverflowError:
