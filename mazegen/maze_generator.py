@@ -7,7 +7,7 @@ import sys
 import random as rng
 
 
-def get_walls(n: int) -> tuple[int, ...]:
+def _get_walls(n: int) -> tuple[int, ...]:
     """Get the walls in a tile, return bit tuple"""
     if n > 15 or n < 0:
         raise ValueError
@@ -23,7 +23,7 @@ def get_walls(n: int) -> tuple[int, ...]:
     return tuple(bits)
 
 
-def manhattan(curr: tuple[int, int], neigh: tuple[int, int]) -> int:
+def _manhattan(curr: tuple[int, int], neigh: tuple[int, int]) -> int:
     """Manhattan heuristic, return distance"""
     return abs(curr[0] - neigh[0]) + abs(curr[1] - neigh[1])
 
@@ -64,24 +64,24 @@ class _Algorithm(ABC):
         maze: NDArray[Any], curr: tuple[int, int], neigh: tuple[int, int]
     ) -> None:
         """Connect two maze tiles"""
-        if manhattan(curr, neigh) != 1:
+        if _manhattan(curr, neigh) != 1:
             return
-        if curr[0] == neigh[0] + 1 and get_walls(
+        if curr[0] == neigh[0] + 1 and _get_walls(
             maze[curr[:]]
         )[0] == 1:
             maze[curr[0]][curr[1]] -= 1
             maze[neigh[0]][neigh[1]] -= 4
-        if curr[0] == neigh[0] - 1 and get_walls(
+        if curr[0] == neigh[0] - 1 and _get_walls(
             maze[curr[:]]
         )[2] == 1:
             maze[curr[0]][curr[1]] -= 4
             maze[neigh[0]][neigh[1]] -= 1
-        if curr[1] == neigh[1] - 1 and get_walls(
+        if curr[1] == neigh[1] - 1 and _get_walls(
             maze[curr[:]]
         )[1] == 1:
             maze[curr[0]][curr[1]] -= 2
             maze[neigh[0]][neigh[1]] -= 8
-        if curr[1] == neigh[1] + 1 and get_walls(
+        if curr[1] == neigh[1] + 1 and _get_walls(
             maze[curr[:]]
         )[3] == 1:
             maze[curr[0]][curr[1]] -= 8
@@ -307,7 +307,7 @@ class _Imperfect(_Algorithm):
         if maze[tile[:]] == 15 or prob < 0 or prob > 1:
             return
         i, j = tile[:]
-        walls = get_walls(maze[tile[:]])
+        walls = _get_walls(maze[tile[:]])
         r_walls = []
         if i > 0:
             if maze[i - 1][j] != 15 and walls[0] == 1:
@@ -369,7 +369,7 @@ class _Imperfect(_Algorithm):
                     ]
                     if False not in adj_walls:
                         maze[i, j] = rng.choice(adm_walls)
-                        walls = get_walls(maze[i, j])
+                        walls = _get_walls(maze[i, j])
                         if walls[0] == 1:
                             maze[i - 1][j] += 4
                         if walls[1] == 1:
@@ -522,7 +522,7 @@ class _Path:
         """Return reachable neighbours list from a maze tile"""
         n = maze[current[:]]
         neighs = []
-        walls = get_walls(n)
+        walls = _get_walls(n)
         if walls[0] == 0:
             neighs.append((current[0] - 1, current[1]))
         if walls[1] == 0:
@@ -551,7 +551,7 @@ class _Path:
                 to_select.append(points[j])
         min_h = inf
         for k in to_select:
-            h = manhattan(k.val, exit)
+            h = _manhattan(k.val, exit)
             if h < min_h:
                 min_h = h
                 current = k
@@ -595,7 +595,7 @@ class _Path:
         g_cost = inf * ones(self._maze.shape[:], int)
         f_cost = inf * ones(self._maze.shape[:], int)
         opened.add(_Node(self._entry))
-        f_cost[self._entry[:]] = manhattan(self._entry, self._exit)
+        f_cost[self._entry[:]] = _manhattan(self._entry, self._exit)
         g_cost[self._entry[:]] = 0
         self._checked = 0
         while len(opened) > 0:
@@ -619,7 +619,7 @@ class _Path:
                     self.rm_node(opened, i, node)
                 else:
                     continue
-                node.set_h(manhattan(i, self._exit))
+                node.set_h(_manhattan(i, self._exit))
                 """Update F cost if is lower"""
                 if node.get_f() < f_cost[i[:]] or self.check_node(
                     opened, i
@@ -701,7 +701,6 @@ class MazeGenerator:
         start: str,
         end: str,
         perfect: bool = False,
-        output_file: str = "maze.txt",
         seed: str | None = None,
         algorithm: str = "Prim"
     ) -> None:
@@ -728,7 +727,6 @@ class MazeGenerator:
         self._maze = _Maze(height, width, perfect, seed, algorithm)
         self._entry = entry
         self._exit = exit
-        self._output_file = output_file
         self._palette: dict[str, str] = {}
         self.regen()
 
@@ -816,9 +814,9 @@ class MazeGenerator:
                     print(f"{tile}  {reset}", end="")
                 if (i, j) in pathtiles and (
                     i, j + 1
-                ) in pathtiles and get_walls(n)[1] == 0:
+                ) in pathtiles and _get_walls(n)[1] == 0:
                     print(f"{path}  {reset}", end="")
-                elif get_walls(n)[1] == 0:
+                elif _get_walls(n)[1] == 0:
                     print(f"{tile}  {reset}", end="")
                 else:
                     print(f"{wall}  {reset}", end="")
@@ -828,20 +826,20 @@ class MazeGenerator:
                 n = self._maze._maze[i, j]
                 if (i, j) in pathtiles and (
                     i + 1, j
-                ) in pathtiles and get_walls(n)[2] == 0:
+                ) in pathtiles and _get_walls(n)[2] == 0:
                     print(f"{path}  {reset}", end="")
-                elif get_walls(n)[2] == 0:
+                elif _get_walls(n)[2] == 0:
                     print(f"{tile}  {reset}", end="")
                 else:
                     print(f"{wall}  {reset}", end="")
                 if i != range(h)[-1] and j != range(w)[-1]:
                     p_path = [
-                        get_walls(n)[1] == 0,
-                        get_walls(n)[2] == 0,
-                        get_walls(self._maze._maze[i + 1][j])[0] == 0,
-                        get_walls(self._maze._maze[i + 1][j])[1] == 0,
-                        get_walls(self._maze._maze[i][j + 1])[2] == 0,
-                        get_walls(self._maze._maze[i][j + 1])[3] == 0
+                        _get_walls(n)[1] == 0,
+                        _get_walls(n)[2] == 0,
+                        _get_walls(self._maze._maze[i + 1][j])[0] == 0,
+                        _get_walls(self._maze._maze[i + 1][j])[1] == 0,
+                        _get_walls(self._maze._maze[i][j + 1])[2] == 0,
+                        _get_walls(self._maze._maze[i][j + 1])[3] == 0
                     ]
                     if False not in p_path:
                         print(f"{tile}  {reset}", end="")
@@ -851,7 +849,7 @@ class MazeGenerator:
                     print(f"{wall}  {reset}", end="")
             print()
 
-    def output(self) -> None:
+    def output(self, filename: str) -> None:
         """Save the maze in an output file"""
         base = "0123456789abcdef"
         try:
@@ -859,7 +857,7 @@ class MazeGenerator:
         except AttributeError:
             print("[ERROR] No maze to print", file=sys.stderr)
             return
-        with open(self._output_file, 'w') as out:
+        with open(filename, 'w') as out:
             for i in range(self._maze.height):
                 for j in range(self._maze.width):
                     out.write(base[self._maze._maze[i, j]])

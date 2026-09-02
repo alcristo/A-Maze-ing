@@ -30,6 +30,7 @@ There are several options in the configuration file:
 * PERFECT: Whether the maze is perfect (there is only one path between two separate points) or not perfect (there can be loops in the path). Defaults to `True`.
 * SEED: The seed to generate the maze. Defaults to `None`.
 * ALGORITHM: The maze generation algorithm. Accepts `aldous broder`, `recursive backtracker`, `depth first search`, `prim` and `wilson`. All options accept no space, snake case space (also - space for Aldous-Broder) and acronyms, as well as any ASCII case format. Defaults to `Prim`.
+* ANIMATED: Whether to show the maze generation. Defaults to `False`.
 
 ### Maze format
 
@@ -50,7 +51,7 @@ One generation algorithm was said to be implemented in this project, but more th
 * Prim's algorithm: starting with a random tile as the maze, which becomes part of a set, one of their unvisited neighbouring tiles get into that set. Then, one of the tiles in the set is selected randomly to repeat this process. When one of the tiles has no neighbours to visit, it is taken out of the set. The generation stops when the set is empty. Prim's algorithm is faster than the previous algorithms, but the generated mazes are usually biased towards the initial point of generation.
 * Depth First Search: starting from a random tile, a random path is made. When the path can't continue due to the current tile not having neighbours to visit, it backtracks until a tile with unvisited neighbours is reached, and this process continues. This is why this method is also known as the *recursive backtracker*. This algorithm is fast, although the mazes are biased towards very long paths, which can be seen in the solution. There is a variation of this algorithm called *hunt & kill*, where, instead of backtracking, the maze is scanned until a tile where the algorithm can continue is found.
 
-If the option *PERFECT* is set to *False*, then another algorithm is triggered after the perfect generation. First, the corners are set to hardcoded values and the neighbours are connected coherently. Then, random tiles are selected and one of their walls is removed. Next, the whole maze is scanned to search dead-end tiles and remove one of their walls. Finally, the maze is scanned again, this time to find open areas (with 3x3 as the minimum of dimensions) and random walls are added at the center.
+If the option *PERFECT* is set to *False*, then another algorithm is triggered after the perfect generation. First, the corners are set to hardcoded values and the neighbours are connected coherently. Then, random tiles are selected and one of their walls is removed. Next, the whole maze is scanned to search dead-end tiles and remove one of their walls. Finally, the maze is scanned again, this time to find open areas (with 3x3 as the minimum of dimensions) and random walls are added at the center. This algorithm will not run if the maze has height or width equal to one.
 
 ### Pathfinding algorithm
 
@@ -78,30 +79,74 @@ It's not unusual the use of Euclidean heuristics to solve these mazes, but it wo
 
 In order to draw the maze in terminal, spaces would represent both the whole maze grid, while ANSI escape sequences were coded to change the colors to distinguish tiles from walls. The default color palette is, in ANSI escape code:
 
-    tiles: \x1b[47m
-    walls: \x1b[40m
-    entry: \x1b[45m
-    exit:  \x1b[42m
-    path:  \x1b[44m
-    block: \x1b[41m
+    tiles:  \x1b[47m
+    walls:  \x1b[40m
+    entry:  \x1b[45m
+    exit:   \x1b[42m
+    path:   \x1b[44m
+    block:  \x1b[41m
+    player: \x1b[46m
 
 Nonetheless, the color palette can be changed in the menu (see instructions). This menu has also an option to hide the solution.
 
 ### Reusable code
 
-The file in the folder `./MazeGenerator` contains a `MazeGenerator` class that may be needed in future projects. This class has the following methods:
+The file in the folder `./MazeGenerator` contains a `MazeGenerator` class that may be needed in future projects. The following structure will be needed to instantiate this class:
+
+```python
+MazeGenerator(
+        height: int,
+        width: int,
+        start: str,
+        end: str,
+        perfect: bool = False,
+        seed: str | None = None,
+        algorithm: str = "Prim"
+)
+```
+
+The variables `start` and `end` will be the entry annd exit of the maze respectively, and need to have the structure `{int},{int}`, just like in the configuration file from the main program. Upon instantiation, the class will automatically generate 
+
+The `MazeGenerator` class will have the following methods:
+
+* `regen()`: Generates a new maze and solves it.
+* `draw(solution: bool = False)`: Draws the maze in terminal. The `solution` variable decides whether to draw the maze solution or not.
+* `color(key: str, color: list[int] = [])`: Changes the `key` color from the palette. The color must be a three-long list and all their values need to be 8-bit  unsigned integers. Otherwise, the key color will be assigned a default value.
+* `output(filename: str)`: Saves the maze, entry, exit and solution in a file named `filename`.
+
+The `MazeGenerator` class also has the following properties:
+
+* `maze`: A `Maze` private class containing the maze information. Printing this class will print its hexaddecimal representation.
+* `solution`: The maze solution from entry to exit as a NESW string.
+* `palette`: A dictionary containing the colors of the maze upon drawing.
 
 ## Instructions
 
 In order to run this project, you need to have a valid configuration file named `config.txt`. Otherwise, a custom configuration menu will appear. Following correctly the instructions of this menu will run the rest of the maze generation.
 
+A Makefile will be attached to this project. It has the following rules:
+
+* install: installs all necessary packages using `pip`.
+* run: runs the program. Cleans all temporary files and caches before and after running.
+* debug: runs the program with `pdb`.
+* clean: removes temporary files and caches.
+* lint: executes `flake8` and `mypy` to make sure the code is well structured and type-hinted.
+* lint-strict: executes `flake8` and `mypy --strict` for a strict hint typing.
+
+To execute one of these rules, run in terminal:
+
+```bash
+make <rule>
+```
+
 After the maze has been drawn a menu will appear. Such menu has the following configurations:
 
-    1. Generate a new maze with the current configuration.
-    2. Show or hide the shortest solution.
-    3. Change the color palette.
-    4. Change the configuration.
-    q. Quit the program.
+    1. Generate a new maze with the current configuration
+    2. Show or hide the shortest solution
+    3. Change the color palette
+    4. Change the configuration
+    5. Play
+    q. Quit the program
 
 ### Color selection menu
 
@@ -113,6 +158,7 @@ A new menu will appear if option number 3 is chosen. This menu will have this st
     4. Exit
     5. Path
     6. Block
+    7. Player
     d. Change all colors to default palette
     q. Quit color selection menu
 
@@ -130,6 +176,7 @@ Another menu will appear after choosing 'Change the configuration' option:
     6. Perfect
     7. Seed
     8. Algorithm
+    9. Animation
     u. Undo all changes
     q. Quit configuration selector menu
 
