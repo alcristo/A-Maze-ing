@@ -824,12 +824,12 @@ class MazeGenerator:
             pathtiles.insert(0, self._entry)
 
         reset = "\x1b[0m"
-        tile = self._palette.get("tile", "\x1b[47")
-        wall = self._palette.get("wall", "\x1b[40")
-        entry = self._palette.get("entry", "\x1b[45")
-        exit = self._palette.get("exit", "\x1b[42")
-        path = self._palette.get("path", "\x1b[44")
-        block = self._palette.get("block", "\x1b[41")
+        tile = self._palette.get("tile", "\x1b[47m")
+        wall = self._palette.get("wall", "\x1b[40m")
+        entry = self._palette.get("entry", "\x1b[45m")
+        exit = self._palette.get("exit", "\x1b[42m")
+        path = self._palette.get("path", "\x1b[44m")
+        block = self._palette.get("block", "\x1b[41m")
 
         h, w = self._maze._maze.shape
         for _ in range(2 * w + 1):
@@ -870,7 +870,21 @@ class MazeGenerator:
                     print(f"{tile}  {reset}", end="")
                 else:
                     print(f"{wall}  {reset}", end="")
-                print(f"{wall}  {reset}", end="")
+                if i != range(h)[-1] and j != range(w)[-1]:
+                    p_path = [
+                        get_walls(n)[1] == 0,
+                        get_walls(n)[2] == 0,
+                        get_walls(self._maze._maze[i + 1][j])[0] == 0,
+                        get_walls(self._maze._maze[i + 1][j])[1] == 0,
+                        get_walls(self._maze._maze[i][j + 1])[2] == 0,
+                        get_walls(self._maze._maze[i][j + 1])[3] == 0
+                    ]
+                    if False not in p_path:
+                        print(f"{tile}  {reset}", end="")
+                    else:
+                        print(f"{wall}  {reset}", end="")
+                else:
+                    print(f"{wall}  {reset}", end="")
             print()
 
     def output(self) -> None:

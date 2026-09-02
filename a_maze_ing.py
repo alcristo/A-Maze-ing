@@ -137,7 +137,7 @@ def change_colors(maze: str, opts: _MazeOptions) -> None:
         elif opt == "q":
             if opts._palette == old_pal:
                 return
-            save = input("Save changes? Y/n   ")
+            save = input("Save changes? (Y/n)   ")
             if save.lower() in ("", "y", "yes", "yea", "yup"):
                 return
             if save.lower() in ("n", "no", "nay", "nope"):
@@ -164,6 +164,7 @@ def change_config(maze: str, opts: _MazeOptions) -> None:
         print(f"6. Output file: {opts._conf.get('OUTPUT_FILE')}")
         print(f"7. Seed:        {opts._conf.get('SEED')}")
         print(f"8. Algorithm:   {opts._conf.get('ALGORITHM')}")
+        print(f"9. Animation:   {opts._conf.get('ANIMATE')}")
         print("d. Default playable maze")
         print("u. Undo changes")
         print("q. Quit configuration selector")
@@ -188,6 +189,8 @@ def change_config(maze: str, opts: _MazeOptions) -> None:
             opts._select_config("SEED")
         elif opt == "8":
             opts._select_config("ALGORITHM")
+        elif opt == "9":
+            opts._select_config("ANIMATE")
         elif opt.lower() == "d":
             opts._conf = {
                 "HEIGHT": "15",
@@ -209,7 +212,7 @@ def change_config(maze: str, opts: _MazeOptions) -> None:
             except MazeError as e:
                 print(e.msg)
                 continue
-            save = input("Save changes? Y/n   ")
+            save = input("Save changes? (Y/n)   ")
             if save.lower() in ("", "y", "yes", "yea", "yup"):
                 return
             if save.lower() in ("n", "no", "nay", "nope"):
@@ -371,6 +374,11 @@ def init_config() -> dict[str, str]:
         except AssertionError:
             print("Invalid algorithm")
             continue
+    animate = input("Animate the maze generation? (y/N): ")
+    if animate.lower() in ("y", "yes", "yea", "yup"):
+        conf.update({"ANIMATE": "True"})
+    else:
+        conf.update({"ANIMATE": "False"})
     return conf
 
 

@@ -193,6 +193,12 @@ class _MazeOptions:
             except AssertionError:
                 print("Invalid algorithm")
                 return
+        elif key == "ANIMATE":
+            perfect = input("Animate the maze generation? (y/N): ")
+            if perfect.lower() in ("y", "yes", "yea", "yup"):
+                self._conf.update({"PERFECT": "True"})
+            else:
+                self._conf.update({"PERFECT": "False"})
 
 
 def manhattan(curr: tuple[int, int], neigh: tuple[int, int]) -> int:
