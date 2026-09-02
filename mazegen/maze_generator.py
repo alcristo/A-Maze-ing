@@ -31,7 +31,7 @@ def _manhattan(curr: tuple[int, int], neigh: tuple[int, int]) -> int:
 class _Algorithm(ABC):
 
     @abstractmethod
-    def generate(
+    def _generate(
         self, maze: NDArray[Any], seed: str | int | None = None
     ) -> None:
         pass
@@ -121,7 +121,7 @@ class _Algorithm(ABC):
 
 
 class _DFS(_Algorithm):
-    def generate(
+    def _generate(
         self, maze: NDArray[Any], seed: str | int | None = None
     ) -> None:
         self.gen_visited(maze)
@@ -158,7 +158,7 @@ class _DFS(_Algorithm):
 
 class _Prim(_Algorithm):
 
-    def generate(
+    def _generate(
         self, maze: NDArray[Any], seed: str | int | None = None
     ) -> None:
         self.gen_visited(maze)
@@ -205,7 +205,7 @@ class _Wilson(_Algorithm):
             visited[path[-1][:]] = 0
             path.pop()
 
-    def generate(
+    def _generate(
         self, maze: NDArray[Any], seed: str | int | None = None
     ) -> None:
         self.gen_visited(maze)
@@ -255,7 +255,7 @@ class _Wilson(_Algorithm):
 
 
 class _AldousBroder(_Algorithm):
-    def generate(
+    def _generate(
         self, maze: NDArray[Any], seed: str | int | None = None
     ) -> None:
         self.gen_visited(maze)
