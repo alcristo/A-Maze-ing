@@ -73,7 +73,7 @@ def generate(opts: _MazeOptions, conf: dict[str, str]) -> str:
         print("Unknown or not implemented algorithm", file=sys.stderr)
         sys.exit()
     if perfect is False:
-        imperfect(maze)
+        imperfect(maze, opts)
     """Solution"""
     start = conf["ENTRY"].split(",")
     end = conf["EXIT"].split(",")
