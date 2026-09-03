@@ -6,6 +6,7 @@ from maze_draw import maze_draw
 from gameplay import Player
 import sys
 import random
+import time
 from typing import Any
 from signal import SIGINT, signal, raise_signal
 
@@ -44,6 +45,7 @@ def generate(opts: _MazeOptions, conf: dict[str, str]) -> str:
     perfect = bool(conf["PERFECT"].lower() != "false")
     if visited.shape[0] < 7 or visited.shape[1] < 9:
         print("The '42' cannot be printed in a maze this size.")
+        time.sleep(3)
     else:
         hs = (visited.shape[0] - 1) // 2 - 2
         ws = (visited.shape[1] - 1) // 2 - 3
@@ -169,6 +171,12 @@ def change_config(maze: str, opts: _MazeOptions) -> None:
         print("u. Undo changes")
         print("q. Quit configuration selector")
         try:
+            h, w = int(opts._conf["HEIGHT"]), int(opts._conf["WIDTH"])
+            if (
+                opts._conf["ANIMATE"].lower() == "true" and (
+                    h > 60 or h * w > 1000)
+            ):
+                raise MazeError("Maze is too big for a smooth animation")
             check_errors(opts._conf)
         except MazeError as e:
             print(e)
@@ -201,7 +209,7 @@ def change_config(maze: str, opts: _MazeOptions) -> None:
                 "OUTPUT_FILE": "default_maze.txt",
                 "SEED": "alcristo",
                 "ALGORITHM": "Wilson",
-                "ANIMATE": "False"
+                "ANIMATE": "True"
             }
         elif opt.lower() == "u":
             opts._conf = old_conf.copy()
@@ -209,6 +217,12 @@ def change_config(maze: str, opts: _MazeOptions) -> None:
             if opts._conf == old_conf:
                 return
             try:
+                h, w = int(opts._conf["HEIGHT"]), int(opts._conf["WIDTH"])
+                if (
+                    opts._conf["ANIMATE"].lower() == "true" and (
+                        h > 60 or h * w > 1000)
+                ):
+                    raise MazeError("Maze is too big for a smooth animation")
                 check_errors(opts._conf)
             except MazeError as e:
                 print(e.msg)
@@ -287,11 +301,7 @@ def maze_config(conf_file: str) -> dict[str, str]:
             tuple(i.split("=")) for i in opts if "=" in i and i.count("=") == 1
         ]
         conf = {i[0].upper(): i[1] for i in tup if i[0][0] != "#"}
-    try:
-        check_errors(conf)
-    except MazeError as e:
-        print(e.msg, file=sys.stderr)
-        sys.exit()
+    check_errors(conf)
     if str(conf.get("PERFECT")).lower() not in ("true", "false"):
         conf.update({"PERFECT": "True"})
     valid_algos = (
@@ -308,27 +318,36 @@ def maze_config(conf_file: str) -> dict[str, str]:
 
 
 def init_config() -> dict[str, str]:
-    conf: dict[str, str] = {}
     while True:
+        conf: dict[str, str] = {}
         try:
             h = input(
                 f"Enter maze height (int > 0); current {conf.get('HEIGHT')}: "
             )
             if h == "" and conf.get("HEIGHT") is not None:
-                pass
+                he = int(conf["HEIGHT"])
             elif conf.get("HEIGHT") is None or conf.get("HEIGHT") != h:
                 he = int(h)
                 assert he > 0
                 conf.update({"HEIGHT": h})
+            if he > 60:
+                print("Maze is too high. Animation will be disabled.")
+                conf.update({"ANIMATE": "False"})
             w = input(
                 f"Enter maze width (int > 0); current {conf.get('WIDTH')}: "
             )
             if w == "" and conf.get("WIDTH") is not None:
-                pass
+                wi = int(conf["WIDTH"])
             elif conf.get("WIDTH") is None or conf.get("WIDTH") != w:
                 wi = int(w)
                 assert wi > 0
                 conf.update({"WIDTH": w})
+            if he * wi > 151**2:
+                print("Maze is too big; maze generation cancelled")
+                continue
+            elif he * wi > 31**2:
+                print("Maze is big; animation will be disabled")
+                conf.update({"ANIMATE": "False"})
             en = input(
                 "Enter maze entry (0 ≤ x,y < width,height); "
                 f"current {conf.get('ENTRY')}: "
@@ -406,11 +425,12 @@ def init_config() -> dict[str, str]:
         except AssertionError:
             print("Invalid algorithm")
             continue
-    animate = input("Animate the maze generation? (y/N): ")
-    if animate.lower() in ("y", "yes", "yea", "yup"):
-        conf.update({"ANIMATE": "True"})
-    else:
-        conf.update({"ANIMATE": "False"})
+    if conf.get("ANIMATE") is not None:
+        animate = input("Animate the maze generation? (y/N): ")
+        if animate.lower() in ("y", "yes", "yea", "yup"):
+            conf.update({"ANIMATE": "True"})
+        else:
+            conf.update({"ANIMATE": "False"})
     return conf
 
 
@@ -427,19 +447,26 @@ if __name__ == "__main__":
     try:
         try:
             conf = maze_config(sys.argv[1])
-            opts = _MazeOptions(conf)
+            """opts = _MazeOptions(conf)
             file = generate(opts, opts._conf)
-            maze_draw(file, opts)
+            maze_draw(file, opts)"""
         except IndexError:
             conf = init_config()
-            opts = _MazeOptions(conf)
+            """opts = _MazeOptions(conf)
             file = generate(opts, opts._conf)
-            maze_draw(file, opts)
+            maze_draw(file, opts)"""
         except FileNotFoundError:
             conf = init_config()
-            opts = _MazeOptions(conf)
+            """opts = _MazeOptions(conf)
             file = generate(opts, opts._conf)
-            maze_draw(file, opts)
+            maze_draw(file, opts)"""
+        except MazeError as e:
+            print(e.msg)
+            time.sleep(3)
+            conf = init_config()
+        opts = _MazeOptions(conf)
+        file = generate(opts, opts._conf)
+        maze_draw(file, opts)
         menu(file, opts)
     except MemoryError:
         print("[ERROR] Out of memory", file=sys.stderr)

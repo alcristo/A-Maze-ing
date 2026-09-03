@@ -1,4 +1,4 @@
-from __future__ import annotations
+# from __future__ import annotations
 from numpy import zeros, ones, inf
 from numpy.typing import NDArray
 from typing import Any
@@ -257,13 +257,9 @@ class _Wilson(_Algorithm):
             current = rng.choice([*yet])
             visited[current[0], current[1]] = 2
             path.append(current)
-            last_direction = ("x", 0)
             while current in yet:
                 """Choose a direction to move"""
                 direct = self._direction()
-                while last_direction == direct:
-                    """Choose again if backtracks one tile"""
-                    direct = self._direction()
                 try:
                     if direct[0] == "V":
                         """Vertical movement"""
@@ -290,7 +286,6 @@ class _Wilson(_Algorithm):
                 """Random walk"""
                 current = neighbour
                 visited[current[0], current[1]] = 2
-                last_direction = (direct[0], direct[1] * -1)
                 if current not in path:
                     path.append(current)
             for tile in path:
@@ -532,6 +527,7 @@ class _Node:
     """Private class for the path nodes.
     Arguments:
         val: The value. For this project, a tuple representing a tile.
+
     Additional variables:
         g: the distance from the node to the entrance.
         h: the ideal distance from the node to the exit.
@@ -578,7 +574,7 @@ class _Node:
 
 class _Path:
 
-    """Private class to store the solution-
+    """Private class to store the solution.
     Arguments:
         maze: The maze as a Numpy array.
         entry: The maze entry.
@@ -644,7 +640,11 @@ class _Path:
 
     @staticmethod
     def _check_node(set: set[_Node], point: tuple[int, int]) -> bool:
-        """Check point in a set"""
+        """Check point coordinates in a set return bool.
+        Arguments:
+            set: A set of nodes.
+            point: a maze coordinate
+        """
         for i in set:
             if i.val == point:
                 return True
@@ -751,8 +751,8 @@ class MazeGenerator:
         end: Exit of the maze.
         perfect: Whether the maze is perfect. Defaults to False.
         seed: Optional random seed.
-        algorithm: The generation algorithm.
-            Accepts DFS, Prim (default), Wilson and Aldous-Broder.
+        algorithm: The generation algorithm. Accepts DFS, Prim (default),
+        Wilson and Aldous-Broder.
     """
     def __init__(
         self,
@@ -862,7 +862,13 @@ class MazeGenerator:
             print("[ERROR] No maze to solve", file=sys.stderr)
 
     def color(self, key: str, color: list[int] = []) -> None:
-        """Change the color of a palette"""
+        """Change the color of a palette
+        Arguments:
+            key: Part of the maze to paint.
+                Accepts "tile", "wall", "entry", "exit", "path", "block"
+            color: List of three uint8 numbers.
+                If not valid, removes the key from the palette.
+        """
         valid_keys = ("tile", "wall", "entry", "exit", "path", "block")
         if key.lower() not in valid_keys:
             return
@@ -880,7 +886,11 @@ class MazeGenerator:
             )
 
     def draw(self, solution: bool = False) -> None:
-        """Draw the maze"""
+        """Draw the maze.
+        Arguments:
+            solution: whether the solution has to be drawn. Defaults to False.
+        If a palette key is missing, a default color for it is used.
+        """
         pathtiles = []
         curr = self._entry
         if solution is True:

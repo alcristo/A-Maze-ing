@@ -216,7 +216,7 @@ def check_errors(conf: dict[str, str]) -> None:
         size = (int(conf["HEIGHT"]), int(conf["WIDTH"]))
     except ValueError:
         raise MazeError(
-            "[ERROR] Configurtion is in wrong format. "
+            "[ERROR] Configuration is in wrong format. "
             "Please, use integers for HEIGHT, WIDTH, ENTRY & EXIT"
         )
     except IndexError:
@@ -224,6 +224,17 @@ def check_errors(conf: dict[str, str]) -> None:
             "[ERROR] Entry or exit in wrong format. "
             "Usage ex.: EXIT=[int],[int]"
         )
+
+    """Check valid size for generation"""
+    if size[0] * size[1] > 151**2:
+        raise MazeError("Maze is too big")
+
+    """Check valid size for animation"""
+    if ((
+        size[0] > 60 or size[0] * size[1] > 1000
+    ) and conf["ANIMATE"].lower() == "true"):
+        print("Maze is too big for a smooth animation")
+        conf.update({"ANIMATE": "False"})
 
     """Check that entry and exit are actually different"""
     if entr == exit:

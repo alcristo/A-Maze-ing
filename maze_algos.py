@@ -275,11 +275,8 @@ def wilson(
         current = rng.choice([*yet])
         visited[current[0], current[1]] = 2
         path.append(current)
-        last_direction = ("x", 0)
         while current in yet:
             direct = direction()
-            while last_direction == direct:
-                direct = direction()
             try:
                 if direct[0] == "V":
                     if current[0] + direct[1] in (-1, maze.shape[0]):
@@ -300,7 +297,6 @@ def wilson(
                 wilson_erase(visited, path, neighbour)
             current = neighbour
             visited[current[0], current[1]] = 2
-            last_direction = (direct[0], direct[1] * -1)
             if current not in path:
                 path.append(current)
         for tile in path:

@@ -5,14 +5,16 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "mazegen"
 version = "1.0.0"
-author = "alcristo"
+authors = [
+    { name = "alcristo" },
+    { name = "pnarvaez" }
+]
 description = "Maze Generator"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { file = "LICENSE.md" }
 dependencies = [
-    "numpy",
-    "build"
+    "numpy"
 ]
 
 [tool.setuptools]

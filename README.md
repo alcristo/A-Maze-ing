@@ -193,10 +193,25 @@ Like the color selection menu, this one will show their current setting. This me
 
 The maze have build in game so the studends can play the maze and go from the entry to the exit.
 
-    1. w or up arrow to go north
-    2. s or down arrow to go south
-    3. a or left arrow to go west
-    4. d or right arrow to go east
+1. w or up arrow to go north
+2. s or down arrow to go south
+3. a or left arrow to go west
+4. d or right arrow to go east
+
+### Maze Generator
+
+To install the `MazeGenerator` class, run in terminal:
+
+```bash
+python -m build
+pip install mazegen*
+```
+
+To use the `MazeGenerator` class, run in Python:
+
+```python
+from mazegen import MazeGenerator
+```
 
 ## Resources
 
