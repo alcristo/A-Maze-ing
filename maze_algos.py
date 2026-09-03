@@ -275,8 +275,8 @@ def wilson(
         current = rng.choice([*yet])
         visited[current[0], current[1]] = 2
         path.append(current)
+        last_direction = ("x", 0)
         while current in yet:
-            last_direction = ("x", 0)
             direct = direction()
             while last_direction == direct:
                 direct = direction()
