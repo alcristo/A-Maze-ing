@@ -2,10 +2,7 @@ from maze_utils import get_walls, _MazeOptions
 
 
 def maze_draw(maze_file: str, opts: _MazeOptions) -> None:
-    """Display the maze in terminal.
-
-    Arguments:
-    """
+    """Display the maze in terminal."""
     with open(maze_file) as f:
         line = f.readline()
         maze = []

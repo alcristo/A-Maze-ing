@@ -160,14 +160,15 @@ class _DFS(_Algorithm):
         self._gen_visited(maze)
         visited = self._visited
         current = self._maze_init(maze, visited, seed)
-        """The path"""
+        
+        # The path to backtrack
         lst = [current]
         while len(lst) > 0:
-            """Set with unvisited tiles"""
+            # Set with unvisited tiles
             nvis = set()
             h, w = current[:]
             neighs = ((h - 1, w), (h, w + 1), (h + 1, w), (h, w - 1))
-            """Add unvisited neighbours to the set"""
+            # Add unvisited neighbours to the set
             for i in neighs:
                 try:
                     if True in [
@@ -179,10 +180,10 @@ class _DFS(_Algorithm):
                 except IndexError:
                     continue
             if len(nvis) == 0:
-                """If all neighbours are visited, backtrack the path"""
+                # If all neighbours are visited, backtrack the path
                 lst.pop()
             else:
-                """Connect one of the neighbours, keep track of the path"""
+                # Connect one of the neighbours, keep track of the path
                 new = rng.choice([*nvis])
                 nvis.clear()
                 self._connect(maze, current, new)
@@ -205,15 +206,15 @@ class _Prim(_Algorithm):
         visited = self._visited
         rng.seed(seed)
         current = self._maze_init(maze, visited, seed)
-        """Open set for tiles with neighbours"""
+        # Open set for tiles with neighbours
         opened: set[tuple[int, int]] = set()
         opened.add(current)
         while len(opened) > 0:
-            """Set of unvisited neighbours"""
+            # Set of unvisited neighbours
             nvis = set()
             h, w = current[:]
             neighs = ((h - 1, w), (h, w + 1), (h + 1, w), (h, w - 1))
-            """Check for unvisited neighbours"""
+            # Check for unvisited neighbours
             for i in neighs:
                 try:
                     if True in [
@@ -225,17 +226,17 @@ class _Prim(_Algorithm):
                 except IndexError:
                     continue
             if len(nvis) == 0:
-                """If no neighbours to visit, remove tile from open set"""
+                # If no neighbours to visit, remove tile from open set
                 opened.remove(current)
             else:
-                """Connect tiles, add neighbour to open set"""
+                # Connect tiles, add neighbour to open set
                 new = rng.choice([*nvis])
                 nvis.clear()
                 self._connect(maze, current, new)
                 visited[new[:]] = 1
                 opened.add(new)
             if len(opened) > 0:
-                """Choose a random tile from the open set"""
+                # Choose a random tile from the open set
                 current = tuple[int, int](rng.choice([*opened]))
 
 
@@ -262,48 +263,48 @@ class _Wilson(_Algorithm):
         current = self._maze_init(maze, visited, seed)
         yet = self._unvisited_set(visited)
         while len(yet) > 0:
-            """Initialize path, choose a random unvisited tile"""
+            # Initialize path, choose a random unvisited tile
             path = []
             current = rng.choice([*yet])
             visited[current[0], current[1]] = 2
             path.append(current)
             while current in yet:
-                """Choose a direction to move"""
+                # Choose a direction to move
                 direct = self._direction()
                 try:
                     if direct[0] == "V":
-                        """Vertical movement"""
+                        # Vertical movement
                         if current[0] + direct[1] in (-1, maze.shape[0]):
                             raise IndexError
                         neighbour = (current[0] + direct[1], current[1])
                     else:
-                        """Horizontal movement"""
+                        # Horizontal movement
                         if current[1] + direct[1] in (-1, maze.shape[1]):
                             raise IndexError
                         neighbour = (current[0], current[1] + direct[1])
                 except IndexError:
                     continue
                 if visited[neighbour[0], neighbour[1]] == -1:
-                    """Moves to forbidden tile (42)"""
+                    # Moves to forbidden tile (42)
                     continue
                 elif visited[neighbour[0], neighbour[1]] == 1:
-                    """Moves to the maze"""
+                    # Moves to the maze
                     path.append(neighbour)
                     break
                 elif neighbour in path:
-                    """Moves to the path itself: loop erase random walk"""
+                    # Moves to the path itself: loop erase random walk
                     self._wilson_erase(visited, path, neighbour)
-                """Random walk"""
+                # Random walk
                 current = neighbour
                 visited[current[0], current[1]] = 2
                 if current not in path:
                     path.append(current)
             for tile in path:
-                """After exit remove path tiles from set"""
+                # After exit remove path tiles from set
                 visited[tile[0], tile[1]] = 1
                 yet.discard(tile)
             while len(path) > 1:
-                """Connect tiles following the path"""
+                # Connect tiles following the path
                 self._connect(maze, path[-2], path[-1])
                 current = path[-1]
                 path.pop()
@@ -323,7 +324,7 @@ class _AldousBroder(_Algorithm):
         current = self._maze_init(maze, visited, seed)
         yet = self._unvisited_set(visited)
         while len(yet) > 0:
-            """Random walk"""
+            # Random walk
             direct = self._direction()
             try:
                 if direct[0] == "V":
@@ -337,10 +338,10 @@ class _AldousBroder(_Algorithm):
             except IndexError:
                 continue
             if visited[neighbour[0], neighbour[1]] == -1:
-                """Moves to forbidden tile"""
+                # Moves to forbidden tile (42)
                 continue
             elif visited[neighbour[0], neighbour[1]] == 0:
-                """Moves to unvisited tile, connects tiles"""
+                # Moves to unvisited tile, connects tiles
                 self._connect(maze, current, neighbour)
                 yet.discard(neighbour)
             current = neighbour
@@ -395,11 +396,11 @@ class _Imperfect(_Algorithm):
 
         h, w = maze.shape
 
-        """If maze is just a line, it's already done"""
+        # If maze is just a line, stop
         if 1 in (h, w):
             return
 
-        """ Start _connecting the four corners"""
+        # Start _connecting the four corners
         self._connect(maze, (0, 0), (0, 1))
         self._connect(maze, (0, 0), (1, 0))
         self._connect(maze, (0, w - 1), (0, w - 2))
@@ -409,7 +410,7 @@ class _Imperfect(_Algorithm):
         self._connect(maze, (h - 1, 0), (h - 1, 1))
         self._connect(maze, (h - 1, 0), (h - 2, 0))
 
-        """Remove random walls in random tiles"""
+        # Remove random walls in random tiles
         for _ in range(h * w // 3):
             tile = (rng.randrange(h), rng.randrange(w))
             self._remove_walls(maze, tile, .5)
@@ -417,13 +418,13 @@ class _Imperfect(_Algorithm):
         s_wall = ((0, 1), (0, 2), (0, 4), (0, 8))
         adm_walls = [1, 2, 3, 4, 5, 6, 8, 9, 10, 12]
 
-        """Remove dead ends; ignores 42"""
+        # Remove dead ends; ignores 42
         for i in range(h):
             for j in range(w):
                 if maze[i, j] in dead_ends:
                     self._remove_walls(maze, (i, j))
 
-        """Check for areas > 3x3; fill them in such case"""
+        # Check for areas > 3x3; fill them in such case
         for i in range(h):
             for j in range(w):
                 if maze[i, j] == 0:
@@ -463,10 +464,12 @@ class _Maze:
         algorithm: str = "Prim"
     ) -> None:
         """Initialize a maze.
+
         Arguments:
             height: The maze height. Must be positive.
             width: The maze width. Must be positive.
             perfect: Whether the maze is perfect or not.
+
         Keyword arguments:
             seed: The seed for the mazer generation (default None).
             algorithm: The maze generation algorithm. (default 'Prim').
@@ -554,10 +557,11 @@ class _Node:
 
     def __init__(self, value: Any) -> None:
         """Initialize a node.
+
         Arguments:
             val: The value. For this project, a tuple representing a tile.
 
-        Additional arguments:
+        Additional variables:
             g: the distance from the node to the entrance.
             h: the ideal distance from the node to the exit.
             f: the sum of g + h.
@@ -669,6 +673,7 @@ class _Path:
     @staticmethod
     def _check_node(set: set[_Node], point: tuple[int, int]) -> bool:
         """Check point coordinates in a set return bool.
+
         Arguments:
             set: A set of nodes.
             point: a maze coordinate
@@ -714,24 +719,24 @@ class _Path:
         while len(opened) > 0:
             self._checked += 1
 
-            """Choose current node, move from open list to closed list"""
+            # Choose current node, move from open list to closed list
             current = self._choose_current(f_cost, list(opened), self._exit)
             opened.remove(current)
             closed.add(current)
 
-            """If node is the exit, path has been found"""
+            # If node is the exit, path has been found
             if current.val == self._exit:
                 break
             for i in self._neighbours(self._maze, current.val):
 
-                """If node is already closed, continue"""
+                # If node is already closed, continue
                 if self._check_node(closed, i) is True:
                     continue
                 node = _Node(i)
                 self._add_front(current, node)
                 node._set_g(node._size() - 1)
 
-                """Check the route to the node is 'cheaper'"""
+                # Check the route to the node is "cheaper"
                 if node._get_g() < g_cost[i[:]]:
                     g_cost[i[:]] = node._get_g()
                     self._rm_node(opened, node)
@@ -739,7 +744,7 @@ class _Path:
                     continue
                 node._set_h(_manhattan(i, self._exit))
 
-                """Update F cost if is lower"""
+                # Update F cost if is lower
                 if node._get_f() < f_cost[i[:]] or self._check_node(
                     opened, i
                 ) is False:
@@ -747,7 +752,7 @@ class _Path:
                     if self._check_node(opened, i) is False:
                         opened.add(node)
 
-        """Return the maze solution via backtracking"""
+        # Return the maze solution via backtracking
         while current.next is not None:
             if current.val[0] == current.next.val[0] + 1:
                 self._path = "S" + self._path
@@ -833,13 +838,13 @@ class MazeGenerator:
                 Entry or exit will be in unreachable tiles.
         """
 
-        """Check entry and exit are not equal"""
+        # Check entry and exit are not equal
         if self._entry == self._exit:
             print("[ERROR] Entry and exit must not be equal", file=sys.stderr)
             raise ValueError
 
         size = (self._height, self._width)
-        """Check entry or exit are not out of bounds"""
+        # Check entry or exit are not out of bounds
         en = (
             self._entry[0] < 0 or self._entry[0] >= size[0],
             self._entry[1] < 0 or self._entry[1] >= size[1]
@@ -855,7 +860,7 @@ class MazeGenerator:
             print("[ERROR] Exit is out of bounds", file=sys.stderr)
             raise ValueError
 
-        """Check entry or exit are not inside the 42"""
+        # Check entry or exit are not inside the 42
         if size[0] < 7 or size[1] < 9:
             print("The '42' cannot be printed in a maze this size.")
         else:
@@ -959,7 +964,7 @@ class MazeGenerator:
         path = self._palette.get("path", "\x1b[44m")
         block = self._palette.get("block", "\x1b[41m")
 
-        """Top wall"""
+        # Top wall
         h, w = self._maze._maze.shape
         for _ in range(2 * w + 1):
             print(f"{wall}  {reset}", end="")
@@ -967,7 +972,7 @@ class MazeGenerator:
         i = 0
         for i in range(h):
             print(f"{wall}  {reset}", end="")
-            """Row with horizontal connections"""
+            # Row with horizontal connections
             for j in range(w):
                 n = self._maze._maze[i, j]
                 if n == 15:
@@ -989,7 +994,8 @@ class MazeGenerator:
                 else:
                     print(f"{wall}  {reset}", end="")
             print()
-            """Row with vertical connections"""
+
+            # Row with vertical connections
             print(f"{wall}  {reset}", end="")
             for j in range(w):
                 n = self._maze._maze[i, j]
@@ -1001,7 +1007,8 @@ class MazeGenerator:
                     print(f"{tile}  {reset}", end="")
                 else:
                     print(f"{wall}  {reset}", end="")
-                """Do not paint isolated (single-pixel) walls"""
+
+                # Do not paint isolated (single-pixel) walls
                 if i != range(h)[-1] and j != range(w)[-1]:
                     p_path = [
                         _get_walls(n)[1] == 0,

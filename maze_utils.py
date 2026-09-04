@@ -44,17 +44,11 @@ class _MazeOptions:
     @staticmethod
     @_uint8
     def _validate_color(channel: int) -> None:
-        """Validate a color channel is  uint8.
-
-    Arguments:
-    """
+        """Validate a color channel is  uint8."""
         pass
 
     def _select_color(self, key: str) -> None:
-        """Change the display color for a key.
-
-    Arguments:
-    """
+        """Change the display color for a key."""
         if key not in self._palette.keys():
             print("Option not in palette.")
             return
@@ -72,10 +66,7 @@ class _MazeOptions:
             return
 
     def _select_config(self, key: str) -> None:
-        """Change the configuration for a key.
-
-    Arguments:
-    """
+        """Change the configuration for a key."""
         he = int(self._conf["HEIGHT"])
         wi = int(self._conf["WIDTH"])
         if key == "HEIGHT":
@@ -205,18 +196,12 @@ class _MazeOptions:
 
 
 def manhattan(curr: tuple[int, int], neigh: tuple[int, int]) -> int:
-    """Manhattan heuristic, return distance.
-
-    Arguments:
-    """
+    """Manhattan heuristic, return distance."""
     return abs(curr[0] - neigh[0]) + abs(curr[1] - neigh[1])
 
 
 def check_errors(conf: dict[str, str]) -> None:
-    """Check for errors in the configuration.
-
-    Arguments:
-    """
+    """Check for errors in the configuration."""
     start = conf["ENTRY"].split(",")
     end = conf["EXIT"].split(",")
     try:
@@ -234,22 +219,22 @@ def check_errors(conf: dict[str, str]) -> None:
             "Usage ex.: EXIT=[int],[int]"
         )
 
-    """Check valid size for generation"""
+    # Check valid size for generation
     if size[0] * size[1] > 23000:
         raise MazeError("Maze is too big")
 
-    """Check valid size for animation"""
+    # Check valid size for animation
     if ((size[0] * size[1] > 700) and conf["ANIMATE"].lower() == "true"):
         print("Maze is too big for a smooth animation")
         conf.update({"ANIMATE": "False"})
     elif ((size[0] * size[1] > 500) and conf["ANIMATE"].lower() == "true"):
         print("Maze somewhat big; animation may suffer esporadic glitches")
 
-    """Check that entry and exit are actually different"""
+    # Check that entry and exit are actually different
     if entr == exit:
         raise MazeError("Maze entrance and exit must be different")
 
-    """Check positive height and width"""
+    # Check positive height and width
     if size[0] <= 0 or size[1] <= 0:
         raise MazeError("Maze dimensions must be positive")
 
@@ -287,10 +272,7 @@ def check_errors(conf: dict[str, str]) -> None:
 
 
 def get_walls(n: int) -> tuple[int, ...]:
-    """Get the walls in a tile, return bit tuple.
-
-    Arguments:
-    """
+    """Get the walls in a tile, return bit tuple."""
     if n > 15 or n < 0:
         raise ValueError
     bits = []
@@ -306,10 +288,7 @@ def get_walls(n: int) -> tuple[int, ...]:
 
 
 def check_tile(maze: NDArray[Any], coords: tuple[int, int]) -> None:
-    """Check coherence between tile walls.
-
-    Arguments:
-    """
+    """Check coherence between tile walls."""
     i, j = coords
     tile = int(maze[i, j])
     msg = f"Maze tile {coords} has incoherent walls"

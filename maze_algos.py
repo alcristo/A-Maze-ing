@@ -6,13 +6,8 @@ from pathfinding import a_star
 import time
 
 
-def creation_draw(
-        maze_file: str, opts: _MazeOptions
-) -> None:
-    """While animated, draw the maze.
-
-    Arguments:
-    """
+def creation_draw(maze_file: str, opts: _MazeOptions) -> None:
+    """While animated, draw the maze."""
     with open(maze_file) as f:
         line = f.readline()
         maze = []
@@ -80,10 +75,7 @@ def creation_draw(
 
 
 def write_path(maze: NDArray[Any], opts: _MazeOptions) -> None:
-    """When ANIMATE is True, animate the maze generation.
-
-    Arguments:
-    """
+    """When ANIMATE is True, animate the maze generation."""
     if opts._conf.get("ANIMATE", "False").lower() == "false":
         return
     size = (int(opts._conf["HEIGHT"]), int(opts._conf["WIDTH"]))
@@ -107,10 +99,7 @@ def write_path(maze: NDArray[Any], opts: _MazeOptions) -> None:
 
 
 def maze_init(maze: NDArray[Any], visited: NDArray[Any]) -> tuple[int, int]:
-    """Initialize the first tile of the maze.
-
-    Arguments:
-    """
+    """Initialize the first tile of the maze."""
     h, w = maze.shape[:]
     v = -1
     while v == -1:
@@ -125,10 +114,7 @@ def maze_init(maze: NDArray[Any], visited: NDArray[Any]) -> tuple[int, int]:
 def connect(
     maze: NDArray[Any], curr: tuple[int, int], neigh: tuple[int, int]
 ) -> None:
-    """Connect two maze tiles.
-
-    Arguments:
-    """
+    """Connect two maze tiles."""
     if manhattan(curr, neigh) != 1:
         return
     if curr[0] == neigh[0] + 1 and get_walls(maze[curr[:]])[0] == 1:
@@ -161,20 +147,14 @@ def direction() -> tuple[str, int]:
 def wilson_erase(
     visited: NDArray[Any], path: list[tuple[int, int]], point: tuple[int, int]
 ) -> None:
-    """For Wilson, erase loop during random walk.
-
-    Arguments:
-    """
+    """For Wilson, erase loop during random walk."""
     while path[-1] != point:
         visited[path[-1][:]] = 0
         path.pop()
 
 
 def unvisited_set(visited: NDArray[Any]) -> set[tuple[int, int]]:
-    """Make the unvisited tiles set.
-
-    Arguments:
-    """
+    """Make the unvisited tiles set."""
     yet = set()
     for i in range(visited.shape[0]):
         for j in range(visited.shape[1]):
@@ -186,10 +166,7 @@ def unvisited_set(visited: NDArray[Any]) -> set[tuple[int, int]]:
 def dfs(
         maze: NDArray[Any], visited: NDArray[Any], opts: _MazeOptions
 ) -> None:
-    """Depth Fisrst Search / Recursive backtracker algorithm.
-
-    Arguments:
-    """
+    """Depth Fisrst Search / Recursive backtracker algorithm."""
     current = maze_init(maze, visited)
     lst = [current]
     while len(lst) > 0:
@@ -222,10 +199,7 @@ def dfs(
 def prim(
         maze: NDArray[Any], visited: NDArray[Any], opts: _MazeOptions
 ) -> None:
-    """Prim's algorithm.
-
-    Arguments:
-    """
+    """Prim's algorithm."""
     current = maze_init(maze, visited)
     opened: set[tuple[int, int]] = set()
     opened.add(current)
@@ -257,10 +231,7 @@ def prim(
 def aldous_broder(
         maze: NDArray[Any], visited: NDArray[Any], opts: _MazeOptions
 ) -> None:
-    """Aldous-Broder algorithm.
-
-    Arguments:
-    """
+    """Aldous-Broder algorithm."""
     current = maze_init(maze, visited)
     yet = unvisited_set(visited)
     while len(yet) > 0:
@@ -289,10 +260,7 @@ def aldous_broder(
 def wilson(
         maze: NDArray[Any], visited: NDArray[Any], opts: _MazeOptions
 ) -> None:
-    """Wilson's algorithm.
-
-    Arguments:
-    """
+    """Wilson's algorithm."""
     current = maze_init(maze, visited)
     write_path(maze, opts)
     yet = unvisited_set(visited)
@@ -337,10 +305,7 @@ def wilson(
 
 
 def break_wall(maze: NDArray[Any], tile: tuple[int, int], op: str) -> None:
-    """Connect a tile with its neighbour in the cardinal point defined by op.
-
-    Arguments:
-    """
+    """Connect tile with its neighbour in cardinal point defined by op."""
     i, j = tile[:]
     if op == "N":
         connect(maze, tile, (i - 1, j))
@@ -355,10 +320,7 @@ def break_wall(maze: NDArray[Any], tile: tuple[int, int], op: str) -> None:
 def remove_walls(
     maze: NDArray[Any], tile: tuple[int, int], prob: float = 1
 ) -> None:
-    """Check for neighbouring removable walls.
-
-    Arguments:
-    """
+    """Check for neighbouring removable walls."""
     if maze[tile[:]] == 15 or prob < 0 or prob > 1:
         return
     i, j = tile[:]
@@ -381,15 +343,12 @@ def remove_walls(
 
 
 def imperfect(maze: NDArray[Any], opts: _MazeOptions) -> None:
-    """Algorithm to braid perfect mazes.
-
-    Arguments:
-    """
+    """Algorithm to braid perfect mazes."""
     h, w = maze.shape
     if h == 1 or w == 1:
         return
 
-    """Start connecting the four corners"""
+    # Start connecting the four corners
     connect(maze, (0, 0), (0, 1))
     connect(maze, (0, 0), (1, 0))
     connect(maze, (0, w - 1), (0, w - 2))
@@ -400,7 +359,7 @@ def imperfect(maze: NDArray[Any], opts: _MazeOptions) -> None:
     connect(maze, (h - 1, 0), (h - 2, 0))
     write_path(maze, opts)
 
-    """Remove random walls in random tiles"""
+    # Remove random walls in random tiles
     for _ in range(h * w // 3):
         tile = (rng.randrange(h), rng.randrange(w))
         remove_walls(maze, tile, .5)
@@ -409,14 +368,14 @@ def imperfect(maze: NDArray[Any], opts: _MazeOptions) -> None:
     s_wall = ((0, 1), (0, 2), (0, 4), (0, 8))
     adm_walls = [1, 2, 3, 4, 5, 6, 8, 9, 10, 12]
 
-    """Remove dead ends; ignores 42"""
+    # Remove dead ends; ignores 42
     for i in range(h):
         for j in range(w):
             if maze[i, j] in dead_ends:
                 remove_walls(maze, (i, j))
                 write_path(maze, opts)
 
-    """Check for areas > 3x3; fill them in such case"""
+    # Check for areas > 3x3; fill them in such case
     for i in range(h):
         for j in range(w):
             if maze[i, j] == 0:

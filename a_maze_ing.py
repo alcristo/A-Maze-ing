@@ -49,7 +49,7 @@ def generate(opts: _MazeOptions) -> str:
         conf: To erase?
     """
 
-    """Create the maze and visited tiles arrays"""
+    # Create the maze and visited tiles arrays
     size = (int(opts._conf["HEIGHT"]), int(opts._conf["WIDTH"]))
     maze = ones(size, int) * 15
     visited = zeros(size, int)
@@ -71,7 +71,7 @@ def generate(opts: _MazeOptions) -> str:
         for tile in pos_42:
             visited[tile[0]][tile[1]] = -1
 
-    """Algorithm"""
+    # Maze generation
     random.seed(opts._conf.get("SEED"))
     algo = select_algo(opts)
     if algo == "AldousBroder":
@@ -87,14 +87,15 @@ def generate(opts: _MazeOptions) -> str:
         sys.exit()
     if perfect is False:
         imperfect(maze, opts)
-    """Solution"""
+
+    # Solution
     start = conf["ENTRY"].split(",")
     end = conf["EXIT"].split(",")
     entr = (int(start[1]), int(start[0]))
     exit = (int(end[1]), int(end[0]))
     sol = a_star(maze, entr, exit)
 
-    """Save the file"""
+    # Save the file
     base = "0123456789abcdef"
     with open(conf['OUTPUT_FILE'], 'w') as out:
         for i in range(size[0]):
