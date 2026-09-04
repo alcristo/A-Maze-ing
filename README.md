@@ -34,7 +34,7 @@ There are several options in the configuration file:
 
 ### Maze format
 
-The maze will be stored in a `numpy` array, so tiles are accessed as `array[y, x]`. For this reason, the entry and exit tiles will have their coordinates inverted for computing simplicity, but will be back in order for user access files.
+The maze will be stored in a `numpy` array, so tiles are accessed as `array[y, x]`. For this reason, the entry and exit tiles will have their coordinates swapped for computing simplicity, but will be back in order for user access files.
 
 The maze tiles are stored in numbers from 0 to 15 in order to later format the maze as hexadecimal numbers. These hexadecimal numbers have four bits, each one representing which walls are open (0) or closed (1). From least to most significant bit, the represented walls are North, East, South and West. Tiles in the maze are coherent with their neighbours, meaning that if the northern wall of a tile is closed, the southern wall of its northern neighbour is also closed. This coherence extends to the box borders.
 
@@ -53,7 +53,7 @@ One generation algorithm was said to be implemented in this project, but more th
 * Prim's algorithm: starting with a random tile as the maze, which becomes part of a set, one of their unvisited neighbouring tiles get into that set. Then, one of the tiles in the set is selected randomly to repeat this process. When one of the tiles has no neighbours to visit, it is taken out of the set. The generation stops when the set is empty. Prim's algorithm is faster than the previous algorithms, but the generated mazes are usually biased towards the initial point of generation.
 * Depth First Search: starting from a random tile, a random path is made. When the path can't continue due to the current tile not having neighbours to visit, it backtracks until a tile with unvisited neighbours is reached, and this process continues. This is why this method is also known as the *recursive backtracker*. This algorithm is fast, although the mazes are biased towards very long paths, which can be seen in the solution. There is a variation of this algorithm called *hunt & kill*, where, instead of backtracking, the maze is scanned until a tile where the algorithm can continue is found.
 
-If the option *PERFECT* is set to *False*, then another algorithm is triggered after the perfect generation. First, the corners are set to hardcoded values and the neighbours are connected coherently. Then, random tiles are selected and one of their walls is removed. Next, the whole maze is scanned to search dead-end tiles and remove one of their walls. Finally, the maze is scanned again, this time to find open areas (with 3x3 as the minimum of dimensions) and random walls are added at the center. This algorithm will not run if the maze has height or width equal to one.
+If the option *PERFECT* is set to *False*, then another algorithm is triggered after the perfect generation. First, the corners are set to hardcoded values and the neighbours are connected coherently. Then, random tiles are selected and one of their walls is removed. Next, the whole maze is scanned to search dead-end tiles and remove one of their walls. Finally, the maze is scanned again, this time to find open areas (with 3x3 as the minimum of dimensions) and random walls are added at the center. This way the maze will be perfectly braided, except for the `42` structure. This algorithm will not run if the maze has height or width equal to one.
 
 ### Pathfinding algorithm
 
@@ -107,7 +107,7 @@ MazeGenerator(
 )
 ```
 
-The variables `start` and `end` will be the entry annd exit of the maze respectively, and need to have the structure `{int},{int}`, just like in the configuration file from the main program. Upon instantiation, the class will automatically generate 
+The variables `start` and `end` will be the entry annd exit of the maze respectively, and need to have the structure `"{int},{int}"`, just like in the configuration file from the main program, except for the quotes. Upon instantiation, the class will automatically generate 
 
 The `MazeGenerator` class will have the following methods:
 
@@ -125,9 +125,8 @@ The `MazeGenerator` class also has the following properties:
 ### Team and project management
 
 * `alcristo` handled the code structuration, algorithm development, and the maze's creation, solution, graphics, and configuration while  `pnarvaez` handled the maze animation, gameplay mode, and player-related gameplay.
-* 
-* The code in his idea works well, we could have added more playable possibilities like a 3d maze or cleaned some reused code. 
-*
+* Originally, `pnarvaez` would have managed the graphics, but due to some problems `alcristo` had to handle it.
+* The code in his idea works well, we could have added more playable possibilities like a 3D maze or cleaned some reused code. 
 
 ## Instructions
 
