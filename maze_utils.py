@@ -97,6 +97,7 @@ class _MazeOptions:
                 w = input(
                     f"New maze width (current {self._conf.get('WIDTH')}): "
                 )
+                wi = int(w)
                 if w == "":
                     return
                 assert wi > 0
@@ -226,15 +227,15 @@ def check_errors(conf: dict[str, str]) -> None:
         )
 
     """Check valid size for generation"""
-    if size[0] * size[1] > 151**2:
+    if size[0] * size[1] > 23000:
         raise MazeError("Maze is too big")
 
     """Check valid size for animation"""
-    if ((
-        size[0] > 60 or size[0] * size[1] > 1000
-    ) and conf["ANIMATE"].lower() == "true"):
+    if ((size[0] * size[1] > 700) and conf["ANIMATE"].lower() == "true"):
         print("Maze is too big for a smooth animation")
         conf.update({"ANIMATE": "False"})
+    elif ((size[0] * size[1] > 500) and conf["ANIMATE"].lower() == "true"):
+        print("Maze somewhat big; animation may suffer esporadic glitches")
 
     """Check that entry and exit are actually different"""
     if entr == exit:
@@ -254,7 +255,7 @@ def check_errors(conf: dict[str, str]) -> None:
         exit[0] < size[0],
         exit[1] < size[1]
     ]
-    if size[0] > 5 and size[1] > 7:
+    if size[0] > 6 and size[1] > 8:
         hs = (size[0] - 1) // 2 - 2
         ws = (size[1] - 1) // 2 - 3
         pos_42 = (

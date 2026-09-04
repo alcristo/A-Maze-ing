@@ -30,7 +30,7 @@ There are several options in the configuration file:
 * PERFECT: Whether the maze is perfect (there is only one path between two separate points) or not perfect (there can be loops in the path). Defaults to `True`.
 * SEED: The seed to generate the maze. Defaults to `None`.
 * ALGORITHM: The maze generation algorithm. Accepts `aldous broder`, `recursive backtracker`, `depth first search`, `prim` and `wilson`. All options accept no space, snake case space (also - space for Aldous-Broder) and acronyms, as well as any ASCII case format. Defaults to `Prim`.
-* ANIMATED: Whether to show the maze generation. Defaults to `False`.
+* ANIMATED: Whether to show the maze generation. Defaults to `False`. The animation will not trigger if the maze height is greater than 60 or if the maze has more than 1000 tiles (for a square maze, the maximum length for trigger the animation will be 31).
 
 ### Maze format
 
@@ -40,9 +40,11 @@ The maze tiles are stored in numbers from 0 to 15 in order to later format the m
 
 If the maze height is above 6 and the maze width is above 8, a mandatory `42` made of fully closed tiles (value 15, f) will be generated at the center of the maze. If this condition is not satisfied, an error message will be displayed, but the maze will still be generated. Neither the maze entry nor the exit can be generated inside the `42`.
 
+Finally, the maze will not be generated if the total area exceeds 23000 tiles. For example, the maximum square maze that will generate is 151 tiles long.
+
 ### Maze generation algorithms
 
-At first, the maze is made in its totality with fully closed tiles. An auxiliary array will keep track of visited tiles, while storing the `42` structure. All maze generation algorithms start with a random tile set as visited, and therefore part of the maze.
+At first, the maze is made entirely with fully closed tiles. An auxiliary array will keep track of visited tiles, while storing the `42` structure. All maze generation algorithms start with a random tile set as visited, and therefore part of the maze.
 
 One generation algorithm was said to be implemented in this project, but more than one was graded as a bonus. We implemented four algorithms in total:
 
@@ -87,7 +89,7 @@ In order to draw the maze in terminal, spaces would represent both the whole maz
     block:  \x1b[41m
     player: \x1b[46m
 
-Nonetheless, the color palette can be changed in the menu (see instructions). This menu has also an option to hide the solution.
+Nonetheless, the color palette can be changed in the menu (see [instructions](#color-selection-menu)). This menu has also an option to hide the solution.
 
 ### Reusable code
 
@@ -169,7 +171,7 @@ A new menu will appear if option number 3 is chosen. This menu will have this st
     d. Change all colors to default palette
     q. Quit color selection menu
 
-All options will have their current color (the default palette for the first time, see Visual representation). To change a color, select it and you will need to input three unsigned 8-bit integers (also known as `uint8` \[0-255\]), each one for each color channel (RGB). Invalid inputs will leave the color unchanged. The colors are updated in the maze.
+All options will have their current color (the default palette for the first time, see [Visual representation](#visual-representation)). To change a color, select it and you will need to input three unsigned 8-bit integers (also known as `uint8` \[0-255\]), each one for each color channel (RGB). Invalid inputs will leave the color unchanged. The colors are updated in the maze.
 
 ### Configuration changing menu
 
@@ -191,12 +193,15 @@ Like the color selection menu, this one will show their current setting. This me
 
 ### Gameplay 
 
-The maze have build in game so the studends can play the maze and go from the entry to the exit.
+The maze has a built-in game mode, so the maze can be playable. To move the player, just press the following keys:
 
 1. w or up arrow to go north
 2. s or down arrow to go south
 3. a or left arrow to go west
 4. d or right arrow to go east
+5. q to exit the game mode
+
+The game will end when the player gets to the exit or when the user presses `q`. The player will return to the maze entry afterwards.
 
 ### Maze Generator
 
@@ -204,7 +209,17 @@ To install the `MazeGenerator` class, run in terminal:
 
 ```bash
 python -m build
-pip install mazegen*
+```
+
+This will generate a `/dist` directory with two files:
+
+* A `mazegen-[...].tar.gz`.
+* A `mazegen-[...].whl`.
+
+To install either of them, copy either of the files to a project and then run:
+
+```bash
+pip install mazegen
 ```
 
 To use the `MazeGenerator` class, run in Python:
@@ -215,7 +230,11 @@ from mazegen import MazeGenerator
 
 ## Resources
 
+Wikipedia pages for [Maze generation algorithm](https://en.wikipedia.org/wiki/Maze_generation_algorithm) and [A* search algorithm](https://en.wikipedia.org/wiki/A*_search_algorithm) were used as reference for docmuentation.
+
 ConnerWill's [ANSI escape sequences cheatsheet](https://gist.github.com/ConnerWill/d4b6c776b509add763e17f9f113fd25b) helped with the maze drawing.
+
+Python's official documentation for [pyproject.toml writing](https://packaging.python.org/en/latest/guides/writing-pyproject-toml/) was used to write the `pyproject.toml`.
 
 ### AI Usage
 

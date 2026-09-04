@@ -172,10 +172,7 @@ def change_config(maze: str, opts: _MazeOptions) -> None:
         print("q. Quit configuration selector")
         try:
             h, w = int(opts._conf["HEIGHT"]), int(opts._conf["WIDTH"])
-            if (
-                opts._conf["ANIMATE"].lower() == "true" and (
-                    h > 60 or h * w > 1000)
-            ):
+            if opts._conf["ANIMATE"].lower() == "true" and h * w > 700:
                 raise MazeError("Maze is too big for a smooth animation")
             check_errors(opts._conf)
         except MazeError as e:
@@ -218,10 +215,7 @@ def change_config(maze: str, opts: _MazeOptions) -> None:
                 return
             try:
                 h, w = int(opts._conf["HEIGHT"]), int(opts._conf["WIDTH"])
-                if (
-                    opts._conf["ANIMATE"].lower() == "true" and (
-                        h > 60 or h * w > 1000)
-                ):
+                if opts._conf["ANIMATE"].lower() == "true" and h * w > 700:
                     raise MazeError("Maze is too big for a smooth animation")
                 check_errors(opts._conf)
             except MazeError as e:
@@ -330,9 +324,6 @@ def init_config() -> dict[str, str]:
                 he = int(h)
                 assert he > 0
                 conf.update({"HEIGHT": h})
-            if he > 60:
-                print("Maze is too high. Animation will be disabled.")
-                conf.update({"ANIMATE": "False"})
             w = input(
                 f"Enter maze width (int > 0); current {conf.get('WIDTH')}: "
             )
@@ -342,12 +333,14 @@ def init_config() -> dict[str, str]:
                 wi = int(w)
                 assert wi > 0
                 conf.update({"WIDTH": w})
-            if he * wi > 151**2:
+            if he * wi > 23000:
                 print("Maze is too big; maze generation cancelled")
                 continue
-            elif he * wi > 31**2:
+            elif he * wi > 700:
                 print("Maze is big; animation will be disabled")
                 conf.update({"ANIMATE": "False"})
+            elif he * wi > 500:
+                print("Maze is somewhat big; animation may suffer glitches")
             en = input(
                 "Enter maze entry (0 ≤ x,y < width,height); "
                 f"current {conf.get('ENTRY')}: "
@@ -479,3 +472,5 @@ if __name__ == "__main__":
         print("\nProgram terminated by user")
     except KeyboardInterrupt:
         raise_signal(SIGINT)
+    except RuntimeError as e:
+        print(f"Caught a RuntimeError: {e}")
