@@ -6,11 +6,11 @@ build-backend = "setuptools.build_meta"
 name = "mazegen"
 version = "1.0.0"
 authors = [
-    { name = "alcristo" },
-    { name = "pnarvaez" }
+    {name = "alcristo"},
+    {name = "pnarvaez"}
 ]
 description = "Maze Generator"
-readme = "README.md"
+readme = "mazegen/README.md"
 requires-python = ">=3.10"
 license = { file = "mazegen/LICENSE.md" }
 dependencies = [
