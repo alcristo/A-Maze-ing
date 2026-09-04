@@ -582,25 +582,31 @@ class _Node:
             self = self.next
         return n
 
-    def _get_g(self) -> int | float:
-        return self._g
-
-    def _get_h(self) -> int | float:
-        return self._h
-
-    def _get_f(self) -> int | float:
+    @property
+    def f(self) -> float | int:
         return self._f
 
-    def _set_f(self, f: int | float) -> None:
+    @f.setter
+    def f(self, f: float | int) -> None:
         self._f = f
 
-    def _set_g(self, g: int | float) -> None:
-        self._g = g
-        self._set_f(self._get_g() + self._get_h())
+    @property
+    def g(self) -> float | int:
+        return self._g
 
-    def _set_h(self, h: int | float) -> None:
+    @g.setter
+    def g(self, g: float | int) -> None:
+        self._g = g
+        self.f = self._g + self._h
+
+    @property
+    def h(self) -> float | int:
+        return self._h
+
+    @h.setter
+    def h(self, h: float | int) -> None:
         self._h = h
-        self._set_f(self._get_g() + self._get_h())
+        self.f = self._g + self._h
 
 
 class _Path:

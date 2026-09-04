@@ -23,25 +23,31 @@ class Node:
             self = self.next
         return n
 
-    def get_g(self) -> int | float:
-        return self._g
-
-    def get_h(self) -> int | float:
-        return self._h
-
-    def get_f(self) -> int | float:
+    @property
+    def f(self) -> float | int:
         return self._f
 
-    def _set_f(self, f: int | float) -> None:
+    @f.setter
+    def f(self, f: float | int) -> None:
         self._f = f
 
-    def set_g(self, g: int | float) -> None:
-        self._g = g
-        self._set_f(self.get_g() + self.get_h())
+    @property
+    def g(self) -> float | int:
+        return self._g
 
-    def set_h(self, h: int | float) -> None:
+    @g.setter
+    def g(self, g: float | int) -> None:
+        self._g = g
+        self.f = self._g + self._h
+
+    @property
+    def h(self) -> float | int:
+        return self._h
+
+    @h.setter
+    def h(self, h: float | int) -> None:
         self._h = h
-        self._set_f(self.get_g() + self.get_h())
+        self.f = self._g + self._h
 
 
 def neighbours(
@@ -102,7 +108,7 @@ def rm_node(set: set[Node], new: Node) -> None:
             alt_path.append(n)
 
     for n in alt_path:
-        if new.get_g() < n.get_g():
+        if new.g < n.g:
             set.remove(n)
     if len(alt_path) == 0:
         set.add(new)
@@ -144,16 +150,16 @@ def a_star(
                 continue
             node = Node(i)
             add_front(current, node)
-            node.set_g(node.size() - 1)
-            if node.get_g() < g_cost[i[:]]:
-                g_cost[i[:]] = node.get_g()
+            node.g = node.size() - 1
+            if node.g < g_cost[i[:]]:
+                g_cost[i[:]] = node.g
                 rm_node(opened, node)
             else:
                 continue
-            node.set_h(manhattan(i, exit))
+            node.h = manhattan(i, exit)
             # Update F cost if is lower
-            if node.get_f() < f_cost[i[:]] or check_node(opened, i) is False:
-                f_cost[i[:]] = node.get_f()
+            if node.f < f_cost[i[:]] or check_node(opened, i) is False:
+                f_cost[i[:]] = node.f
                 if check_node(opened, i) is False:
                     opened.add(node)
 
