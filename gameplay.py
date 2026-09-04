@@ -3,19 +3,26 @@ import sys
 import termios
 import tty
 import time
-# import json
 
 
-class Player:
+class _Player:
+    """Player class
+
+    Arguments:
+        maze_file: the file containing the maze with entry and exit tiles.
+        opts: the maze configuration, containing the display colors.
+    """
+
     def __init__(self, maze_file: str, opts: _MazeOptions) -> None:
         self._maze_file = maze_file
         self._opts = opts
         self._w = 0
         self._path = ""
         self._playable = False
-        self.map()
+        self._map()
 
-    def map(self) -> None:
+    def _map(self) -> None:
+        """Read maze file"""
         with open(self._maze_file) as f:
             line = f.readline()
             maze = []
@@ -32,7 +39,8 @@ class Player:
             ex = f.readline().split(",")
             self._exit = (int(ex[1]), int(ex[0]))
 
-    def print_map(self) -> None:
+    def _print_map(self) -> None:
+        """Display maze in terminal with player."""
         reset = "\x1b[0m"
         print("\x1bc")
         for _ in range(2 * self._w + 1):
@@ -91,7 +99,8 @@ class Player:
         print("=== A-Maze-ing ===")
         print("q. Quit")
 
-    def move(self) -> str:
+    def _move(self) -> str:
+        """Analyze user input, return string."""
         fd = sys.stdin.fileno()
         old_config = termios.tcgetattr(fd)
         try:
@@ -103,12 +112,12 @@ class Player:
             termios.tcsetattr(fd, termios.TCSADRAIN, old_config)
         return order
 
-    def player_moves(self) -> None:
+    def _player_moves(self) -> None:
+        """Move the player through the maze."""
         base = "0123456789abcdef"
-        self.print_map()
-        # start_time = time.time()
+        self._print_map()
         while self._playable is True:
-            move = self.move()
+            move = self._move()
             walls = get_walls(
                 base.index(self._maze[self._pos[0]][self._pos[1]])
             )
@@ -124,34 +133,17 @@ class Player:
             elif move in ("w", "\x1b[A"):
                 if walls[0] == 0:
                     self._pos = (self._pos[0] - 1, self._pos[1])
-            self.print_map()
+            self._print_map()
             if move == "q":
                 self._pos = (self._entry[0], self._entry[1])
                 self._playable = False
                 break
             elif self._pos == self._exit:
-                """current_time = time.time() - start_time
-                user = input("\x1b[KEnter user: ")
-                t = float(current_time)
-                with open("scores.json", "r") as f:
-                    txt = f.read()
-                    if txt == "":
-                        scores: dict[str, float] = {}
-                        break
-                    scores = json.loads(txt)
-                scores.update({user: round(t - start_time, 3)})
-                j = json.dumps(scores)
-                with open("scores.json", "w") as f:
-                    f.write(j)
-                print(
-                    f"Your user has been saved as: {user} with",
-                    f"{round(t - start_time, 3)} seconds"
-                )
-                time.sleep(10)"""
                 self._pos = (self._entry[0], self._entry[1])
                 self._playable = False
                 return
             time.sleep(0.1)
 
-    def show_player(self) -> None:
+    def _show_player(self) -> None:
+        """Show or hide the player"""
         self._playable = self._playable is False

@@ -3,7 +3,7 @@ from maze_utils import MazeError, check_errors, _MazeOptions
 from maze_algos import dfs, prim, wilson, aldous_broder, imperfect
 from pathfinding import a_star
 from maze_draw import maze_draw
-from gameplay import Player
+from gameplay import _Player
 import sys
 import random
 import time
@@ -11,24 +11,28 @@ from typing import Any
 from signal import SIGINT, signal, raise_signal
 
 
-def select_algo(conf: dict[str, str]) -> str:
-    """Return selected algorithm string"""
+def select_algo(opts: _MazeOptions) -> str:
+    """Return selected algorithm string.
+
+    Arguments:
+        opts: The maze configuration containing the algorithm
+    """
     try:
-        if conf["ALGORITHM"].lower() in (
+        if opts._conf["ALGORITHM"].lower() in (
             "aldous broder", "aldousbroder", "aldous_broder", "aldous-broder",
             "ab"
         ):
             return "AldousBroder"
-        elif conf["ALGORITHM"].lower() in (
+        elif opts._conf["ALGORITHM"].lower() in (
             "dfs", "depthfirstsearch", "depth first search",
             "depth_first_search",
             "recursivebacktracker", "recursive backtracker",
             "recursive_backtracker", "rb"
         ):
             return "DFS"
-        elif conf["ALGORITHM"].lower() == "prim":
+        elif opts._conf["ALGORITHM"].lower() == "prim":
             return "Prim"
-        elif conf["ALGORITHM"].lower() == "wilson":
+        elif opts._conf["ALGORITHM"].lower() == "wilson":
             return "Wilson"
         else:
             return "Error"
@@ -36,13 +40,20 @@ def select_algo(conf: dict[str, str]) -> str:
         return "Prim"
 
 
-def generate(opts: _MazeOptions, conf: dict[str, str]) -> str:
+def generate(opts: _MazeOptions) -> str:
+    """
+    Generate the maze.
+
+    Arguments:
+        opts: The maze configuration.
+        conf: To erase?
+    """
 
     """Create the maze and visited tiles arrays"""
-    size = (int(conf["HEIGHT"]), int(conf["WIDTH"]))
+    size = (int(opts._conf["HEIGHT"]), int(opts._conf["WIDTH"]))
     maze = ones(size, int) * 15
     visited = zeros(size, int)
-    perfect = bool(conf["PERFECT"].lower() != "false")
+    perfect = bool(opts._conf["PERFECT"].lower() != "false")
     if visited.shape[0] < 7 or visited.shape[1] < 9:
         print("The '42' cannot be printed in a maze this size.")
         time.sleep(3)
@@ -61,8 +72,8 @@ def generate(opts: _MazeOptions, conf: dict[str, str]) -> str:
             visited[tile[0]][tile[1]] = -1
 
     """Algorithm"""
-    random.seed(conf.get("SEED"))
-    algo = select_algo(conf)
+    random.seed(opts._conf.get("SEED"))
+    algo = select_algo(opts)
     if algo == "AldousBroder":
         aldous_broder(maze, visited, opts)
     elif algo == "DFS":
@@ -98,6 +109,12 @@ def generate(opts: _MazeOptions, conf: dict[str, str]) -> str:
 
 
 def change_colors(maze: str, opts: _MazeOptions) -> None:
+    """Change the display colors.
+
+    Arguments:
+        maze: the file where the maze is stored.
+        opts: The current configuration for the maze.
+    """
     reset = "\x1b[0m"
     old_pal = opts._palette.copy()
     while True:
@@ -153,6 +170,12 @@ def change_colors(maze: str, opts: _MazeOptions) -> None:
 
 
 def change_config(maze: str, opts: _MazeOptions) -> None:
+    """Change the maze configuration; generate new maze for changes to apply.
+
+    Arguments:
+        maze: the file where the maze is stored.
+        opts: The current maze configuration.
+    """
     old_conf = opts._conf.copy()
     while True:
         print("\x1b[H\x1b[0J", end="")
@@ -234,22 +257,15 @@ def change_config(maze: str, opts: _MazeOptions) -> None:
             pass
 
 
-def players_stats(maze: str, opts: _MazeOptions) -> None:
-    with open("scores.json", "r", encoding="utf-8") as f:
-        content = f.read()
-    maze_draw(maze, opts)
-    print(content)
-    char = input("Press q to quit   ")
-    while char != "q":
-        maze_draw(maze, opts)
-        print(content)
-        char = input("Press q to quit: ")
-        # continue
-
-
 def menu(maze: str, opts: _MazeOptions) -> None:
+    """A-Maze-ing main menu.
+
+    Arguments:
+        maze: the file where the maze is stored.
+        opts: The configuration for all the maze.
+    """
     clear = "\x1bc"
-    player = Player(maze, opts)
+    player = _Player(maze, opts)
     while True:
         print("\x1b[H\x1b[J", end="")
         maze_draw(maze, opts)
@@ -259,16 +275,12 @@ def menu(maze: str, opts: _MazeOptions) -> None:
         print("3. Change colors")
         print("4. Change configuration")
         print("5. Play")
-        # print("6. Top players")
         print("q. Quit")
         opt = input("\x1b[KSelect option: ")
         if opt == "1":
             print(f"{clear}")
-            maze = generate(opts, opts._conf)
-            player = Player(maze, opts)
-            # with open("scores.json", "w"):
-            #     pass
-            # return menu(maze, opts)
+            maze = generate(opts)
+            player = _Player(maze, opts)
         elif opt == "2":
             opts._show_hide()
         elif opt == "3":
@@ -276,18 +288,20 @@ def menu(maze: str, opts: _MazeOptions) -> None:
         elif opt == "4":
             change_config(maze, opts)
         elif opt == "5":
-            player.show_player()
-        # elif opt == "6":
-            # players_stats(maze, opts)
+            player._show_player()
         elif opt.lower() == "q":
             sys.exit()
         else:
             pass
-        player.player_moves()
+        player._player_moves()
 
 
 def maze_config(conf_file: str) -> dict[str, str]:
-    """Open the configuration file and set everything"""
+    """Open the configuration file and set everything.
+
+    Arguments:
+        config_file: The file where the configuration is currently stored.
+    """
     with open(conf_file) as f:
         txt = f.read()
         opts = txt.split("\n")
@@ -312,6 +326,7 @@ def maze_config(conf_file: str) -> dict[str, str]:
 
 
 def init_config() -> dict[str, str]:
+    """Configuration initializer if configuration loading fails"""
     while True:
         conf: dict[str, str] = {}
         try:
@@ -458,7 +473,7 @@ if __name__ == "__main__":
             time.sleep(3)
             conf = init_config()
         opts = _MazeOptions(conf)
-        file = generate(opts, opts._conf)
+        file = generate(opts)
         maze_draw(file, opts)
         menu(file, opts)
     except MemoryError:

@@ -12,10 +12,11 @@ authors = [
 description = "Maze Generator"
 readme = "README.md"
 requires-python = ">=3.10"
-license = { file = "LICENSE.md" }
+license = { file = "mazegen/LICENSE.md" }
 dependencies = [
     "numpy"
 ]
 
-[tool.setuptools]
-py-modules = ["maze_generator"]
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["mazegen*"]

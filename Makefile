@@ -17,6 +17,7 @@ SOURCES =	a_maze_ing.py \
 			maze_generator.py
 
 CACHE = __pycache__ \
+		*/__pycache__ \
 		.mypy_cache
 
 RM = rm -rf

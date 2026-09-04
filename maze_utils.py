@@ -5,26 +5,15 @@ from collections.abc import Callable
 
 
 class MazeError(Exception):
+    """Class for errors regarding the maze."""
+
     def __init__(self, msg: str = ""):
         self.msg = msg
 
 
-def uint8(func: Callable[[Any], Any]) -> Callable[[Any], Any]:
-    """Decorator to validate 0 <= value <= 255"""
-    @wraps(func)
-    def validate(*args: Any, **kwargs: Any) -> Any:
-        if args[0] < 0 or args[0] > 255:
-            raise ValueError
-        return func(*args, **kwargs)
-    return validate
-
-
-@uint8
-def validate_color(channel: int) -> None:
-    pass
-
-
 class _MazeOptions:
+    """Class for storage of maze configuration and display colors."""
+
     def __init__(self, conf: dict[str, str]) -> None:
         self._conf = conf
         self._solution = False
@@ -39,11 +28,12 @@ class _MazeOptions:
         }
 
     def _show_hide(self) -> None:
+        """Show or hide the maze solution."""
         self._solution = self._solution is False
 
     @staticmethod
     def _uint8(func: Callable[[Any], Any]) -> Callable[[Any], Any]:
-        """Decorator to validate 0 <= value <= 255"""
+        """Decorator to validate 0 <= value <= 255."""
         @wraps(func)
         def validate(*args: Any, **kwargs: Any) -> Any:
             if args[0] < 0 or args[0] > 255:
@@ -54,26 +44,38 @@ class _MazeOptions:
     @staticmethod
     @_uint8
     def _validate_color(channel: int) -> None:
+        """Validate a color channel is  uint8.
+
+    Arguments:
+    """
         pass
 
     def _select_color(self, key: str) -> None:
+        """Change the display color for a key.
+
+    Arguments:
+    """
         if key not in self._palette.keys():
             print("Option not in palette.")
             return
         print(f"Currently selected: {key} {self._palette.get(key)}  \x1b[0m")
         try:
             R = int(input("Insert red (R) intensity [0-255]:   "))
-            validate_color(R)
+            self._validate_color(R)
             G = int(input("Insert green (G) intensity [0-255]: "))
-            validate_color(G)
+            self._validate_color(G)
             B = int(input("Insert blue (B) intensity [0-255]:  "))
-            validate_color(B)
+            self._validate_color(B)
             self._palette.update({key: f"\x1b[48;2;{R};{G};{B}m"})
         except ValueError:
             print("[ERROR] Invalid color value. Aborting.")
             return
 
     def _select_config(self, key: str) -> None:
+        """Change the configuration for a key.
+
+    Arguments:
+    """
         he = int(self._conf["HEIGHT"])
         wi = int(self._conf["WIDTH"])
         if key == "HEIGHT":
@@ -203,12 +205,18 @@ class _MazeOptions:
 
 
 def manhattan(curr: tuple[int, int], neigh: tuple[int, int]) -> int:
-    """Manhattan heuristic, return distance"""
+    """Manhattan heuristic, return distance.
+
+    Arguments:
+    """
     return abs(curr[0] - neigh[0]) + abs(curr[1] - neigh[1])
 
 
 def check_errors(conf: dict[str, str]) -> None:
-    """Check for errors in the configuration"""
+    """Check for errors in the configuration.
+
+    Arguments:
+    """
     start = conf["ENTRY"].split(",")
     end = conf["EXIT"].split(",")
     try:
@@ -279,7 +287,10 @@ def check_errors(conf: dict[str, str]) -> None:
 
 
 def get_walls(n: int) -> tuple[int, ...]:
-    """Get the walls in a tile, return bit tuple"""
+    """Get the walls in a tile, return bit tuple.
+
+    Arguments:
+    """
     if n > 15 or n < 0:
         raise ValueError
     bits = []
@@ -295,7 +306,10 @@ def get_walls(n: int) -> tuple[int, ...]:
 
 
 def check_tile(maze: NDArray[Any], coords: tuple[int, int]) -> None:
-    """Check coherence between tile walls"""
+    """Check coherence between tile walls.
+
+    Arguments:
+    """
     i, j = coords
     tile = int(maze[i, j])
     msg = f"Maze tile {coords} has incoherent walls"

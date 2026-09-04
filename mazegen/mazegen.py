@@ -1,4 +1,3 @@
-# from __future__ import annotations
 from numpy import zeros, ones, inf
 from numpy.typing import NDArray
 from typing import Any
@@ -9,10 +8,13 @@ import random as rng
 
 """Maze generation module.
 
-Example:
-    from maze_generator import MazeGenerator
+This module provides a MazeGenerator class for generating and displaying mazes.
 
-    generator = MazeGenerator(width=20, height=20, seed=42)
+Example:
+    from mazegen import MazeGenerator
+
+
+    generator = MazeGenerator(20, 20, '0,0', '19,19', seed=42)
 
     maze = generator.maze
     solution = generator.solution
@@ -26,7 +28,14 @@ through ``solution``.
 
 
 def _get_walls(n: int) -> tuple[int, ...]:
-    """Get the walls in a tile, return bit tuple"""
+    """Get the walls in a tile, return bit tuple.
+
+    Arguments:
+        n: The value of the tile.
+
+    Raises:
+        ValueError: If n is negative or higher than 15.
+    """
     if n > 15 or n < 0:
         raise ValueError
     bits = []
@@ -42,23 +51,23 @@ def _get_walls(n: int) -> tuple[int, ...]:
 
 
 def _manhattan(curr: tuple[int, int], neigh: tuple[int, int]) -> int:
-    """Manhattan heuristic, return distance"""
+    """Manhattan heuristic, return distance."""
     return abs(curr[0] - neigh[0]) + abs(curr[1] - neigh[1])
 
 
 class _Algorithm(ABC):
-
     """Abstract class for maze generation algorithms."""
 
     @abstractmethod
     def _generate(
         self, maze: NDArray[Any], seed: str | int | None = None
     ) -> None:
+        """Generate the maze."""
         pass
 
     @staticmethod
     def _unvisited_set(visited: NDArray[Any]) -> set[tuple[int, int]]:
-        """Make the unvisited tiles set"""
+        """Return the unvisited tiles set from an array."""
         yet = set()
         for i in range(visited.shape[0]):
             for j in range(visited.shape[1]):
@@ -70,7 +79,7 @@ class _Algorithm(ABC):
     def _maze_init(
         maze: NDArray[Any], visited: NDArray[Any], seed: str | int | None
     ) -> tuple[int, int]:
-        """Set the first visited tile of the maze, return such tile as tuple"""
+        """Set first visited tile of the maze, return it as tuple."""
         h, w = maze.shape[:]
         v = -1
         rng.seed(seed)
@@ -84,7 +93,7 @@ class _Algorithm(ABC):
     def _connect(
         maze: NDArray[Any], curr: tuple[int, int], neigh: tuple[int, int]
     ) -> None:
-        """Connect two maze tiles"""
+        """Connect two maze tiles."""
         if _manhattan(curr, neigh) != 1:
             return
         if curr[0] == neigh[0] + 1 and _get_walls(
@@ -110,7 +119,7 @@ class _Algorithm(ABC):
 
     @staticmethod
     def _direction() -> tuple[str, int]:
-        """Choose a direction, return tuple"""
+        """Choose a direction, return tuple."""
         if rng.random() < .5:
             axis = "V"
         else:
@@ -122,7 +131,7 @@ class _Algorithm(ABC):
         return (axis, step)
 
     def _gen_visited(self, maze: NDArray[Any]) -> None:
-        """Generate auxiliar array to keep track of visited tiles"""
+        """Generate auxiliar array to keep track of visited tiles."""
         visited = zeros(maze.shape, int)
         if visited.shape[0] > 6 and visited.shape[1] > 8:
             hs = (visited.shape[0] - 1) // 2 - 2
@@ -142,13 +151,12 @@ class _Algorithm(ABC):
 
 
 class _DFS(_Algorithm):
-
-    """Depth First Search / Recursive Backtracker algorithm"""
+    """Depth First Search / Recursive Backtracker algorithm private class."""
 
     def _generate(
         self, maze: NDArray[Any], seed: str | int | None = None
     ) -> None:
-        """Depth First Search / Recursive Backtracker algorithm"""
+        """Depth First Search / Recursive Backtracker algorithm."""
         self._gen_visited(maze)
         visited = self._visited
         current = self._maze_init(maze, visited, seed)
@@ -187,11 +195,12 @@ class _DFS(_Algorithm):
 
 
 class _Prim(_Algorithm):
+    """Prim's algorithm private class."""
 
     def _generate(
         self, maze: NDArray[Any], seed: str | int | None = None
     ) -> None:
-        """Prim's algorithm"""
+        """Prim's algorithm."""
         self._gen_visited(maze)
         visited = self._visited
         rng.seed(seed)
@@ -231,6 +240,7 @@ class _Prim(_Algorithm):
 
 
 class _Wilson(_Algorithm):
+    """Wilson's algorithm private class."""
 
     @staticmethod
     def _wilson_erase(
@@ -238,7 +248,7 @@ class _Wilson(_Algorithm):
         path: list[tuple[int, int]],
         point: tuple[int, int]
     ) -> None:
-        """Erase a loop during random walk"""
+        """Erase a loop during random walk."""
         while path[-1] != point:
             visited[path[-1][:]] = 0
             path.pop()
@@ -246,7 +256,7 @@ class _Wilson(_Algorithm):
     def _generate(
         self, maze: NDArray[Any], seed: str | int | None = None
     ) -> None:
-        """Wilson's algorithm"""
+        """Wilson's algorithm."""
         self._gen_visited(maze)
         visited = self._visited
         current = self._maze_init(maze, visited, seed)
@@ -301,10 +311,12 @@ class _Wilson(_Algorithm):
 
 
 class _AldousBroder(_Algorithm):
+    """Aldous-Broder algorithm private class."""
+
     def _generate(
         self, maze: NDArray[Any], seed: str | int | None = None
     ) -> None:
-        """Aldous-Broder algorithm"""
+        """Aldous-Broder algorithm."""
         self._gen_visited(maze)
         visited = self._visited
         rng.seed(seed)
@@ -336,13 +348,12 @@ class _AldousBroder(_Algorithm):
 
 
 class _Imperfect(_Algorithm):
-
-    """Algorithm class for imperfect mazes"""
+    """Algorithm class for imperfect mazes."""
 
     def _break_wall(
         self, maze: NDArray[Any], tile: tuple[int, int], op: str
     ) -> None:
-        """Connect the chosen tiles"""
+        """Connect the chosen tiles."""
         i, j = tile[:]
         if op == "N":
             self._connect(maze, tile, (i - 1, j))
@@ -356,7 +367,7 @@ class _Imperfect(_Algorithm):
     def _remove_walls(
         self, maze: NDArray[Any], tile: tuple[int, int], prob: float = 1
     ) -> None:
-        """Check for neighbouring removable walls"""
+        """Check for neighbouring removable walls."""
         if maze[tile[:]] == 15 or prob < 0 or prob > 1:
             return
         i, j = tile[:]
@@ -380,7 +391,7 @@ class _Imperfect(_Algorithm):
     def _generate(
         self, maze: NDArray[Any], seed: str | int | None = None
     ) -> None:
-        """Algorithm for adding loops and removing dead ends"""
+        """Algorithm for braiding perfect mazes."""
 
         h, w = maze.shape
 
@@ -441,8 +452,7 @@ class _Imperfect(_Algorithm):
 
 
 class _Maze:
-
-    """Private class for the maze"""
+    """Private class for the maze."""
 
     def __init__(
         self,
@@ -452,6 +462,15 @@ class _Maze:
         seed: int | str | None = None,
         algorithm: str = "Prim"
     ) -> None:
+        """Initialize a maze.
+        Arguments:
+            height: The maze height. Must be positive.
+            width: The maze width. Must be positive.
+            perfect: Whether the maze is perfect or not.
+        Keyword arguments:
+            seed: The seed for the mazer generation (default None).
+            algorithm: The maze generation algorithm. (default 'Prim').
+        """
         self._height = height
         self._width = width
         self._perfect = perfect
@@ -473,6 +492,14 @@ class _Maze:
             return
 
     def __str__(self) -> str:
+        """Print the maze as a hexadecimal grid.
+
+        Bits represent the wall status (0 open; 1 closed):
+            0: N
+            1: E
+            2: S
+            3: W
+        """
         base = "0123456789abcdef"
         s = ""
         for i in range(self._maze.shape[0]):
@@ -490,7 +517,7 @@ class _Maze:
         return s
 
     def _generate(self) -> None:
-        """Generate the maze"""
+        """Generate the maze."""
         self._maze = 15 * ones([self._height, self._width], int)
         self._algo._generate(self._maze, self._seed)
         if self._perfect is False:
@@ -523,19 +550,19 @@ class _Maze:
 
 
 class _Node:
-
-    """Private class for the path nodes.
-    Arguments:
-        val: The value. For this project, a tuple representing a tile.
-
-    Additional variables:
-        g: the distance from the node to the entrance.
-        h: the ideal distance from the node to the exit.
-        f: the sum of g + h.
-        next: The next node.
-    """
+    """Private class for the path nodes."""
 
     def __init__(self, value: Any) -> None:
+        """Initialize a node.
+        Arguments:
+            val: The value. For this project, a tuple representing a tile.
+
+        Additional arguments:
+            g: the distance from the node to the entrance.
+            h: the ideal distance from the node to the exit.
+            f: the sum of g + h.
+            next: The next node.
+        """
         self.val = value
         self._g = inf
         self._h = inf
@@ -543,7 +570,7 @@ class _Node:
         self.next: Any = None
 
     def _size(self) -> int:
-        """Get the length of the node chain"""
+        """Get the length of the node chain."""
         first = self
         n = 1
         while self.next is not None and self.next is not first:
@@ -573,13 +600,7 @@ class _Node:
 
 
 class _Path:
-
-    """Private class to store the solution.
-    Arguments:
-        maze: The maze as a Numpy array.
-        entry: The maze entry.
-        exit: The maze exit.
-    """
+    """Private class to store the solution. """
 
     def __init__(
         self,
@@ -587,6 +608,12 @@ class _Path:
         entry: tuple[int, int],
         exit: tuple[int, int]
     ) -> None:
+        """Initialize a path.
+
+        Arguments:
+            maze: The maze as a Numpy array.
+            entry: The maze entry.
+            exit: The maze exit."""
         self._entry = entry
         self._exit = exit
         self._maze = maze
@@ -594,13 +621,14 @@ class _Path:
         self._checked = 0
 
     def __str__(self) -> str:
+        """Print path from entry to exit in cardinal directions."""
         return self._path
 
     @staticmethod
     def _neighbours(
         maze: NDArray[Any], current: tuple[int, int]
     ) -> list[tuple[int, int]]:
-        """Return reachable neighbours list from a maze tile"""
+        """Return reachable neighbours list from a maze tile."""
         n = maze[current[:]]
         neighs = []
         walls = _get_walls(n)
@@ -618,7 +646,7 @@ class _Path:
     def _choose_current(
         f: NDArray[Any], points: list[_Node], exit: tuple[int, int]
     ) -> _Node:
-        """Return most promising point to evaluate"""
+        """Return most promising node to evaluate."""
         f_cost = []
         for i in points:
             p = i.val
@@ -652,9 +680,9 @@ class _Path:
 
     @staticmethod
     def _rm_node(
-        set: set[_Node], point: tuple[int, int], new: _Node
+        set: set[_Node], new: _Node
     ) -> None:
-        """Remove a node from a set"""
+        """Remove a node from a set."""
         alt_path = []
         for n in set:
             if n.val == new.val:
@@ -668,13 +696,13 @@ class _Path:
 
     @staticmethod
     def _add_front(old: _Node, newnode: _Node) -> None:
-        """Add a new node pointing to the old node"""
+        """Add a new node pointing to the old node."""
         if newnode is None:
             return
         newnode.next = old
 
     def _solve(self) -> None:
-        """A* pathfinding algorithm with Manhattan heuristic"""
+        """A* pathfinding algorithm with Manhattan heuristic."""
 
         opened, closed = set(), set()
         g_cost = inf * ones(self._maze.shape[:], int)
@@ -706,7 +734,7 @@ class _Path:
                 """Check the route to the node is 'cheaper'"""
                 if node._get_g() < g_cost[i[:]]:
                     g_cost[i[:]] = node._get_g()
-                    self._rm_node(opened, i, node)
+                    self._rm_node(opened, node)
                 else:
                     continue
                 node._set_h(_manhattan(i, self._exit))
@@ -741,19 +769,8 @@ class _Path:
 
 
 class MazeGenerator:
+    """Class for generating and displaying mazes."""
 
-    """Generate a maze.
-
-    Arguments:
-        height: Height of the maze.
-        width: Width of the maze.
-        start: Entry of the maze.
-        end: Exit of the maze.
-        perfect: Whether the maze is perfect. Defaults to False.
-        seed: Optional random seed.
-        algorithm: The generation algorithm. Accepts DFS, Prim (default),
-        Wilson and Aldous-Broder.
-    """
     def __init__(
         self,
         height: int,
@@ -764,6 +781,19 @@ class MazeGenerator:
         seed: str | None = None,
         algorithm: str = "Prim"
     ) -> None:
+        """Initialize a maze generator.
+
+        Arguments:
+            height: Height of the maze.
+            width: Width of the maze.
+            start: Entry of the maze.
+            end: Exit of the maze.
+
+        Keyword arguments:
+            perfect: Whether the maze is perfect (default False).
+            seed: Optional random seed.
+            algorithm: The generation algorithm. Accepts DFS, Prim (default),
+            Wilson and Aldous-Broder."""
         try:
             assert height > 0
             assert width > 0
@@ -794,7 +824,14 @@ class MazeGenerator:
             self._gen = False
 
     def _valid_entry_exit(self) -> None:
-        """Check entry and exit are valid"""
+        """Check entry and exit are valid.
+
+        Raises:
+            ValueError: if:
+                Entry and exit are equal.
+                Entry or exit are out of maze bounds.
+                Entry or exit will be in unreachable tiles.
+        """
 
         """Check entry and exit are not equal"""
         if self._entry == self._exit:
@@ -839,7 +876,7 @@ class MazeGenerator:
                 raise ValueError
 
     def _generate(self) -> None:
-        """Generate the maze"""
+        """Generate the maze."""
         self._maze = _Maze(
             self._height,
             self._width,
@@ -854,7 +891,7 @@ class MazeGenerator:
             return
 
     def _solve(self) -> None:
-        """Solve the maze"""
+        """Solve the maze."""
         try:
             self._path = _Path(self._maze._maze, self._entry, self._exit)
             self._path._solve()
@@ -862,10 +899,11 @@ class MazeGenerator:
             print("[ERROR] No maze to solve", file=sys.stderr)
 
     def color(self, key: str, color: list[int] = []) -> None:
-        """Change the color of a palette
+        """Change the color of a palette.
+
         Arguments:
             key: Part of the maze to paint.
-                Accepts "tile", "wall", "entry", "exit", "path", "block"
+                Accepts "tile", "wall", "entry", "exit", "path" and "block".
             color: List of three uint8 numbers.
                 If not valid, removes the key from the palette.
         """
@@ -887,8 +925,10 @@ class MazeGenerator:
 
     def draw(self, solution: bool = False) -> None:
         """Draw the maze.
+
         Arguments:
-            solution: whether the solution has to be drawn. Defaults to False.
+            solution: whether the solution has to be drawn (default False).
+
         If a palette key is missing, a default color for it is used.
         """
         pathtiles = []
@@ -980,7 +1020,7 @@ class MazeGenerator:
             print()
 
     def output(self, filename: str) -> None:
-        """Save the maze in an output file"""
+        """Save the maze in an output file."""
         base = "0123456789abcdef"
         try:
             self._maze
@@ -995,11 +1035,10 @@ class MazeGenerator:
             out.write("\n")
             out.write(f"{self._entry[1]},{self._entry[0]}\n")
             out.write(f"{self._exit[1]},{self._exit[0]}\n")
-            # print(self._solution)
             out.write(self._path._path)
 
     def regen(self) -> None:
-        """Regenerate and solve the maze"""
+        """Regenerate and solve the maze."""
         try:
             self._generate()
             self._solve()
