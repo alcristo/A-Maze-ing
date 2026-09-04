@@ -4,18 +4,30 @@ CONFIG = config.txt
 
 PYTHON = python3
 
-REQUIREMENTS = numpy
+PIP = pip install
+
+REQUIREMENTS = -r requirements.txt
+
+SOURCES =	a_maze_ing.py \
+			maze_algos.py \
+			maze_utils.py \
+			pathfinding.py \
+			maze_draw.py \
+			gameplay.py \
+			maze_generator.py
 
 CACHE = __pycache__ \
 		.mypy_cache
 
 RM = rm -rf
 
+LINT = flake8 $(SOURCES) && mypy $(SOURCES)
+
 
 install:
-	pip install $(REQUIREMENTS)
+	$(PIP) $(REQUIREMENTS)
 
-run:
+run: clean
 	$(PYTHON) $(NAME) $(CONFIG) && make clean
 
 debug:
@@ -24,8 +36,8 @@ debug:
 clean:
 	$(RM) $(CACHE)
 
-lint:
-	$(PYTHON) -m flake8 && $(PYTHON) -m mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs && make clean
+lint: clean
+	$(LINT) --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs && make clean
 
-lint-strict:
-	$(PYTHON) -m flake8 && $(PYTHON) -m mypy . --strict && make clean
+lint-strict: clean
+	$(LINT) --strict && make clean
