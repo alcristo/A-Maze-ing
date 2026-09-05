@@ -4,6 +4,9 @@ from functools import wraps
 from collections.abc import Callable
 
 
+"""Utilities module for a_maze_ing."""
+
+
 class MazeError(Exception):
     """Class for errors regarding the maze."""
 
@@ -11,7 +14,7 @@ class MazeError(Exception):
         self.msg = msg
 
 
-class _MazeOptions:
+class MazeOptions:
     """Class for storage of maze configuration and display colors."""
 
     def __init__(self, conf: dict[str, str]) -> None:

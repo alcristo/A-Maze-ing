@@ -4,7 +4,10 @@ from typing import Any
 from maze_utils import get_walls, manhattan
 
 
-class Node:
+"""Maze solving module for a_maze_ing"""
+
+
+class _Node:
     """Node class to track down the path"""
 
     def __init__(self, value: Any) -> None:
@@ -50,7 +53,7 @@ class Node:
         self.f = self._g + self._h
 
 
-def neighbours(
+def _neighbours(
     maze: NDArray[Any], current: tuple[int, int]
 ) -> list[tuple[int, int]]:
     """Return reachable neighbours list from a maze tile."""
@@ -68,9 +71,9 @@ def neighbours(
     return neighs
 
 
-def choose_current(
-        f: NDArray[Any], points: list[Node], exit: tuple[int, int]
-) -> Node:
+def _choose_current(
+        f: NDArray[Any], points: list[_Node], exit: tuple[int, int]
+) -> _Node:
     """Return most promising point to evaluate."""
     f_cost = []
     for i in points:
@@ -92,7 +95,7 @@ def choose_current(
     return current
 
 
-def check_node(set: set[Node], point: tuple[int, int]) -> bool:
+def _check_node(set: set[_Node], point: tuple[int, int]) -> bool:
     """Check point in a set, return bool."""
     for i in set:
         if i.val == point:
@@ -100,9 +103,9 @@ def check_node(set: set[Node], point: tuple[int, int]) -> bool:
     return False
 
 
-def rm_node(set: set[Node], new: Node) -> None:
+def _rm_node(set: set[_Node], new: _Node) -> None:
     """Remove node from set and add new one if shorter."""
-    alt_path: list[Node] = []
+    alt_path: list[_Node] = []
     for n in set:
         if n.val == new.val:
             alt_path.append(n)
@@ -114,7 +117,7 @@ def rm_node(set: set[Node], new: Node) -> None:
         set.add(new)
 
 
-def add_front(current: Node, new: Node) -> None:
+def _add_front(current: _Node, new: _Node) -> None:
     """Add a new node to the current head."""
     if new is None:
         return
@@ -127,40 +130,40 @@ def a_star(
     """A* pathfinding algorithm with Manhattan heuristic."""
 
     # Initialize lists and F cost array
-    opened: set[Node] = set()
-    closed: set[Node] = set()
+    opened: set[_Node] = set()
+    closed: set[_Node] = set()
     g_cost = inf * ones(maze.shape[:], int)
     f_cost = inf * ones(maze.shape[:], int)
-    opened.add(Node(entr))
+    opened.add(_Node(entr))
     f_cost[entr[:]] = manhattan(entr, exit)
     g_cost[entr[:]] = 0
     n = 0
     while len(opened) > 0:
         n += 1
         # Choose current node, move from open list to closed list
-        current = choose_current(f_cost, list(opened), exit)
+        current = _choose_current(f_cost, list(opened), exit)
         opened.remove(current)
         closed.add(current)
         # If node is the exit, path has been found
         if current.val == exit:
             break
-        for i in neighbours(maze, current.val):
+        for i in _neighbours(maze, current.val):
             # If node is already closed, continue
-            if check_node(closed, i) is True:
+            if _check_node(closed, i) is True:
                 continue
-            node = Node(i)
-            add_front(current, node)
+            node = _Node(i)
+            _add_front(current, node)
             node.g = node.size() - 1
             if node.g < g_cost[i[:]]:
                 g_cost[i[:]] = node.g
-                rm_node(opened, node)
+                _rm_node(opened, node)
             else:
                 continue
             node.h = manhattan(i, exit)
             # Update F cost if is lower
-            if node.f < f_cost[i[:]] or check_node(opened, i) is False:
+            if node.f < f_cost[i[:]] or _check_node(opened, i) is False:
                 f_cost[i[:]] = node.f
-                if check_node(opened, i) is False:
+                if _check_node(opened, i) is False:
                     opened.add(node)
 
     # Return the maze solution via backtracking

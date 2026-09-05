@@ -107,20 +107,24 @@ MazeGenerator(
 )
 ```
 
-The variables `start` and `end` will be the entry annd exit of the maze respectively, and need to have the structure `"{int},{int}"`, just like in the configuration file from the main program, except for the quotes. Upon instantiation, the class will automatically generate 
+The variables `start` and `end` will be the entry annd exit of the maze respectively, and need to have the structure `"{int},{int}"`, just like in the configuration file from the main program, except for the quotes.
+
+Upon instantiation, the class will automatically generate a maze ready for use.
 
 The `MazeGenerator` class will have the following methods:
 
-* `regen()`: Generates a new maze and solves it.
+* `regen()`: Generates a new maze and solves it. It will not do nothing if the maze is not valid.
 * `draw(solution: bool = False)`: Draws the maze in terminal. The `solution` variable decides whether to draw the maze solution or not.
-* `color(key: str, color: list[int] = [])`: Changes the `key` color from the palette. The color must be a three-long list and all their values need to be 8-bit  unsigned integers. Otherwise, the key color will be assigned a default value.
+* `color(key: str, color: list[int] = [])`: Changes the `key` color from the palette. The color must be a three-long list and all their values need to be 8-bit  unsigned integers. Any other value will remove the key from the palette, assigning a default color to it.
 * `output(filename: str)`: Saves the maze, entry, exit and solution in a file named `filename`.
 
 The `MazeGenerator` class also has the following properties:
 
-* `maze`: A `Maze` private class containing the maze information. Printing this class will print its hexaddecimal representation.
+* `maze`: A `Maze` private class containing the maze information. Printing this class will print its hexadecimal representation.
+* `path`: A `Path` private class contaning information about the maze solution. Printing this class will print its NESW representation.
 * `solution`: The maze solution from entry to exit as a NESW string.
 * `palette`: A dictionary containing the colors of the maze upon drawing.
+
 
 ### Team and project management
 
@@ -224,7 +228,7 @@ pip install mazegen
 To use the `MazeGenerator` class, run in Python:
 
 ```python
-from mazegen import MazeGenerator
+from mazegen.mazegen import MazeGenerator
 ```
 
 ## Resources

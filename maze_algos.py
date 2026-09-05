@@ -1,12 +1,15 @@
 from numpy.typing import NDArray
 import random as rng
 from typing import Any
-from maze_utils import manhattan, get_walls, _MazeOptions
-from pathfinding import a_star
+from maze_utils import manhattan, get_walls, MazeOptions
+from maze_solve import a_star
 import time
 
 
-def creation_draw(maze_file: str, opts: _MazeOptions) -> None:
+"""Maze generation algorithms and animation module for a_maze_ing."""
+
+
+def _creation_draw(maze_file: str, opts: MazeOptions) -> None:
     """While animated, draw the maze."""
     with open(maze_file) as f:
         line = f.readline()
@@ -74,7 +77,7 @@ def creation_draw(maze_file: str, opts: _MazeOptions) -> None:
         print()
 
 
-def write_path(maze: NDArray[Any], opts: _MazeOptions) -> None:
+def _write_path(maze: NDArray[Any], opts: MazeOptions) -> None:
     """When ANIMATE is True, animate the maze generation."""
     if opts._conf.get("ANIMATE", "False").lower() == "false":
         return
@@ -94,24 +97,22 @@ def write_path(maze: NDArray[Any], opts: _MazeOptions) -> None:
         out.write(f"{entr[1]},{entr[0]}\n")
         out.write(f"{exit[1]},{exit[0]}\n")
         out.write(sol)
-    creation_draw(opts._conf['OUTPUT_FILE'], opts)
+    _creation_draw(opts._conf['OUTPUT_FILE'], opts)
     time.sleep(1 / 16)
 
 
-def maze_init(maze: NDArray[Any], visited: NDArray[Any]) -> tuple[int, int]:
+def _maze_init(maze: NDArray[Any], visited: NDArray[Any]) -> tuple[int, int]:
     """Initialize the first tile of the maze."""
     h, w = maze.shape[:]
     v = -1
     while v == -1:
-        current = (
-            rng.randrange(0, h), rng.randrange(0, w)
-        )
+        current = (rng.randrange(0, h), rng.randrange(0, w))
         v = visited[current[:]]
     visited[current[:]] = 1
     return current
 
 
-def connect(
+def _connect(
     maze: NDArray[Any], curr: tuple[int, int], neigh: tuple[int, int]
 ) -> None:
     """Connect two maze tiles."""
@@ -131,7 +132,7 @@ def connect(
         maze[neigh[0]][neigh[1]] -= 2
 
 
-def direction() -> tuple[str, int]:
+def _direction() -> tuple[str, int]:
     """Choose a direction, return tuple"""
     if rng.random() < .5:
         axis = "V"
@@ -144,7 +145,7 @@ def direction() -> tuple[str, int]:
     return (axis, step)
 
 
-def wilson_erase(
+def _wilson_erase(
     visited: NDArray[Any], path: list[tuple[int, int]], point: tuple[int, int]
 ) -> None:
     """For Wilson, erase loop during random walk."""
@@ -153,7 +154,7 @@ def wilson_erase(
         path.pop()
 
 
-def unvisited_set(visited: NDArray[Any]) -> set[tuple[int, int]]:
+def _unvisited_set(visited: NDArray[Any]) -> set[tuple[int, int]]:
     """Make the unvisited tiles set."""
     yet = set()
     for i in range(visited.shape[0]):
@@ -164,10 +165,10 @@ def unvisited_set(visited: NDArray[Any]) -> set[tuple[int, int]]:
 
 
 def dfs(
-        maze: NDArray[Any], visited: NDArray[Any], opts: _MazeOptions
+        maze: NDArray[Any], visited: NDArray[Any], opts: MazeOptions
 ) -> None:
     """Depth Fisrst Search / Recursive backtracker algorithm."""
-    current = maze_init(maze, visited)
+    current = _maze_init(maze, visited)
     lst = [current]
     while len(lst) > 0:
         nvis = set()
@@ -186,10 +187,10 @@ def dfs(
         else:
             new = rng.choice([*nvis])
             nvis.clear()
-            connect(maze, current, new)
+            _connect(maze, current, new)
             visited[new[:]] = 1
             lst.append(new)
-            write_path(maze, opts)
+            _write_path(maze, opts)
         try:
             current = lst[-1]
         except IndexError:
@@ -197,10 +198,10 @@ def dfs(
 
 
 def prim(
-        maze: NDArray[Any], visited: NDArray[Any], opts: _MazeOptions
+        maze: NDArray[Any], visited: NDArray[Any], opts: MazeOptions
 ) -> None:
     """Prim's algorithm."""
-    current = maze_init(maze, visited)
+    current = _maze_init(maze, visited)
     opened: set[tuple[int, int]] = set()
     opened.add(current)
     while len(opened) > 0:
@@ -220,22 +221,22 @@ def prim(
         else:
             new = rng.choice([*nvis])
             nvis.clear()
-            connect(maze, current, new)
+            _connect(maze, current, new)
             visited[new[:]] = 1
             opened.add(new)
-            write_path(maze, opts)
+            _write_path(maze, opts)
         if len(opened) > 0:
             current = rng.choice([*opened])
 
 
 def aldous_broder(
-        maze: NDArray[Any], visited: NDArray[Any], opts: _MazeOptions
+        maze: NDArray[Any], visited: NDArray[Any], opts: MazeOptions
 ) -> None:
     """Aldous-Broder algorithm."""
-    current = maze_init(maze, visited)
-    yet = unvisited_set(visited)
+    current = _maze_init(maze, visited)
+    yet = _unvisited_set(visited)
     while len(yet) > 0:
-        direct = direction()
+        direct = _direction()
         try:
             if direct[0] == "V":
                 neighbour = (current[0] + direct[1], current[1])
@@ -250,27 +251,27 @@ def aldous_broder(
         if visited[neighbour[0], neighbour[1]] == -1:
             continue
         elif visited[neighbour[0], neighbour[1]] == 0:
-            connect(maze, tuple[int, int](current), tuple[int, int](neighbour))
-            write_path(maze, opts)
+            _connect(maze, current, neighbour)
+            _write_path(maze, opts)
             yet.discard(neighbour)
         current = neighbour
         visited[current[0], current[1]] = 1
 
 
 def wilson(
-        maze: NDArray[Any], visited: NDArray[Any], opts: _MazeOptions
+        maze: NDArray[Any], visited: NDArray[Any], opts: MazeOptions
 ) -> None:
     """Wilson's algorithm."""
-    current = maze_init(maze, visited)
-    write_path(maze, opts)
-    yet = unvisited_set(visited)
+    current = _maze_init(maze, visited)
+    _write_path(maze, opts)
+    yet = _unvisited_set(visited)
     while len(yet) > 0:
         path = []
         current = rng.choice([*yet])
         visited[current[0], current[1]] = 2
         path.append(current)
         while current in yet:
-            direct = direction()
+            direct = _direction()
             try:
                 if direct[0] == "V":
                     if current[0] + direct[1] in (-1, maze.shape[0]):
@@ -288,7 +289,7 @@ def wilson(
                 path.append(neighbour)
                 break
             elif neighbour in path:
-                wilson_erase(visited, path, neighbour)
+                _wilson_erase(visited, path, neighbour)
             current = neighbour
             visited[current[0], current[1]] = 2
             if current not in path:
@@ -297,27 +298,27 @@ def wilson(
             visited[tile[0], tile[1]] = 1
             yet.discard(tile)
         while len(path) > 1:
-            connect(maze, path[0], path[1])
-            write_path(maze, opts)
+            _connect(maze, path[0], path[1])
+            _write_path(maze, opts)
             current = path[1]
             path.pop(0)
         path.clear()
 
 
-def break_wall(maze: NDArray[Any], tile: tuple[int, int], op: str) -> None:
+def _break_wall(maze: NDArray[Any], tile: tuple[int, int], op: str) -> None:
     """Connect tile with its neighbour in cardinal point defined by op."""
     i, j = tile[:]
     if op == "N":
-        connect(maze, tile, (i - 1, j))
+        _connect(maze, tile, (i - 1, j))
     elif op == "E":
-        connect(maze, tile, (i, j + 1))
+        _connect(maze, tile, (i, j + 1))
     elif op == "S":
-        connect(maze, tile, (i + 1, j))
+        _connect(maze, tile, (i + 1, j))
     elif op == "W":
-        connect(maze, tile, (i, j - 1))
+        _connect(maze, tile, (i, j - 1))
 
 
-def remove_walls(
+def _remove_walls(
     maze: NDArray[Any], tile: tuple[int, int], prob: float = 1
 ) -> None:
     """Check for neighbouring removable walls."""
@@ -339,31 +340,31 @@ def remove_walls(
         if maze[i][j - 1] != 15 and walls[3] == 1:
             r_walls.append("W")
     if len(r_walls) > 0 and rng.random() < prob:
-        break_wall(maze, tile, rng.choice(r_walls))
+        _break_wall(maze, tile, rng.choice(r_walls))
 
 
-def imperfect(maze: NDArray[Any], opts: _MazeOptions) -> None:
+def imperfect(maze: NDArray[Any], opts: MazeOptions) -> None:
     """Algorithm to braid perfect mazes."""
     h, w = maze.shape
     if h == 1 or w == 1:
         return
 
     # Start connecting the four corners
-    connect(maze, (0, 0), (0, 1))
-    connect(maze, (0, 0), (1, 0))
-    connect(maze, (0, w - 1), (0, w - 2))
-    connect(maze, (0, w - 1), (1, w - 1))
-    connect(maze, (h - 1, w - 1), (h - 1, w - 2))
-    connect(maze, (h - 1, w - 1), (h - 2, w - 1))
-    connect(maze, (h - 1, 0), (h - 1, 1))
-    connect(maze, (h - 1, 0), (h - 2, 0))
-    write_path(maze, opts)
+    _connect(maze, (0, 0), (0, 1))
+    _connect(maze, (0, 0), (1, 0))
+    _connect(maze, (0, w - 1), (0, w - 2))
+    _connect(maze, (0, w - 1), (1, w - 1))
+    _connect(maze, (h - 1, w - 1), (h - 1, w - 2))
+    _connect(maze, (h - 1, w - 1), (h - 2, w - 1))
+    _connect(maze, (h - 1, 0), (h - 1, 1))
+    _connect(maze, (h - 1, 0), (h - 2, 0))
+    _write_path(maze, opts)
 
     # Remove random walls in random tiles
     for _ in range(h * w // 3):
         tile = (rng.randrange(h), rng.randrange(w))
-        remove_walls(maze, tile, .5)
-        write_path(maze, opts)
+        _remove_walls(maze, tile, .5)
+        _write_path(maze, opts)
     dead_ends = (7, 11, 13, 14)
     s_wall = ((0, 1), (0, 2), (0, 4), (0, 8))
     adm_walls = [1, 2, 3, 4, 5, 6, 8, 9, 10, 12]
@@ -372,8 +373,8 @@ def imperfect(maze: NDArray[Any], opts: _MazeOptions) -> None:
     for i in range(h):
         for j in range(w):
             if maze[i, j] in dead_ends:
-                remove_walls(maze, (i, j))
-                write_path(maze, opts)
+                _remove_walls(maze, (i, j))
+                _write_path(maze, opts)
 
     # Check for areas > 3x3; fill them in such case
     for i in range(h):
@@ -396,4 +397,4 @@ def imperfect(maze: NDArray[Any], opts: _MazeOptions) -> None:
                         maze[i + 1][j] += 1
                     if walls[3] == 1:
                         maze[i][j - 1] += 2
-                    write_path(maze, opts)
+                    _write_path(maze, opts)

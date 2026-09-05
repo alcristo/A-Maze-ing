@@ -1,14 +1,17 @@
-from maze_utils import get_walls, _MazeOptions
+from maze_utils import get_walls, MazeOptions
 import sys
 import termios
 import tty
 import time
 
 
-class _Player:
-    """Player class for 'play' mode."""
+"""Module for a_maze_ing "play" mode."""
 
-    def __init__(self, maze_file: str, opts: _MazeOptions) -> None:
+
+class Player:
+    """Player class for "play" mode."""
+
+    def __init__(self, maze_file: str, opts: MazeOptions) -> None:
         """Initialize a player.
 
         Arguments:

@@ -1,9 +1,9 @@
 from numpy import zeros, ones
-from maze_utils import MazeError, check_errors, _MazeOptions
+from maze_utils import MazeError, check_errors, MazeOptions
 from maze_algos import dfs, prim, wilson, aldous_broder, imperfect
-from pathfinding import a_star
+from maze_solve import a_star
 from maze_draw import maze_draw
-from gameplay import _Player
+from maze_play import Player
 import sys
 import random
 import time
@@ -11,7 +11,15 @@ from typing import Any
 from signal import SIGINT, signal, raise_signal
 
 
-def select_algo(opts: _MazeOptions) -> str:
+"""Maze generation script
+
+Run this script with a configuration file as argument (check README)
+If no file or invalid configuration, follow the instructions to generate one.
+After generation, navigate the menu.
+"""
+
+
+def _select_algo(opts: MazeOptions) -> str:
     """Return selected algorithm string.
 
     Arguments:
@@ -40,7 +48,7 @@ def select_algo(opts: _MazeOptions) -> str:
         return "Prim"
 
 
-def generate(opts: _MazeOptions) -> str:
+def _generate(opts: MazeOptions) -> str:
     """
     Generate the maze.
 
@@ -73,7 +81,7 @@ def generate(opts: _MazeOptions) -> str:
 
     # Maze generation
     random.seed(opts._conf.get("SEED"))
-    algo = select_algo(opts)
+    algo = _select_algo(opts)
     if algo == "AldousBroder":
         aldous_broder(maze, visited, opts)
     elif algo == "DFS":
@@ -109,7 +117,7 @@ def generate(opts: _MazeOptions) -> str:
     return conf['OUTPUT_FILE']
 
 
-def change_colors(maze: str, opts: _MazeOptions) -> None:
+def _change_colors(maze: str, opts: MazeOptions) -> None:
     """Change the display colors.
 
     Arguments:
@@ -170,7 +178,7 @@ def change_colors(maze: str, opts: _MazeOptions) -> None:
             pass
 
 
-def change_config(maze: str, opts: _MazeOptions) -> None:
+def _change_config(maze: str, opts: MazeOptions) -> None:
     """Change the maze configuration; generate new maze for changes to apply.
 
     Arguments:
@@ -258,7 +266,7 @@ def change_config(maze: str, opts: _MazeOptions) -> None:
             pass
 
 
-def menu(maze: str, opts: _MazeOptions) -> None:
+def _menu(maze: str, opts: MazeOptions) -> None:
     """A-Maze-ing main menu.
 
     Arguments:
@@ -266,7 +274,7 @@ def menu(maze: str, opts: _MazeOptions) -> None:
         opts: The configuration for all the maze.
     """
     clear = "\x1bc"
-    player = _Player(maze, opts)
+    player = Player(maze, opts)
     while True:
         print("\x1b[H\x1b[J", end="")
         maze_draw(maze, opts)
@@ -280,14 +288,14 @@ def menu(maze: str, opts: _MazeOptions) -> None:
         opt = input("\x1b[KSelect option: ")
         if opt == "1":
             print(f"{clear}")
-            maze = generate(opts)
-            player = _Player(maze, opts)
+            maze = _generate(opts)
+            player = Player(maze, opts)
         elif opt == "2":
             opts._show_hide()
         elif opt == "3":
-            change_colors(maze, opts)
+            _change_colors(maze, opts)
         elif opt == "4":
-            change_config(maze, opts)
+            _change_config(maze, opts)
         elif opt == "5":
             player._show_player()
         elif opt.lower() == "q":
@@ -297,7 +305,7 @@ def menu(maze: str, opts: _MazeOptions) -> None:
         player._player_moves()
 
 
-def maze_config(conf_file: str) -> dict[str, str]:
+def _maze_config(conf_file: str) -> dict[str, str]:
     """Open the configuration file and set everything.
 
     Arguments:
@@ -326,7 +334,7 @@ def maze_config(conf_file: str) -> dict[str, str]:
     return conf
 
 
-def init_config() -> dict[str, str]:
+def _init_config() -> dict[str, str]:
     """Configuration initializer if configuration loading fails"""
     while True:
         conf: dict[str, str] = {}
@@ -455,28 +463,19 @@ if __name__ == "__main__":
         print("Only one configuration file is allowed", file=sys.stderr)
     try:
         try:
-            conf = maze_config(sys.argv[1])
-            """opts = _MazeOptions(conf)
-            file = generate(opts, opts._conf)
-            maze_draw(file, opts)"""
+            conf = _maze_config(sys.argv[1])
         except IndexError:
-            conf = init_config()
-            """opts = _MazeOptions(conf)
-            file = generate(opts, opts._conf)
-            maze_draw(file, opts)"""
+            conf = _init_config()
         except FileNotFoundError:
-            conf = init_config()
-            """opts = _MazeOptions(conf)
-            file = generate(opts, opts._conf)
-            maze_draw(file, opts)"""
+            conf = _init_config()
         except MazeError as e:
             print(e.msg)
             time.sleep(3)
-            conf = init_config()
-        opts = _MazeOptions(conf)
-        file = generate(opts)
+            conf = _init_config()
+        opts = MazeOptions(conf)
+        file = _generate(opts)
         maze_draw(file, opts)
-        menu(file, opts)
+        _menu(file, opts)
     except MemoryError:
         print("[ERROR] Out of memory", file=sys.stderr)
     except OverflowError:

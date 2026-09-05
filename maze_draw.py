@@ -1,7 +1,10 @@
-from maze_utils import get_walls, _MazeOptions
+from maze_utils import get_walls, MazeOptions
 
 
-def maze_draw(maze_file: str, opts: _MazeOptions) -> None:
+"""Maze drawing module for a_maze_ing."""
+
+
+def maze_draw(maze_file: str, opts: MazeOptions) -> None:
     """Display the maze in terminal."""
     with open(maze_file) as f:
         line = f.readline()
