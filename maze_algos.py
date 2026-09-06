@@ -9,8 +9,9 @@ import time
 """Maze generation algorithms and animation module for a_maze_ing."""
 
 
-def _creation_draw(maze_file: str, opts: MazeOptions) -> None:
+def _creation_draw(opts: MazeOptions) -> None:
     """While animated, draw the maze."""
+    maze_file = opts._conf.get("OUTPUT_FILE")
     with open(maze_file) as f:
         line = f.readline()
         maze = []
@@ -97,7 +98,7 @@ def _write_path(maze: NDArray[Any], opts: MazeOptions) -> None:
         out.write(f"{entr[1]},{entr[0]}\n")
         out.write(f"{exit[1]},{exit[0]}\n")
         out.write(sol)
-    _creation_draw(opts._conf['OUTPUT_FILE'], opts)
+    _creation_draw(opts)
     time.sleep(1 / 16)
 
 

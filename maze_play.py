@@ -11,14 +11,14 @@ import time
 class Player:
     """Player class for "play" mode."""
 
-    def __init__(self, maze_file: str, opts: MazeOptions) -> None:
+    def __init__(self, opts: MazeOptions) -> None:
         """Initialize a player.
 
         Arguments:
             maze_file: the file containing the maze with entry and exit tiles.
             opts: the maze configuration, containing the display colors.
         """
-        self._maze_file = maze_file
+        self._maze_file = opts._conf.get("OUTPUT_FILE")
         self._opts = opts
         self._w = 0
         self._path = ""
