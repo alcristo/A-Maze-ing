@@ -30,7 +30,7 @@ There are several options in the configuration file:
 * PERFECT: Whether the maze is perfect (there is only one path between two separate points) or not perfect (there can be loops in the path). Defaults to `True`.
 * SEED: The seed to generate the maze. Defaults to `None`.
 * ALGORITHM: The maze generation algorithm. Accepts `aldous broder`, `recursive backtracker`, `depth first search`, `prim` and `wilson`. All options accept no space, snake case space (also - space for Aldous-Broder) and acronyms, as well as any ASCII case format. Defaults to `Prim`.
-* ANIMATED: Whether to show the maze generation. Defaults to `False`. The animation will not trigger if the maze height is greater than 60 or if the maze has more than 1000 tiles (for a square maze, the maximum length for trigger the animation will be 31).
+* ANIMATE: Whether to show the maze generation. Defaults to `False`. The animation will not trigger if the maze height is greater than 60 or if the maze has more than 1000 tiles (for a square maze, the maximum length for trigger the animation will be 31).
 
 ### Maze format
 
@@ -44,24 +44,57 @@ Finally, the maze will not be generated if the total area exceeds 23000 tiles. F
 
 ### Maze generation algorithms
 
-At first, the maze is made entirely with fully closed tiles. An auxiliary array will keep track of visited tiles, while storing the `42` structure. All maze generation algorithms start with a random tile set as visited, and therefore part of the maze.
+One generation algorithm was said to be implemented in this project, but more than one was graded as a bonus.
 
-One generation algorithm was said to be implemented in this project, but more than one was graded as a bonus. We implemented four algorithms in total:
+At first, the maze is made entirely with fully closed tiles. An auxiliary array will keep track of visited tiles, while storing the `42` structure. Every maze generation algorithm implemented in this project starts with a random tile marked as visited, which becomes part of the maze. We implemented four algorithms in total:
 
-* Wilson's algorithm: This was the first algorithm implemented in the project. We chose it because it generates an infinite spanning tree; in other words, with this algorithm all mazes are equally probable. Wilson's algorithm is based on a loop-erase random walk: starting from a random point as the maze, we choose a non-visited tile and make it perform a random walk. When the path hits itself, it gets erased until that point, in which continues the random walk. If the path gets into the maze it becomes part of it, and another non-visited tile is selected to perform another random walk. However, Wilson's algorithm has the downside of being slow at the beginning, especially in really large mazes, but the generation accelerates once the first path becomes part of the maze.
-* Aldous-Broder algorithm: Like Wilson's, this algorithm also generates an infinite spanning tree. Starting from a point considered part of the maze, a point performs a random walk through all the box. If such point walks into a non-visited tile, it gets connected to the previous tile, which will always be part of the maze. Like Wilson's, Aldous-Broder algorithm is also slower than other algorithms in huge mazes, especially at the end, when there are few stray tiles in the maze that may take time to connect. Usually both Wilson and Aldous-Broder algorithms are combined together, starting with the latter until a third part of the area and then switching to the former.
-* Prim's algorithm: starting with a random tile as the maze, which becomes part of a set, one of their unvisited neighbouring tiles get into that set. Then, one of the tiles in the set is selected randomly to repeat this process. When one of the tiles has no neighbours to visit, it is taken out of the set. The generation stops when the set is empty. Prim's algorithm is faster than the previous algorithms, but the generated mazes are usually biased towards the initial point of generation.
-* Depth First Search: starting from a random tile, a random path is made. When the path can't continue due to the current tile not having neighbours to visit, it backtracks until a tile with unvisited neighbours is reached, and this process continues. This is why this method is also known as the *recursive backtracker*. This algorithm is fast, although the mazes are biased towards very long paths, which can be seen in the solution. There is a variation of this algorithm called *hunt & kill*, where, instead of backtracking, the maze is scanned until a tile where the algorithm can continue is found.
+* Wilson's algorithm: This was the first algorithm implemented in the project. We chose it because it generates an uniform spanning tree; in other words, with this algorithm all possible mazes are equally probable. Wilson's algorithm is based on a loop-erase random walk:
+  1. A non-visited tile is chosen and made it the starting point for performing a random walk.
+  2. When the path visits a tile within itself, the loop until that point gets erased, in which continues the random walk.
+  3. If the path gets into the maze it becomes part of it. Repeat step 1.
 
-If the option *PERFECT* is set to *False*, then another algorithm is triggered after the perfect generation. First, the corners are set to hardcoded values and the neighbours are connected coherently. Then, random tiles are selected and one of their walls is removed. Next, the whole maze is scanned to search dead-end tiles and remove one of their walls. Finally, the maze is scanned again, this time to find open areas (with 3x3 as the minimum of dimensions) and random walls are added at the center. This way the maze will be perfectly braided, except for the `42` structure. This algorithm will not run if the maze has height or width equal to one.
+  Wilson's algorithm has the downside of being slow at the beginning, especially in really large mazes, but the generation accelerates once the first path becomes part of the maze.
+* Aldous-Broder algorithm: Like Wilson's, this algorithm also generates an uniform spanning tree.
+  1. A point performs a random walk through all the maze boundaries, starting from the initial tile.
+  2. If such point walks into a non-visited tile, it gets connected to the previous tile, which will always be part of the maze.
+  3. If the point walks into an already visited tile, it does nothing. The point can ignore maze walls while moving, but not the maze boundaries.
+  
+  Like Wilson's, Aldous-Broder algorithm is also slower than other algorithms in huge mazes, especially at the end, when there are few stray tiles in the maze that may take time to connect. Usually both Wilson and Aldous-Broder algorithms are combined together, starting with the latter until a third part of the area and then switching to the former.
+* Prim's algorithm: A simple maze generation algorithm which is faster than the previous ones. 
+  1. Starting with a random tile as the maze, which becomes part of a set, one of their unvisited neighbouring tiles get into that set.
+  2. One of the tiles in the set is selected randomly to repeat step 1.
+  3. When one of the tiles has no neighbours to visit, it is taken out of the set. The generation stops when the set is empty.
+
+  Prim's algorithm has the downside of generating mazes with many short dead-ends. In bigger mazes, a bias towards the initial point of generation can be seen.
+* Depth First Search: Another simple maze generation algorithm.
+  1. A random path from the starting tile to unvisited tiles is performed.
+  2. When the path can't continue due to the current tile not having neighbours to visit, it backtracks until a tile with unvisited neighbours is reached, and step 1 repeats itself. This is why this method is also known as the *recursive backtracker*.
+  
+  This algorithm is fast, although the mazes are biased towards very long paths. When visualizing the solution, this fact is clearer due to its length compared to the ones in other algorithms. There is a variation of this algorithm called *hunt & kill*, where, instead of backtracking, the maze is scanned until a tile with neighbours to visit is found.
+
+If the option *PERFECT* is set to *False*, then another algorithm is triggered after the perfect generation, no matter which algorithm was used to generate the maze:
+
+1. The corners are set to hardcoded values and their neighbours are connected coherently.
+2. Random tiles are selected and one of their walls is removed.
+3. The whole maze is scanned to search dead-end tiles and remove one of their walls.
+4. The maze is scanned again, this time to find open areas (with 3x3 as the minimum of dimensions) and random walls (no dead ends) are added at the center.
+
+This way the maze will be perfectly braided, except for the `42` structure. This algorithm will not run if the maze has height or width equal to one.
 
 ### Pathfinding algorithm
 
 To solve the maze, the usual strategy is to grab a wall and follow it until the exit is reached. However, in looped mazes this strategy can actually cause one to loop around a wall. So, the next coherent strategy would be flood-filled based: you start at the entry and start flooding the neighbouring areas until the exit is eventually reached. Despite its ability to find the shortest path, these algorithms search even areas that one would ignore because, for example, they are actively going away from the exit. So, a *heuristic* (a way to decide) is needed to choose which path to follow next.
 
-A* algorithm is one of the best pathfinding algorithms fi using the right heuristic: it's used in areas from videogames to maps. It uses three variables: *G score*, which is the distance from the starting node to the current node, *H score*, which is the same but from current node to finish node, and the *F score*, the sum of *G* and *H* scores.
+A* algorithm is one of the best pathfinding algorithms if using the right heuristic: it's used in areas from videogames to maps. It uses three variables: *G score*, which is the distance from the starting node to the current node, *H score*, which is the same but from current node to finish node, and the *F score*, the sum of *G* and *H* scores. At the start of the A* algorithm, two sets defined as *open* and *closed* are defined. The open set contains the entry node and the closed set is empty. So, the A* algorithm runs as follows:
 
-First, the entry node is saved to an open set. Then, a node from such open set is moved to a closed set, and all their neighbours are added to the open set, calculating the *F* scores and heuristics of each one, and updating them in case *F* or *G* scores are actually lower. Finally, the node with the lowest *F* score is selected and the process is repeated until the exit is reached. If two tiles have the same *F* score, the one with the lowest *H* score is selected, for it would be the nearest to the exit. If a tie between tiles exists, then one of them is selected randomly.
+1. A node from such open set is moved to a closed set.
+2. *G*, *H* and *F* scores are calculated for each tile neighbouring the current one, regarding they do not belong to the closed set.
+3. If *F* score lower than the one calculated in a previous step, update the node in the open set.
+4. If that tile is not in the open or closed sets, add the node containing it to the open set.
+5. Select the node with the lowest *F* score.
+  - If there is a tie in *F* score, select the node with the lowest *H* score.
+  - If a tie persists, choose one of those nodes randomly.
+6. Repeat step 1 with the selected node.
 
 The performance of the A* algorithm depends on the heuristics defined to search the exit. In our case, we selected the Manhattan heuristic:
 
@@ -75,7 +108,7 @@ $$
 H = \sqrt{\left(x_{tile} - x_{exit}\right)^2 + \left(y_{tile} - y_{exit}\right)^2}
 $$
 
-It's not unusual the use of Euclidean heuristics to solve these mazes, but it would take longer. Nonetheless, such heuristic will find the shortest path too.
+It's not unusual the use of Euclidean heuristics to solve these mazes, but it would take longer. Nonetheless, such heuristic will find the shortest path too. If no heuristics are used, the A* algorithm becomes *Djikstra's algorithm*.
 
 ### Visual representation
 
@@ -128,9 +161,9 @@ The `MazeGenerator` class also has the following properties:
 
 ### Team and project management
 
-* `alcristo` handled the code structuration, algorithm development, and the maze's creation, solution, graphics, and configuration while  `pnarvaez` handled the maze animation, gameplay mode, and player-related gameplay.
-* Originally, `pnarvaez` would have managed the graphics, but due to some problems `alcristo` had to handle it.
-* The code in his idea works well, we could have added more playable possibilities like a 3D maze or cleaned some reused code. 
+* `alcristo` handled the code structuration, algorithm development, and the maze creation, solution, graphics, and configuration while `pnarvaez` handled the maze animation, gameplay mode, and player-related gameplay.
+* Originally, `pnarvaez` would have managed the graphics, but due to some problems `alcristo` had to handle it. Nonetheless, `pnarvaez` did an excellent job with their part of the project.
+* The code in his idea works well, we could have added more playable possibilities like a 3D maze, even more algorithm support like Eller's or Krunskal's or cleaned some reused code. 
 
 ## Instructions
 
