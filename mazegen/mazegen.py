@@ -20,7 +20,7 @@ Example:
     solution = generator.solution
 
 Custom parameters:
-    MazeGenerator(width=30, height=30, seed=123)
+    MazeGenerator(30, 30, "0,0", "29,29", seed=123)
 
 The generated maze can be accessed through ``maze`` and a solution
 through ``solution``.
@@ -160,7 +160,7 @@ class _DFS(_Algorithm):
         self._gen_visited(maze)
         visited = self._visited
         current = self._maze_init(maze, visited, seed)
-        
+
         # The path to backtrack
         lst = [current]
         while len(lst) > 0:
@@ -493,6 +493,7 @@ class _Maze:
         else:
             print("[ERROR] Invalid algorithm", file=sys.stderr)
             return
+        self._generate()
 
     def __str__(self) -> str:
         """Print the maze as a hexadecimal grid.
@@ -700,7 +701,7 @@ class _Path:
                 alt_path.append(n)
 
         for n in alt_path:
-            if new._get_g() < n._get_g():
+            if new.g < n.g:
                 set.remove(n)
         if len(alt_path) == 0:
             set.add(new)
@@ -740,21 +741,21 @@ class _Path:
                     continue
                 node = _Node(i)
                 self._add_front(current, node)
-                node._set_g(node._size() - 1)
+                node.g = node._size() - 1
 
                 # Check the route to the node is "cheaper"
-                if node._get_g() < g_cost[i[:]]:
-                    g_cost[i[:]] = node._get_g()
+                if node.g < g_cost[i[:]]:
+                    g_cost[i[:]] = node.g
                     self._rm_node(opened, node)
                 else:
                     continue
-                node._set_h(_manhattan(i, self._exit))
+                node.h = _manhattan(i, self._exit)
 
                 # Update F cost if is lower
-                if node._get_f() < f_cost[i[:]] or self._check_node(
+                if node.f < f_cost[i[:]] or self._check_node(
                     opened, i
                 ) is False:
-                    f_cost[i[:]] = node._get_f()
+                    f_cost[i[:]] = node.f
                     if self._check_node(opened, i) is False:
                         opened.add(node)
 
@@ -823,7 +824,8 @@ class MazeGenerator:
             except ValueError:
                 self._gen = False
             self._palette: dict[str, str] = {}
-            self.regen()
+            if self._gen is True:
+                self.regen()
         except AssertionError:
             print("[ERROR] Maze dimensions must be positive", file=sys.stderr)
             self._gen = False
@@ -833,15 +835,17 @@ class MazeGenerator:
         except IndexError:
             print("[ERROR] Entry/Exit in wrong format. Usage ex.: EXIT=0,0")
             self._gen = False
+        except AttributeError:
+            return
 
     def _valid_entry_exit(self) -> None:
         """Check entry and exit are valid.
 
         Raises:
-            ValueError: if:
-                Entry and exit are equal.
-                Entry or exit are out of maze bounds.
-                Entry or exit will be in unreachable tiles.
+            ValueError:
+            * Entry and exit are equal.
+            * Entry or exit are out of maze bounds.
+            * Entry or exit will be in unreachable tiles.
         """
 
         # Check entry and exit are not equal
@@ -895,11 +899,8 @@ class MazeGenerator:
             self._seed,
             self._algorithm
         )
-        try:
-            if self._gen is True:
-                self._maze._generate()
-        except AttributeError:
-            return
+        if self._gen is True:
+            self._maze._generate()
 
     def _solve(self) -> None:
         """Solve the maze."""
@@ -942,6 +943,11 @@ class MazeGenerator:
 
         If a palette key is missing, a default color for it is used.
         """
+        try:
+            self.maze
+        except AttributeError:
+            print("[ERROR] No maze to draw")
+            return
         pathtiles = []
         curr = self._entry
         if solution is True:
@@ -971,7 +977,7 @@ class MazeGenerator:
         block = self._palette.get("block", "\x1b[41m")
 
         # Top wall
-        h, w = self._maze._maze.shape
+        h, w = self.maze.maze.shape
         for _ in range(2 * w + 1):
             print(f"{wall}  {reset}", end="")
         print()
@@ -980,7 +986,7 @@ class MazeGenerator:
             print(f"{wall}  {reset}", end="")
             # Row with horizontal connections
             for j in range(w):
-                n = self._maze._maze[i, j]
+                n = self.maze.maze[i, j]
                 if n == 15:
                     print(f"{block}  {reset}", end="")
                 elif (i, j) == self._entry:
@@ -1004,7 +1010,7 @@ class MazeGenerator:
             # Row with vertical connections
             print(f"{wall}  {reset}", end="")
             for j in range(w):
-                n = self._maze._maze[i, j]
+                n = self.maze.maze[i, j]
                 if (i, j) in pathtiles and (
                     i + 1, j
                 ) in pathtiles and _get_walls(n)[2] == 0:
@@ -1019,10 +1025,10 @@ class MazeGenerator:
                     p_path = [
                         _get_walls(n)[1] == 0,
                         _get_walls(n)[2] == 0,
-                        _get_walls(self._maze._maze[i + 1][j])[0] == 0,
-                        _get_walls(self._maze._maze[i + 1][j])[1] == 0,
-                        _get_walls(self._maze._maze[i][j + 1])[2] == 0,
-                        _get_walls(self._maze._maze[i][j + 1])[3] == 0
+                        _get_walls(self.maze.maze[i + 1][j])[0] == 0,
+                        _get_walls(self.maze.maze[i + 1][j])[1] == 0,
+                        _get_walls(self.maze.maze[i][j + 1])[2] == 0,
+                        _get_walls(self.maze.maze[i][j + 1])[3] == 0
                     ]
                     if False not in p_path:
                         print(f"{tile}  {reset}", end="")
@@ -1036,25 +1042,26 @@ class MazeGenerator:
         """Save the maze in an output file."""
         base = "0123456789abcdef"
         try:
-            self._maze
+            self.maze
         except AttributeError:
             print("[ERROR] No maze to print", file=sys.stderr)
             return
         with open(filename, 'w') as out:
-            for i in range(self._maze.height):
-                for j in range(self._maze.width):
-                    out.write(base[self._maze._maze[i, j]])
+            for i in range(self.maze.height):
+                for j in range(self.maze.width):
+                    out.write(base[self.maze.maze[i, j]])
                 out.write("\n")
             out.write("\n")
-            out.write(f"{self._entry[1]},{self._entry[0]}\n")
-            out.write(f"{self._exit[1]},{self._exit[0]}\n")
-            out.write(self._path._path)
+            out.write(f"{self.entry[1]},{self.entry[0]}\n")
+            out.write(f"{self.exit[1]},{self.exit[0]}\n")
+            out.write(self.solution)
 
     def regen(self) -> None:
         """Regenerate and solve the maze."""
         try:
-            self._generate()
-            self._solve()
+            if self._gen is True:
+                self._generate()
+                self._solve()
         except AttributeError:
             return
 

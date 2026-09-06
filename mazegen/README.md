@@ -1,4 +1,4 @@
-# Maze Generator
+# mazegen: a maze generator package
 
 ## Description
 
@@ -40,7 +40,7 @@ Upon instantiation, the class will automatically generate a maze ready for use.
 
 The `MazeGenerator` class will have the following methods:
 
-* `regen()`: Generates a new maze and solves it.
+* `regen()`: Generates a new maze and solves it. It will not do nothing if the maze is not valid.
 * `draw(solution: bool = False)`: Draws the maze in terminal. The `solution` variable decides whether to draw the maze solution or not.
 * `color(key: str, color: list[int] = [])`: Changes the `key` color from the palette. The color must be a three-long list and all their values need to be 8-bit  unsigned integers. Any other value will remove the key from the palette, assigning a default color to it.
 * `output(filename: str)`: Saves the maze, entry, exit and solution in a file named `filename`.
@@ -53,5 +53,17 @@ The `MazeGenerator` class also has the following properties:
 * `palette`: A dictionary containing the colors of the maze upon drawing.
 
 ## Instructions
+
+To install the package, copy the wheel file `mazegen-[VERSION]-py3-none-any.whl` to a project and then run in a virtual environment:
+
+```bash
+pip install mazegen
+```
+
+To use the `MazeGenerator` class in a script, import it to the script:
+
+```python
+from mazegen.mazegen import MazeGenerator
+```
 
 ## Resources
