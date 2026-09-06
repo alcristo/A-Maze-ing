@@ -2,7 +2,6 @@ from numpy.typing import NDArray
 import random as rng
 from typing import Any
 from maze_utils import manhattan, get_walls, MazeOptions
-from maze_solve import a_star
 import time
 
 
@@ -88,7 +87,6 @@ def _write_path(maze: NDArray[Any], opts: MazeOptions) -> None:
     entr = (int(start[1]), int(start[0]))
     exit = (int(end[1]), int(end[0]))
     base = "0123456789abcdef"
-    sol = a_star(maze, entr, exit)
     with open(opts._conf['OUTPUT_FILE'], 'w') as out:
         for i in range(size[0]):
             for j in range(size[1]):
@@ -97,7 +95,6 @@ def _write_path(maze: NDArray[Any], opts: MazeOptions) -> None:
         out.write("\n")
         out.write(f"{entr[1]},{entr[0]}\n")
         out.write(f"{exit[1]},{exit[0]}\n")
-        out.write(sol)
     _creation_draw(opts)
     time.sleep(1 / 16)
 
