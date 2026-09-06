@@ -221,3 +221,5 @@ __marimo__/
 # For this project
 maze.txt
 default_maze.txt
+maze_test.py
+*.ipynb

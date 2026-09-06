@@ -30,7 +30,7 @@ There are several options in the configuration file:
 * PERFECT: Whether the maze is perfect (there is only one path between two separate points) or not perfect (there can be loops in the path). Defaults to `True`.
 * SEED: The seed to generate the maze. Defaults to `None`.
 * ALGORITHM: The maze generation algorithm. Accepts `aldous broder`, `recursive backtracker`, `depth first search`, `prim` and `wilson`. All options accept no space, snake case space (also - space for Aldous-Broder) and acronyms, as well as any ASCII case format. Defaults to `Prim`.
-* ANIMATE: Whether to show the maze generation. Defaults to `False`. The animation will not trigger if the maze height is greater than 60 or if the maze has more than 1000 tiles (for a square maze, the maximum length for trigger the animation will be 31).
+* ANIMATE: Whether to show the maze generation. Defaults to `False`. The animation will not trigger if  the maze has more than 700 tiles (for a square maze, the maximum length to trigger the animation will be 26).
 
 ### Maze format
 
@@ -40,7 +40,7 @@ The maze tiles are stored in numbers from 0 to 15 in order to later format the m
 
 If the maze height is above 6 and the maze width is above 8, a mandatory `42` made of fully closed tiles (value 15, f) will be generated at the center of the maze. If this condition is not satisfied, an error message will be displayed, but the maze will still be generated. Neither the maze entry nor the exit can be generated inside the `42`.
 
-Finally, the maze will not be generated if the total area exceeds 23000 tiles. For example, the maximum square maze that will generate is 151 tiles long.
+Finally, the maze will not be generated if the total area exceeds 26000 tiles. For example, the maximum square maze that will generate is 161 tiles long.
 
 ### Maze generation algorithms
 

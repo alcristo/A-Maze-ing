@@ -223,7 +223,7 @@ def check_errors(conf: dict[str, str]) -> None:
         )
 
     # Check valid size for generation
-    if size[0] * size[1] > 23000:
+    if size[0] * size[1] > 26000:
         raise MazeError("Maze is too big")
 
     # Check valid size for animation

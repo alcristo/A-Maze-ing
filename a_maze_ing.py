@@ -334,8 +334,8 @@ def _init_config() -> dict[str, str]:
                 wi = int(w)
                 assert wi > 0
                 conf.update({"WIDTH": w})
-            if he * wi > 23000:
-                print("Maze is too big; maze generation cancelled")
+            if he * wi > 26000:
+                print("Maze is too big; maze generation aborted")
                 continue
             elif he * wi > 700:
                 print("Maze is big; animation will be disabled")
