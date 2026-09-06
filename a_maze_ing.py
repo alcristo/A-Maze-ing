@@ -199,7 +199,7 @@ def _change_config(maze: str, opts: MazeOptions) -> None:
         print(f"7. Seed:        {opts._conf.get('SEED')}")
         print(f"8. Algorithm:   {opts._conf.get('ALGORITHM')}")
         print(f"9. Animation:   {opts._conf.get('ANIMATE')}")
-        print("d. Default playable maze")
+        print("d. Default braided maze")
         print("u. Undo changes")
         print("q. Quit configuration selector")
         try:

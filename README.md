@@ -222,10 +222,25 @@ Another menu will appear after choosing 'Change the configuration' option:
     7. Seed
     8. Algorithm
     9. Animation
+    d. Default braided maze
     u. Undo all changes
     q. Quit configuration selector menu
 
 Like the color selection menu, this one will show their current setting. This menu is foolproof: if you try to make a faulty maze (for example, with negative dimensions or entry/exit out of bounds) you would not be able to quit the menu. After exiting this menu with different settings, generating a new maze will draw a maze with the selected settings.
+
+The default braided can be generated at start if the `config.txt` file has this structure:
+
+```text
+HEIGHT=15
+WIDTH=31
+ENTRY=0,7
+EXIT=30,7
+PERFECT=False
+OUTPUT_FILE=default_maze.txt
+SEED=alcristo
+ALGORITHM=Wilson
+ANIMATE=True
+```
 
 ### Gameplay 
 
