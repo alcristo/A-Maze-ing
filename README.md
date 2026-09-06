@@ -29,7 +29,7 @@ There are several options in the configuration file:
 * OUTPUT_FILE: Mandatory. The file where the maze will be printed in order to be drawn.
 * PERFECT: Whether the maze is perfect (there is only one path between two separate points) or not perfect (there can be loops in the path). Defaults to `True`.
 * SEED: The seed to generate the maze. Defaults to `None`.
-* ALGORITHM: The maze generation algorithm. Accepts `aldous broder`, `recursive backtracker`, `depth first search`, `prim` and `wilson`. All options accept no space, snake case space (also - space for Aldous-Broder) and acronyms, as well as any ASCII case format. Defaults to `Prim`.
+* ALGORITHM: The maze generation algorithm. Accepts `aldous broder`, `recursive backtracker`, `depth first search`, `prim` and `wilson`. All options accept no space, snake case space (also dash space for Aldous-Broder) and acronyms, as well as any ASCII case format. Defaults to `Prim`.
 * ANIMATE: Whether to show the maze generation. Defaults to `False`. The animation will not trigger if  the maze has more than 700 tiles (for a square maze, the maximum length to trigger the animation will be 26).
 
 ### Maze format

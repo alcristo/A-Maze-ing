@@ -8,7 +8,7 @@ import time
 """Maze generation algorithms and animation module for a_maze_ing."""
 
 
-def _creation_draw(opts: MazeOptions) -> None:
+def _creation_draw(opts: MazeOptions, vis: NDArray[Any]) -> None:
     """While animated, draw the maze."""
     maze_file = opts._conf.get("OUTPUT_FILE")
     with open(maze_file) as f:
@@ -40,7 +40,10 @@ def _creation_draw(opts: MazeOptions) -> None:
         for j in range(w):
             c = row[j]
             if c == "f":
-                print(f"{opts._palette['block']}  {reset}", end="")
+                if vis[i, j] == 1:
+                    print(f"{opts._palette['tile']}  {reset}", end="")
+                else:
+                    print(f"{opts._palette['block']}  {reset}", end="")
             elif (i, j) == entry:
                 print(f"{opts._palette['entry']}  {reset}", end="")
             elif (i, j) == exit:
@@ -77,7 +80,7 @@ def _creation_draw(opts: MazeOptions) -> None:
         print()
 
 
-def _write_path(maze: NDArray[Any], opts: MazeOptions) -> None:
+def _write_path(maze: NDArray[Any], vis: NDArray[Any], opts: MazeOptions) -> None:
     """When ANIMATE is True, animate the maze generation."""
     if opts._conf.get("ANIMATE", "False").lower() == "false":
         return
@@ -95,7 +98,7 @@ def _write_path(maze: NDArray[Any], opts: MazeOptions) -> None:
         out.write("\n")
         out.write(f"{entr[1]},{entr[0]}\n")
         out.write(f"{exit[1]},{exit[0]}\n")
-    _creation_draw(opts)
+    _creation_draw(opts, vis)
     time.sleep(1 / 16)
 
 
@@ -188,7 +191,7 @@ def dfs(
             _connect(maze, current, new)
             visited[new[:]] = 1
             lst.append(new)
-            _write_path(maze, opts)
+            _write_path(maze, visited, opts)
         try:
             current = lst[-1]
         except IndexError:
@@ -250,7 +253,7 @@ def aldous_broder(
             continue
         elif visited[neighbour[0], neighbour[1]] == 0:
             _connect(maze, current, neighbour)
-            _write_path(maze, opts)
+            _write_path(maze, visited, opts)
             yet.discard(neighbour)
         current = neighbour
         visited[current[0], current[1]] = 1
@@ -261,7 +264,7 @@ def wilson(
 ) -> None:
     """Wilson's algorithm."""
     current = _maze_init(maze, visited)
-    _write_path(maze, opts)
+    # _write_path(maze, opts)
     yet = _unvisited_set(visited)
     while len(yet) > 0:
         path = []
@@ -297,7 +300,7 @@ def wilson(
             yet.discard(tile)
         while len(path) > 1:
             _connect(maze, path[0], path[1])
-            _write_path(maze, opts)
+            _write_path(maze, visited, opts)
             current = path[1]
             path.pop(0)
         path.clear()
@@ -356,13 +359,13 @@ def imperfect(maze: NDArray[Any], opts: MazeOptions) -> None:
     _connect(maze, (h - 1, w - 1), (h - 2, w - 1))
     _connect(maze, (h - 1, 0), (h - 1, 1))
     _connect(maze, (h - 1, 0), (h - 2, 0))
-    _write_path(maze, opts)
+    _write_path(maze, visited, opts)
 
     # Remove random walls in random tiles
     for _ in range(h * w // 3):
         tile = (rng.randrange(h), rng.randrange(w))
         _remove_walls(maze, tile, .5)
-        _write_path(maze, opts)
+        _write_path(maze, visited, opts)
     dead_ends = (7, 11, 13, 14)
     s_wall = ((0, 1), (0, 2), (0, 4), (0, 8))
     adm_walls = [1, 2, 3, 4, 5, 6, 8, 9, 10, 12]
@@ -372,7 +375,7 @@ def imperfect(maze: NDArray[Any], opts: MazeOptions) -> None:
         for j in range(w):
             if maze[i, j] in dead_ends:
                 _remove_walls(maze, (i, j))
-                _write_path(maze, opts)
+                _write_path(maze, visited, opts)
 
     # Check for areas > 3x3; fill them in such case
     for i in range(h):
@@ -395,4 +398,4 @@ def imperfect(maze: NDArray[Any], opts: MazeOptions) -> None:
                         maze[i + 1][j] += 1
                     if walls[3] == 1:
                         maze[i][j - 1] += 2
-                    _write_path(maze, opts)
+                    _write_path(maze, visited, opts)
