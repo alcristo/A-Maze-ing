@@ -111,7 +111,7 @@ def _change_colors(opts: MazeOptions) -> None:
     old_pal = opts._palette.copy()
     while True:
         print("\x1b[H\x1b[0J", end="")
-        maze_draw(opts._conf.get("OUTPUT_FILE"), opts)
+        maze_draw(str(opts._conf.get("OUTPUT_FILE")), opts)
         print("== Change colors ==")
         print(f"1. Tile   {opts._palette['tile']}  {reset}")
         print(f"2. Wall   {opts._palette['wall']}  {reset}")
@@ -164,7 +164,7 @@ def _change_colors(opts: MazeOptions) -> None:
 def _change_config(opts: MazeOptions) -> None:
     """Change the maze configuration; generate new maze to apply changes."""
     old_conf = opts._conf.copy()
-    file = old_conf.get("OUTPUT_FILE")
+    file = str(old_conf.get("OUTPUT_FILE"))
     while True:
         print("\x1b[H\x1b[0J", end="")
         maze_draw(file, opts)
@@ -249,7 +249,7 @@ def _menu(opts: MazeOptions) -> None:
     """A-Maze-ing main menu."""
     clear = "\x1bc"
     player = Player(opts)
-    file = opts._conf.get("OUTPUT_FILE")
+    file = str(opts._conf.get("OUTPUT_FILE"))
     while True:
         print("\x1b[H\x1b[J", end="")
         maze_draw(file, opts)
@@ -340,7 +340,7 @@ def _init_config() -> dict[str, str]:
             elif he * wi > 700:
                 print("Maze is big; animation will be disabled")
                 conf.update({"ANIMATE": "False"})
-            elif he * wi > 500:
+            elif he * wi > 300:
                 print("Maze is somewhat big; animation may suffer glitches")
             en = input(
                 "Enter maze entry (0 ≤ x,y < width,height); "
@@ -451,7 +451,7 @@ if __name__ == "__main__":
             conf = _init_config()
         opts = MazeOptions(conf)
         _generate(opts)
-        maze_draw(opts._conf.get("OUTPUT_FILE"), opts)
+        maze_draw(str(opts._conf.get("OUTPUT_FILE")), opts)
         _menu(opts)
     except MemoryError:
         print("[ERROR] Out of memory", file=sys.stderr)

@@ -230,7 +230,7 @@ def check_errors(conf: dict[str, str]) -> None:
     if ((size[0] * size[1] > 700) and conf["ANIMATE"].lower() == "true"):
         print("Maze is too big for a smooth animation")
         conf.update({"ANIMATE": "False"})
-    elif ((size[0] * size[1] > 500) and conf["ANIMATE"].lower() == "true"):
+    elif ((size[0] * size[1] > 350) and conf["ANIMATE"].lower() == "true"):
         print("Maze somewhat big; animation may suffer esporadic glitches")
 
     # Check that entry and exit are actually different
