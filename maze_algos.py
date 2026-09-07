@@ -10,7 +10,7 @@ import time
 
 def _creation_draw(opts: MazeOptions) -> None:
     """While animated, draw the maze."""
-    maze_file = opts._conf.get("OUTPUT_FILE")
+    maze_file = opts._conf["OUTPUT_FILE"]
     with open(maze_file) as f:
         line = f.readline()
         maze = []

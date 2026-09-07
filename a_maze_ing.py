@@ -111,7 +111,7 @@ def _change_colors(opts: MazeOptions) -> None:
     old_pal = opts._palette.copy()
     while True:
         print("\x1b[H\x1b[0J", end="")
-        maze_draw(str(opts._conf.get("OUTPUT_FILE")), opts)
+        maze_draw(opts._conf['OUTPUT_FILE'], opts)
         print("== Change colors ==")
         print(f"1. Tile   {opts._palette['tile']}  {reset}")
         print(f"2. Wall   {opts._palette['wall']}  {reset}")
@@ -164,7 +164,7 @@ def _change_colors(opts: MazeOptions) -> None:
 def _change_config(opts: MazeOptions) -> None:
     """Change the maze configuration; generate new maze to apply changes."""
     old_conf = opts._conf.copy()
-    file = str(old_conf.get("OUTPUT_FILE"))
+    file = old_conf['OUTPUT_FILE']
     while True:
         print("\x1b[H\x1b[0J", end="")
         maze_draw(file, opts)
@@ -298,6 +298,8 @@ def _maze_config(conf_file: str) -> dict[str, str]:
     check_errors(conf)
     if str(conf.get("PERFECT")).lower() not in ("true", "false"):
         conf.update({"PERFECT": "True"})
+    if conf.get("OUTPUT_FILE") is not None:
+        conf.update({"OUTPUT_FILE": "maze.txt"})
     valid_algos = (
         "wilson", "prim", "dfs", "ab", "aldous broder", "aldousbroder", "rb",
         "aldous_broder", "aldous-broder", "depth first search",

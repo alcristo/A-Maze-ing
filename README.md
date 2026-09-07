@@ -163,7 +163,8 @@ The `MazeGenerator` class also has the following properties:
 
 * `alcristo` handled the code structuration, algorithm development, and the maze creation, solution, graphics, and configuration while `pnarvaez` handled the maze animation, gameplay mode, and player-related gameplay.
 * Originally, `pnarvaez` would have managed the graphics, but due to some problems `alcristo` had to handle it. Nonetheless, `pnarvaez` did an excellent job with their part of the project.
-* The code in his idea works well, we could have added more playable possibilities like a 3D maze, even more algorithm support like Eller's or Krunskal's or cleaned some reused code. 
+* We could have added more playable possibilities like a 3D maze, even more algorithm support like Eller's or Krunskal's or cleaned some reused code. Nonetheless, everything worked fine despite the throwbacks.
+* We used `numpy` to store the mazes and other auxiliar arrays and `termios` for improved user input.
 
 ## Instructions
 

@@ -47,7 +47,7 @@ class MazeOptions:
     @staticmethod
     @_uint8
     def _validate_color(channel: int) -> None:
-        """Validate a color channel is  uint8."""
+        """Validate a color channel is uint8."""
         pass
 
     def _select_color(self, key: str) -> None:
@@ -156,9 +156,9 @@ class MazeOptions:
             else:
                 self._conf.update({"PERFECT": "True"})
         elif key == "OUTPUT_FILE":
-            out = input("New maze output file (default: maze.txt): ")
+            out = input("New maze output file: ")
             if out == "":
-                self._conf.update({"OUTPUT_FILE": "maze.txt"})
+                pass
             else:
                 self._conf.update({"OUTPUT_FILE": out})
         elif key == "SEED":
