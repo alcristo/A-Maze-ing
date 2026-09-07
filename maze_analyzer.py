@@ -203,7 +203,7 @@ class Maze:
 
     def largest_region(self) -> FrozenSet[Cell]:
         """Largest connected component, found in a single linear sweep."""
-        seen: set = set()
+        seen: set[Cell] = set()
         best: FrozenSet[Cell] = frozenset()
         for cell in self:
             if cell in seen:
@@ -451,7 +451,7 @@ def _xy(cell: Cell) -> str:
 def _exit(report: MazeReport) -> str:
     if report.maze.exit is None:
         return "?"
-    state = {True: " (reachable)", False: " (UNREACHABLE)"}.get(
+    state = {True: " (reachable)", False: " (UNREACHABLE)", None: ""}.get(
         report.exit_reachable, ""
     )
     return f"{_xy(report.maze.exit)}{state}"
