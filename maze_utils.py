@@ -227,11 +227,12 @@ def check_errors(conf: dict[str, str]) -> None:
         raise MazeError("Maze is too big")
 
     # Check valid size for animation
-    if ((size[0] * size[1] > 700) and conf["ANIMATE"].lower() == "true"):
-        print("Maze is too big for a smooth animation")
-        conf.update({"ANIMATE": "False"})
-    elif ((size[0] * size[1] > 350) and conf["ANIMATE"].lower() == "true"):
-        print("Maze somewhat big; animation may suffer esporadic glitches")
+    if conf.get("ANIMATE") is not None:
+        if ((size[0] * size[1] > 700) and conf["ANIMATE"].lower() == "true"):
+            print("Maze is too big for a smooth animation")
+            conf.update({"ANIMATE": "False"})
+        elif ((size[0] * size[1] > 350) and conf["ANIMATE"].lower() == "true"):
+            print("Maze somewhat big; animation may suffer esporadic glitches")
 
     # Check that entry and exit are actually different
     if entr == exit:

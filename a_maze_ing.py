@@ -105,13 +105,13 @@ def _generate(opts: MazeOptions) -> None:
         out.write(sol)
 
 
-def _change_colors(opts: MazeOptions) -> None:
+def _change_colors(file: str, opts: MazeOptions) -> None:
     """Change the display colors."""
     reset = "\x1b[0m"
     old_pal = opts._palette.copy()
     while True:
         print("\x1b[H\x1b[0J", end="")
-        maze_draw(opts._conf['OUTPUT_FILE'], opts)
+        maze_draw(file, opts)
         print("== Change colors ==")
         print(f"1. Tile   {opts._palette['tile']}  {reset}")
         print(f"2. Wall   {opts._palette['wall']}  {reset}")
@@ -259,7 +259,6 @@ def _menu(opts: MazeOptions) -> None:
         print("4. Change configuration")
         print("5. Play")
         print("q. Quit")
-        print(opts._conf.get("OUTPUT_FILE"))
         opt = input("\x1b[KSelect option: ")
         if opt == "1":
             print(f"{clear}")
@@ -269,7 +268,7 @@ def _menu(opts: MazeOptions) -> None:
         elif opt == "2":
             opts._show_hide()
         elif opt == "3":
-            _change_colors(opts)
+            _change_colors(file, opts)
         elif opt == "4":
             _change_config(file, opts)
         elif opt == "5":
@@ -315,8 +314,8 @@ def _maze_config(conf_file: str) -> dict[str, str]:
 
 def _init_config() -> dict[str, str]:
     """Configuration initializer if configuration loading fails"""
+    conf: dict[str, str] = {}
     while True:
-        conf: dict[str, str] = {}
         try:
             h = input(
                 f"Enter maze height (int > 0); current {conf.get('HEIGHT')}: "
@@ -421,7 +420,7 @@ def _init_config() -> dict[str, str]:
         except AssertionError:
             print("Invalid algorithm")
             continue
-    if conf.get("ANIMATE") is not None:
+    if conf.get("ANIMATE") is None:
         animate = input("Animate the maze generation? (y/N): ")
         if animate.lower() in ("y", "yes", "yea", "yup"):
             conf.update({"ANIMATE": "True"})
