@@ -11,10 +11,10 @@ REQUIREMENTS = -r requirements.txt
 SOURCES =	a_maze_ing.py \
 			maze_algos.py \
 			maze_utils.py \
-			pathfinding.py \
+			maze_solve.py \
 			maze_draw.py \
-			gameplay.py \
-			maze_generator.py
+			maze_play.py \
+			mazegen/mazegen.py
 
 CACHE = __pycache__ \
 		*/__pycache__ \
