@@ -446,6 +446,8 @@ if __name__ == "__main__":
             conf = _init_config()
         except FileNotFoundError:
             conf = _init_config()
+        except KeyError:
+            conf = _init_config()
         except MazeError as e:
             print(e.msg)
             time.sleep(3)
