@@ -94,7 +94,7 @@ def _generate(opts: MazeOptions) -> None:
 
     # Save the file
     base = "0123456789abcdef"
-    with open(conf['OUTPUT_FILE'], 'w') as out:
+    with open(opts._conf['OUTPUT_FILE'], 'w') as out:
         for i in range(size[0]):
             for j in range(size[1]):
                 out.write(base[maze[i][j]])
@@ -161,10 +161,9 @@ def _change_colors(opts: MazeOptions) -> None:
             pass
 
 
-def _change_config(opts: MazeOptions) -> None:
+def _change_config(file: str, opts: MazeOptions) -> None:
     """Change the maze configuration; generate new maze to apply changes."""
     old_conf = opts._conf.copy()
-    file = old_conf['OUTPUT_FILE']
     while True:
         print("\x1b[H\x1b[0J", end="")
         maze_draw(file, opts)
@@ -260,18 +259,19 @@ def _menu(opts: MazeOptions) -> None:
         print("4. Change configuration")
         print("5. Play")
         print("q. Quit")
+        print(opts._conf.get("OUTPUT_FILE"))
         opt = input("\x1b[KSelect option: ")
         if opt == "1":
             print(f"{clear}")
             _generate(opts)
-            player = Player(opts)
+            # player = Player(opts)
             return _menu(opts)
         elif opt == "2":
             opts._show_hide()
         elif opt == "3":
             _change_colors(opts)
         elif opt == "4":
-            _change_config(opts)
+            _change_config(file, opts)
         elif opt == "5":
             player._show_player()
         elif opt.lower() == "q":
