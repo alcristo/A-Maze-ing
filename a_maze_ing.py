@@ -469,5 +469,5 @@ if __name__ == "__main__":
         raise_signal(SIGINT)
     except RuntimeError as e:
         print(f"Caught a RuntimeError: {e}")
-    except BaseException as e:
+    except Exception as e:
         print(f"Caught an Exception: {e}")
