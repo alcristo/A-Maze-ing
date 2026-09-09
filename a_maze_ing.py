@@ -86,8 +86,8 @@ def _generate(opts: MazeOptions) -> None:
         imperfect(maze, opts)
 
     # Solution
-    start = conf["ENTRY"].split(",")
-    end = conf["EXIT"].split(",")
+    start = opts._conf["ENTRY"].split(",")
+    end = opts._conf["EXIT"].split(",")
     entr = (int(start[1]), int(start[0]))
     exit = (int(end[1]), int(end[0]))
     sol = a_star(maze, entr, exit)
@@ -469,3 +469,5 @@ if __name__ == "__main__":
         raise_signal(SIGINT)
     except RuntimeError as e:
         print(f"Caught a RuntimeError: {e}")
+    except BaseException as e:
+        print(f"Caught an Exception: {e}")
