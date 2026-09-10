@@ -117,7 +117,7 @@ $$
 H = \sqrt{\left(x_{tile} - x_{exit}\right)^2 + \left(y_{tile} - y_{exit}\right)^2}
 $$
 
-It's not unusual the use of Euclidean heuristics to solve these mazes, but it would take longer. Nonetheless, such heuristic will find the shortest path too. If no heuristics are used, the A* algorithm becomes *Djikstra's algorithm*.
+It's not unusual the use of Euclidean heuristics to solve these mazes, but it would take longer. Nonetheless, such heuristic will find the shortest path too. If no heuristics are used, the A* algorithm becomes *Dijkstra's algorithm*.
 
 ## Instructions
 
