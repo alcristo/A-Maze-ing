@@ -100,8 +100,6 @@ class Player:
                 else:
                     print(f"{self._opts._palette['wall']}  {reset}", end="")
             print()
-        print("=== A-Maze-ing ===")
-        print("q. Quit")
 
     def _move(self) -> str:
         """Analyze user input, return string."""
@@ -120,6 +118,9 @@ class Player:
         """Move the player through the maze."""
         base = "0123456789abcdef"
         self._print_map()
+        print("=== A-Maze-ing ===")
+        print("q. Quit")
+        tiempo_inicio = time.time()
         while self._playable is True:
             move = self._move()
             walls = get_walls(
@@ -138,13 +139,25 @@ class Player:
                 if walls[0] == 0:
                     self._pos = (self._pos[0] - 1, self._pos[1])
             self._print_map()
+            print("=== A-Maze-ing ===")
+            print("q. Quit")
             if move == "q":
                 self._pos = (self._entry[0], self._entry[1])
                 self._playable = False
                 break
             elif self._pos == self._exit:
+                self._print_map()
+                print("=== A-Maze-ing ===")
+                user = input("\x1b[KEnter user: ")
+                tiempo_actual = time.time() - tiempo_inicio
+                segundos = int(tiempo_actual % 60)
+                print(
+                    f"{user} completed the maze with:",
+                    f"{segundos} seconds"
+                )
                 self._pos = (self._entry[0], self._entry[1])
                 self._playable = False
+                time.sleep(2)
                 return
             time.sleep(0.1)
 
