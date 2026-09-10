@@ -29,6 +29,7 @@ class MazeOptions:
             "block": "\x1b[41m",
             "player": "\x1b[46m"
         }
+        self._maze = ""
 
     def _show_hide(self) -> None:
         """Show or hide the maze solution."""

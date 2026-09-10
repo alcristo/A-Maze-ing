@@ -4,9 +4,9 @@ from maze_utils import get_walls, MazeOptions
 """Maze drawing module for a_maze_ing."""
 
 
-def maze_draw(maze_file: str, opts: MazeOptions) -> None:
+def maze_draw(opts: MazeOptions) -> None:
     """Display the maze in terminal."""
-    with open(maze_file) as f:
+    """with open(maze_file) as f:
         line = f.readline()
         maze = []
         w = 0
@@ -20,7 +20,22 @@ def maze_draw(maze_file: str, opts: MazeOptions) -> None:
         ex = f.readline().split(",")
         exit = (int(ex[1]), int(ex[0]))
         path = f.readline()
+    """
 
+    file = opts._maze.split("\n\n")
+    mazef = file[0].split("\n")
+    maze = []
+    w = 0
+    for line in mazef:
+        maze.append(line)
+        if w == 0:
+            w = len(line)
+    rem = file[1].split("\n")
+    en = rem[0].split(",")
+    entry = (int(en[1]), int(en[0]))
+    ex = rem[1].split(",")
+    exit = (int(ex[1]), int(ex[0]))
+    path = rem[2]
     pathtiles = []
     if opts._solution is True:
         curr = entry
