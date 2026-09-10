@@ -294,7 +294,7 @@ def _maze_config(conf_file: str) -> dict[str, str]:
         ]
         conf = {i[0].upper(): i[1] for i in tup if i[0][0] != "#"}
     check_errors(conf)
-    if str(conf.get("PERFECT")).lower() not in ("true", "false"):
+    if str(conf.get("PERFECT")).lower() not in ("", "true", "false"):
         print("Invalid input. Defaulting to True.")
         conf.update({"PERFECT": "True"})
     if conf.get("OUTPUT_FILE") is None:
@@ -303,13 +303,13 @@ def _maze_config(conf_file: str) -> dict[str, str]:
         "wilson", "prim", "dfs", "ab", "aldous broder", "aldousbroder", "rb",
         "aldous_broder", "aldous-broder", "depth first search",
         "depthfirstserach", "depth_first_search", "recursivebacktracker",
-        "recursive backtracker", "recursive_backtracker"
+        "recursive backtracker", "recursive_backtracker", ""
     )
-    if str(conf.get("ALGORITHM")).lower() not in valid_algos:
+    if str(conf.get("ALGORITHM", "Prim")).lower() not in valid_algos:
         print("Invalid algorithm. Defaulting to Prim.")
         conf.update({"ALGORITHM": "Prim"})
         time.sleep(1)
-    if str(conf.get("ANIMATE")).lower() not in ("true", "false"):
+    if str(conf.get("ANIMATE")).lower() not in ("", "true", "false"):
         print("Invalid input. Defaulting to False.")
         conf.update({"ANIMATE": "False"})
         time.sleep(1)

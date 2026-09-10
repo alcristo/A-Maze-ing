@@ -5,5 +5,5 @@ EXIT=30,14
 OUTPUT_FILE=maze.txt
 PERFECT=True
 #Seed=42
-Algorithm=Wilson
+#Algorithm=Wilson
 ANIMATE=False
