@@ -287,7 +287,7 @@ def _maze_config(conf_file: str) -> dict[str, str]:
         config_file: The file where the configuration is currently stored.
     """
     # Read file and parse arguments
-    with open(conf_file) as f:
+    with open(conf_file, "r") as f:
         txt = f.read()
         opts = txt.split("\n")
         tup = [
@@ -395,11 +395,20 @@ def _init_config() -> dict[str, str]:
         conf.update({"PERFECT": "False"})
     else:
         conf.update({"PERFECT": "True"})
-    out = input("Enter the maze output file (default: maze.txt): ")
-    if out == "":
-        conf.update({"OUTPUT_FILE": "maze.txt"})
-    else:
-        conf.update({"OUTPUT_FILE": out})
+    while True:
+        out = input("Enter the maze output file (default: maze.txt): ")
+        if out == "":
+            conf.update({"OUTPUT_FILE": "maze.txt"})
+        else:
+            conf.update({"OUTPUT_FILE": out})
+        try:
+            with open(conf["OUTPUT_FILE"]):
+                pass
+        except PermissionError as e:
+            print(f"Caught PermissionError: {e}")
+            continue
+        else:
+            break
     seed = input("Enter the maze seed (leave in blank for random): ")
     if seed != "":
         conf.update({"SEED": seed})
@@ -449,10 +458,19 @@ if __name__ == "__main__":
         try:
             conf = _maze_config(sys.argv[1])
         except IndexError:
+            print("Entry or exit in wrong configuration")
             conf = _init_config()
-        except FileNotFoundError:
+        except FileNotFoundError as e:
+            print(e)
             conf = _init_config()
-        except KeyError:
+        except PermissionError as e:
+            print(e)
+            conf = _init_config()
+        except OSError as e:
+            print(e)
+            conf = _init_config()
+        except KeyError as e:
+            print(f"Missing parameter: {e}")
             conf = _init_config()
         except MazeError as e:
             print(e.msg)
@@ -475,5 +493,3 @@ if __name__ == "__main__":
         raise_signal(SIGINT)
     except RuntimeError as e:
         print(f"Caught a RuntimeError: {e}")
-    """except Exception as e:
-        print(f"Caught an Exception: {e}")"""
