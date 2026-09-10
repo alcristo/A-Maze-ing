@@ -175,7 +175,7 @@ def _change_config(file: str, opts: MazeOptions) -> None:
         print(f"5. Perfect:     {opts._conf.get('PERFECT')}")
         print(f"6. Output file: {opts._conf.get('OUTPUT_FILE')}")
         print(f"7. Seed:        {opts._conf.get('SEED')}")
-        print(f"8. Algorithm:   {opts._conf.get('ALGORITHM')}")
+        print(f"8. Algorithm:   {opts._conf.get('ALGORITHM', 'Prim')}")
         print(f"9. Animation:   {opts._conf.get('ANIMATE')}")
         print("d. Default braided maze")
         print("u. Undo changes")
@@ -263,7 +263,6 @@ def _menu(opts: MazeOptions) -> None:
         if opt == "1":
             print(f"{clear}")
             _generate(opts)
-            # player = Player(opts)
             return _menu(opts)
         elif opt == "2":
             opts._show_hide()
@@ -296,8 +295,9 @@ def _maze_config(conf_file: str) -> dict[str, str]:
         conf = {i[0].upper(): i[1] for i in tup if i[0][0] != "#"}
     check_errors(conf)
     if str(conf.get("PERFECT")).lower() not in ("true", "false"):
+        print("Invalid input. Defaulting to True.")
         conf.update({"PERFECT": "True"})
-    if conf.get("OUTPUT_FILE") is not None:
+    if conf.get("OUTPUT_FILE") is None:
         conf.update({"OUTPUT_FILE": "maze.txt"})
     valid_algos = (
         "wilson", "prim", "dfs", "ab", "aldous broder", "aldousbroder", "rb",
@@ -306,9 +306,13 @@ def _maze_config(conf_file: str) -> dict[str, str]:
         "recursive backtracker", "recursive_backtracker"
     )
     if str(conf.get("ALGORITHM")).lower() not in valid_algos:
+        print("Invalid algorithm. Defaulting to Prim.")
         conf.update({"ALGORITHM": "Prim"})
+        time.sleep(1)
     if str(conf.get("ANIMATE")).lower() not in ("true", "false"):
+        print("Invalid input. Defaulting to False.")
         conf.update({"ANIMATE": "False"})
+        time.sleep(1)
     return conf
 
 
@@ -412,6 +416,7 @@ def _init_config() -> dict[str, str]:
         )
         algo = input()
         if algo == "":
+            conf.update({"ALGORITHM": "Prim"})
             break
         try:
             assert algo.lower() in valid_algos
