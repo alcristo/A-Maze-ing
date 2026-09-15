@@ -130,7 +130,7 @@ pip install mazegen
 To use the `MazeGenerator` class in a script, import it to the script:
 
 ```python
-from mazegen.mazegen import MazeGenerator
+from mazegen import MazeGenerator
 ```
 
 ## Resources

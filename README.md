@@ -277,7 +277,7 @@ pip install mazegen
 To use the `MazeGenerator` class, run in Python:
 
 ```python
-from mazegen.mazegen import MazeGenerator
+from mazegen import MazeGenerator
 ```
 
 ## Resources
