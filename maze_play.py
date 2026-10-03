@@ -146,18 +146,8 @@ class Player:
                 self._playable = False
                 break
             elif self._pos == self._exit:
-                self._print_map()
-                print("=== A-Maze-ing ===")
-                user = input("\x1b[KEnter user: ")
-                tiempo_actual = time.time() - tiempo_inicio
-                segundos = int(tiempo_actual % 60)
-                print(
-                    f"{user} completed the maze with:",
-                    f"{segundos} seconds"
-                )
                 self._pos = (self._entry[0], self._entry[1])
                 self._playable = False
-                time.sleep(2)
                 return
             time.sleep(0.1)
 
